@@ -155,6 +155,9 @@ module.exports = function (Topics) {
 					postObj.user.username = 'Anonymous';
 					postObj.user.userslug = 'Anonymous';
 					postObj.user.displayname = 'Anonymous';
+					postObj.user.picture = null;
+					postObj.user['icon:text'] = 'A';
+					postObj.user['icon:bgColor'] = '#6c757d';
 				}
 			}
 		});
@@ -164,9 +167,9 @@ module.exports = function (Topics) {
 			uid: uid,
 		});
 		return result.posts;
-};
+	};
 
-Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
+	Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
 		const loggedIn = parseInt(topicPrivileges.uid, 10) > 0;
 		topicData.posts.forEach((post) => {
 			if (post) {
