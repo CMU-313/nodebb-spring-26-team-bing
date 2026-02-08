@@ -192,8 +192,6 @@ module.exports = function (Topics) {
 			privileges.users.isAdministrator(uid),
 		]);
 
-		await canReply(data, topicData);
-
 		data.cid = topicData.cid;
 
 		await guestHandleValid(data);
@@ -206,6 +204,8 @@ module.exports = function (Topics) {
 				throw new Error(`[[error:not-enough-reputation-to-post-links, ${meta.config['min:rep:post-links']}]]`);
 			}
 		}
+
+		await canReply(data, topicData);
 
 		// For replies to scheduled topics, don't have a timestamp older than topic's itself
 		if (topicData.scheduled) {
