@@ -149,6 +149,13 @@ module.exports = function (Topics) {
 					postObj.user.username = validator.escape(String(postObj.handle));
 					postObj.user.displayname = postObj.user.username;
 				}
+
+				// Handle anonymous posts
+				if (postObj.anonymous && postObj.user) {
+					postObj.user.username = 'Anonymous';
+					postObj.user.userslug = 'Anonymous';
+					postObj.user.displayname = 'Anonymous';
+				}
 			}
 		});
 
@@ -157,9 +164,9 @@ module.exports = function (Topics) {
 			uid: uid,
 		});
 		return result.posts;
-	};
+};
 
-	Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
+Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
 		const loggedIn = parseInt(topicPrivileges.uid, 10) > 0;
 		topicData.posts.forEach((post) => {
 			if (post) {

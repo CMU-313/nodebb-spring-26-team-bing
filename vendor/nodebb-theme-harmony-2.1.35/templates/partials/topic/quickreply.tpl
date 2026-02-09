@@ -14,9 +14,15 @@
 			<div class="imagedrop"><div>[[topic:composer.drag-and-drop-images]]</div></div>
 		</div>
 		<div>
-			<div class="d-flex justify-content-end gap-2">
+			<div class="d-flex justify-content-end align-items-center gap-2">
 				<button type="button" component="topic/quickreply/upload/button" class="btn btn-ghost btn-sm border"><i class="fa fa-upload"></i></button>
 				<button type="button" component="topic/quickreply/expand" class="btn btn-ghost btn-sm border" title="[[topic:open-composer]]"><i class="fa fa-expand"></i></button>
+				<!-- add toggle button -->
+				<!-- <input type="checkbox" component="topic/quickreply/anonymize" class="checkbox">Post Anonymously</input> -->
+				<div class="form-check m-0">
+					<input class="form-check-input" component="topic/quickreply/anonymize" type="checkbox" name="anonymous" id="anonymous" checked="">
+					<label class="form-check-label" for="anonymous">Post Anonymously</label>
+				</div>
 				<button type="submit" component="topic/quickreply/button" class="btn btn-sm btn-primary">[[topic:post-quick-reply]]</button>
 			</div>
 		</div>
