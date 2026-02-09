@@ -164,9 +164,9 @@ module.exports = function (Topics) {
 			uid: uid,
 		});
 		return result.posts;
-};
+	};
 
-Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
+	Topics.modifyPostsByPrivilege = function (topicData, topicPrivileges) {
 		const loggedIn = parseInt(topicPrivileges.uid, 10) > 0;
 		topicData.posts.forEach((post) => {
 			if (post) {
