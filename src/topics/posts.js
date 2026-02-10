@@ -151,7 +151,7 @@ module.exports = function (Topics) {
 				}
 
 				// Handle anonymous posts
-				if (postObj.anonymous && postObj.user) {
+				if (postObj.anonymous == 'true' && postObj.user) {
 					postObj.user.username = 'Anonymous';
 					postObj.user.userslug = 'Anonymous';
 					postObj.user.displayname = 'Anonymous';
