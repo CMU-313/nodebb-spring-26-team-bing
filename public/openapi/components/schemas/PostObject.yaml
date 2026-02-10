@@ -172,6 +172,7 @@ PostDataObject:
           type: string
         anonymous:
           type: string
+          default: 'false'
         timestamp:
           type: number
         votes:
