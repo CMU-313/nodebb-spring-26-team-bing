@@ -170,6 +170,9 @@ PostDataObject:
           description: A topic identifier
         content:
           type: string
+        anonymous:
+          type: string
+          default: 'false'
         timestamp:
           type: number
         votes:

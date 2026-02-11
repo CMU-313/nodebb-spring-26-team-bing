@@ -47,6 +47,7 @@ describe('Post\'s', () => {
 			cid: cid,
 			title: 'Test Topic Title',
 			content: 'The content of test topic',
+			anonymous: false,
 		}));
 		await groups.join('Global Moderators', globalModUid);
 	});
@@ -61,7 +62,7 @@ describe('Post\'s', () => {
 		assert.equal(data.categories[0].posts[0].pid, postResult.postData.pid);
 
 		const newUid = await user.create({ username: 'teaserdelete' });
-		const newPostResult = await topics.post({ uid: newUid, cid: cid, title: 'topic title', content: 'xxxxxxxx' });
+		const newPostResult = await topics.post({ uid: newUid, cid: cid, title: 'topic title', content: 'xxxxxxxx', anonymous: false });
 
 		data = await getCategoriesAsync();
 		assert.equal(data.categories[0].teaser.pid, newPostResult.postData.pid);
@@ -80,7 +81,7 @@ describe('Post\'s', () => {
 		const oldUid = await user.create({ username: 'olduser' });
 		const newUid = await user.create({ username: 'newuser' });
 		const postResult = await topics.post({ uid: oldUid, cid: cid, title: 'change owner', content: 'original post' });
-		const postData = await topics.reply({ uid: oldUid, tid: postResult.topicData.tid, content: 'firstReply' });
+		const postData = await topics.reply({ uid: oldUid, tid: postResult.topicData.tid, content: 'firstReply', anonymous: false });
 		const pid1 = postResult.postData.pid;
 		const pid2 = postData.pid;
 
