@@ -59,12 +59,15 @@ define('quickreply', [
 			if (!ready) {
 				return;
 			}
-
+			
+			var anonymous = (components.get('topic/quickreply/anonymize').prop('checked')) ? 'true' : 'false';
+			
 			const replyMsg = element.val();
 			const replyData = {
 				tid: ajaxify.data.tid,
 				handle: undefined,
 				content: replyMsg,
+				anonymous: anonymous,
 			};
 			const replyLen = replyMsg.length;
 			if (replyLen < parseInt(config.minimumPostLength, 10)) {
@@ -82,17 +85,19 @@ define('quickreply', [
 					return alerts.error(err);
 				}
 				if (data && data.queued) {
+					data.anonymous = anonymous;
 					alerts.alert({
 						type: 'success',
 						title: '[[global:alert.success]]',
 						message: data.message,
 						timeout: 10000,
+						anonymous: anonymous,
 						clickfn: function () {
 							ajaxify.go(`/post-queue/${data.id}`);
 						},
 					});
 				}
-
+				data.anonymous = anonymous;
 				element.val('');
 				storage.removeItem(qrDraftId);
 				QuickReply._autocomplete.hide();
