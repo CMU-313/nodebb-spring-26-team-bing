@@ -326,7 +326,7 @@ define('forum/topic/threadTools', [
 		components.get('topic/reply/container').toggleClass('hidden', hideReply);
 		components.get('topic/reply/locked').toggleClass('hidden', ajaxify.data.privileges.isAdminOrMod || !data.isLocked || ajaxify.data.deleted);
 
-		threadEl.find('[component="post"]:not(.deleted) [component="post/reply"], [component="post"]:not(.deleted) [component="post/quote"]').toggleClass('hidden', hideReply);
+		threadEl.find('[component="post"]:not(.deleted) [component="post/reply"], [component="post"]:not(.deleted) [component="post/quote"], [component="post"]:not(.deleted) [component="post/forward"]').toggleClass('hidden', hideReply);
 		threadEl.find('[component="post/edit"], [component="post/delete"]').toggleClass('hidden', isLocked);
 
 		threadEl.find('[component="post"][data-uid="' + app.user.uid + '"].deleted [component="post/tools"]').toggleClass('hidden', isLocked);
