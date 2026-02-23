@@ -6,6 +6,14 @@ const db = require('../database');
 const privileges = require('../privileges');
 
 module.exports = function (Posts) {
+    Posts.getMostComments = async function (uid, start, stop, term) {
+        
+    };
+
+    Posts.getHeat = async function (uid, start, stop, term) {
+
+    };
+
     Posts.getMostVotes = async function (uid, start, stop, term) {
 
     };
