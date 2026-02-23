@@ -135,7 +135,7 @@ module.exports = function (Topics) {
 
 		postData.forEach((postObj, i) => {
 			if (postObj) {
-				postObj.user = postObj.uid ? userData[postObj.uid] : { ...userData[postObj.uid] };
+				postObj.user = { ...userData[postObj.uid] };
 				postObj.editor = postObj.editor ? editors[postObj.editor] : null;
 				postObj.bookmarked = bookmarks[i];
 				postObj.upvoted = voteData.upvotes[i];
@@ -148,6 +148,16 @@ module.exports = function (Topics) {
 				if (meta.config.allowGuestHandles && postObj.uid === 0 && postObj.handle) {
 					postObj.user.username = validator.escape(String(postObj.handle));
 					postObj.user.displayname = postObj.user.username;
+				}
+
+				// Handle anonymous posts
+				if (postObj.anonymous === 'true' && postObj.user) {
+					postObj.user.username = 'Anonymous';
+					postObj.user.userslug = 'Anonymous';
+					postObj.user.displayname = 'Anonymous';
+					postObj.user.picture = null;
+					postObj.user['icon:text'] = 'A';
+					postObj.user['icon:bgColor'] = '#6c757d';
 				}
 			}
 		});
