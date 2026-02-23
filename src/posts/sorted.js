@@ -87,7 +87,7 @@ module.exports = function (Posts) {
 		const postData = await Posts.getPostsFields(pids, ['pid', 'replies', 'timestamp']);
 		
 		// Calculate heat score for each post (activity/recency)
-		postData.forEach(post => {
+		postData.forEach((post) => {
 			post.heat = Posts.calculateHeat({
 				replies: post.replies,
 				createdAt: post.timestamp,
