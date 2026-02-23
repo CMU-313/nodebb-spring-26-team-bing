@@ -73,6 +73,7 @@ exports.post = async function (req, res) {
 			data.title = body.title;
 			data.tags = [];
 			data.thumb = '';
+			data.instructorOnly = !!body.instructorOnly;
 			result = await queueOrPost(topics.post, data);
 		} else {
 			throw new Error('[[error:invalid-data]]');

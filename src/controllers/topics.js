@@ -59,6 +59,12 @@ topicsController.get = async function getTopic(req, res, next) {
 	if (!userPrivileges['topics:read'] || (!topicData.scheduled && topicData.deleted && !userPrivileges.view_deleted)) {
 		return helpers.notAllowed(req, res);
 	}
+	if (topicData.instructorOnly) {
+		const isInstructor = await user.isInstructor(req.uid);
+		if (!isInstructor) {
+			return helpers.notAllowed(req, res);
+		}
+	}
 
 	if (req.params.post_index === 'unread') {
 		postIndex = await topics.getUserBookmark(tid, req.uid);
@@ -94,6 +100,7 @@ topicsController.get = async function getTopic(req, res, next) {
 	topicData.tagWhitelist = categories.filterTagWhitelist(topicData.tagWhitelist, userPrivileges.isAdminOrMod);
 
 	topicData.privileges = userPrivileges;
+	topicData.isInstructor = await user.isInstructor(req.uid);
 	topicData.topicStaleDays = meta.config.topicStaleDays;
 	topicData['reputation:disabled'] = meta.config['reputation:disabled'];
 	topicData['downvote:disabled'] = meta.config['downvote:disabled'];

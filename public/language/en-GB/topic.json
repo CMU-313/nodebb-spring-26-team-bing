@@ -6,6 +6,7 @@
 	"no-posts-found": "No posts found!",
 
 	"post-is-deleted": "This post is deleted!",
+	"post-instructor-only": "This post is visible to instructors only.",
 	"topic-is-deleted": "This topic is deleted!",
 
 	"profile": "Profile",
@@ -96,6 +97,8 @@
 	"markAsUnreadForAll.success" : "Topic marked as unread for all.",
 	"mark-unread": "Mark unread",
 	"mark-unread.success": "Topic marked as unread.",
+	"instructor-only-enabled": "Topic is now visible to instructors only.",
+	"instructor-only-disabled": "Topic is now visible to all.",
 
 	"watch": "Watch",
 	"unwatch": "Unwatch",
@@ -115,6 +118,8 @@
 	"thread-tools.unpin": "Unpin Topic",
 	"thread-tools.lock": "Lock Topic",
 	"thread-tools.unlock": "Unlock Topic",
+	"thread-tools.instructor-only-enable": "Instructor Only (restrict to instructors)",
+	"thread-tools.instructor-only-disable": "Remove Instructor Only",
 	"thread-tools.move": "Move Topic",
 	"thread-tools.crosspost": "Crosspost Topic",
 	"thread-tools.move-posts": "Move Posts",
@@ -192,6 +197,11 @@
 	"crossposts.none": "This topic has not been cross-posted to any additional categories",
 
 	"composer.title-placeholder": "Enter your topic title here...",
+	"composer.instructor-only-label": "Instructor only (visible to instructors only)",
+	"composer.visibility-label": "Post visibility",
+	"composer.visibility-public": "Public",
+	"composer.visibility-anonymous": "Anonymous",
+	"composer.visibility-instructor-only": "Instructor only",
 	"composer.handle-placeholder": "Enter your name/handle here",
 	"composer.hide": "Hide",
 	"composer.discard": "Discard",

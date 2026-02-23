@@ -2,6 +2,7 @@
 
 const nconf = require('nconf');
 const validator = require('validator');
+const slugify = require('../../slugify');
 
 const db = require('../../database');
 const user = require('../../user');
@@ -11,6 +12,28 @@ const pagination = require('../../pagination');
 const events = require('../../events');
 
 const groupsController = module.exports;
+
+const INSTRUCTORS_GROUP_NAME = 'Instructors';
+
+groupsController.instructors = async function (req, res) {
+	const exists = await groups.exists(INSTRUCTORS_GROUP_NAME);
+	if (!exists) {
+		try {
+			await groups.create({
+				name: INSTRUCTORS_GROUP_NAME,
+				userTitle: 'Instructor',
+				description: 'Users who can view instructor-only content and be set as instructors (default role is student).',
+				private: 1,
+			});
+		} catch (err) {
+			if (err.message !== '[[error:group-already-exists]]') {
+				throw err;
+			}
+		}
+	}
+	const slug = slugify(INSTRUCTORS_GROUP_NAME) || 'instructors';
+	return res.redirect(`${nconf.get('relative_path')}/admin/manage/groups/${slug}`);
+};
 
 groupsController.list = async function (req, res) {
 	const page = parseInt(req.query.page, 10) || 1;

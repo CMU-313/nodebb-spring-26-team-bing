@@ -57,6 +57,13 @@ topicsAPI.create = async function (caller, data) {
 	const payload = { ...data };
 	delete payload.tid;
 	payload.tags = payload.tags || [];
+	if (payload.instructorOnly) {
+		const isInstructor = await user.isInstructor(caller.uid);
+		if (!isInstructor) {
+			payload.instructorOnly = false;
+		}
+	}
+	payload.instructorOnly = !!payload.instructorOnly;
 	apiHelpers.setDefaultPostData(caller, payload);
 	const isScheduling = parseInt(data.timestamp, 10) > payload.timestamp;
 	if (isScheduling) {
@@ -163,6 +170,23 @@ topicsAPI.unlock = async function (caller, data) {
 	await doTopicAction('unlock', 'event:topic_unlocked', caller, {
 		tids: data.tids,
 	});
+};
+
+topicsAPI.setInstructorOnly = async function (caller, data) {
+	const { tid, instructorOnly } = data;
+	if (!tid) {
+		throw new Error('[[error:invalid-data]]');
+	}
+	const isInstructor = await user.isInstructor(caller.uid);
+	if (!isInstructor) {
+		throw new Error('[[error:no-privileges]]');
+	}
+	const canEdit = await privileges.topics.canEdit(tid, caller.uid);
+	if (!canEdit) {
+		throw new Error('[[error:no-privileges]]');
+	}
+	await topics.setTopicField(tid, 'instructorOnly', instructorOnly ? 1 : 0);
+	return await topics.getTopicFields(tid, ['tid', 'instructorOnly']);
 };
 
 topicsAPI.follow = async function (caller, data) {

@@ -61,6 +61,45 @@ define('forum/topic/threadTools', [
 			return false;
 		});
 
+		topicContainer.on('click', '[component="topic/instructor-only/enable"]', function () {
+			api.put(`/topics/${tid}/instructor-only`, { instructorOnly: true })
+				.then(() => {
+					ajaxify.data.instructorOnly = true;
+					components.get('topic/instructor-only/enable').toggleClass('hidden', true).parent().attr('hidden', '');
+					components.get('topic/instructor-only/disable').toggleClass('hidden', false).parent().removeAttr('hidden');
+					const titleEl = components.get('topic/title');
+					if (titleEl.length) {
+						const current = titleEl.text();
+						if (current.indexOf('[Instructor Only] ') !== 0) {
+							titleEl.text('[Instructor Only] ' + current);
+						}
+					}
+					alerts.success('[[topic:instructor-only-enabled]]');
+				})
+				.catch(alerts.error);
+			return false;
+		});
+
+		topicContainer.on('click', '[component="topic/instructor-only/disable"]', function () {
+			api.put(`/topics/${tid}/instructor-only`, { instructorOnly: false })
+				.then(() => {
+					ajaxify.data.instructorOnly = false;
+					components.get('topic/instructor-only/enable').toggleClass('hidden', false).parent().removeAttr('hidden');
+					components.get('topic/instructor-only/disable').toggleClass('hidden', true).parent().attr('hidden', '');
+					const titleEl = components.get('topic/title');
+					if (titleEl.length) {
+						const current = titleEl.text();
+						const prefix = '[Instructor Only] ';
+						if (current.indexOf(prefix) === 0) {
+							titleEl.text(current.slice(prefix.length));
+						}
+					}
+					alerts.success('[[topic:instructor-only-disabled]]');
+				})
+				.catch(alerts.error);
+			return false;
+		});
+
 		topicContainer.on('click', '[component="topic/mark-unread"]', function () {
 			topicCommand('del', '/read', undefined, () => {
 				if (app.previousUrl && !app.previousUrl.match('^/topic')) {

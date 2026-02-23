@@ -33,6 +33,15 @@
 	<a component="topic/tag" href="#" class="dropdown-item rounded-1 d-flex align-items-center gap-2" role="menuitem"><i class="fa fa-fw fa-tag text-secondary"></i> [[topic:thread-tools.tag]]</a>
 </li>
 
+{{{ if isInstructor }}}
+<li {{{ if instructorOnly }}}hidden{{{ end }}}>
+	<a component="topic/instructor-only/enable" href="#" class="dropdown-item rounded-1 d-flex align-items-center gap-2" role="menuitem"><i class="fa fa-fw fa-graduation-cap text-secondary"></i> [[topic:thread-tools.instructor-only-enable]]</a>
+</li>
+<li {{{ if !instructorOnly }}}hidden{{{ end }}}>
+	<a component="topic/instructor-only/disable" href="#" class="dropdown-item rounded-1 d-flex align-items-center gap-2" role="menuitem"><i class="fa fa-fw fa-graduation-cap text-secondary"></i> [[topic:thread-tools.instructor-only-disable]]</a>
+</li>
+{{{ end }}}
+
 {{{ if !scheduled }}}
 <li>
 	<a component="topic/move-posts" href="#" class="dropdown-item rounded-1 d-flex align-items-center gap-2" role="menuitem"><i class="fa fa-fw fa-arrows text-secondary"></i> [[topic:thread-tools.move-posts]]</a>

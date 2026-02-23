@@ -13,8 +13,16 @@
 			<textarea rows="4" name="content" component="topic/quickreply/text" class="form-control mousetrap" placeholder="[[modules:composer.textarea.placeholder]]"></textarea>
 			<div class="imagedrop"><div>[[topic:composer.drag-and-drop-images]]</div></div>
 		</div>
-		<div>
-			<div class="d-flex justify-content-end gap-2">
+		<div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+			<div class="d-flex align-items-center gap-2">
+				<label class="form-label mb-0 small text-muted">[[topic:composer.visibility-label]]</label>
+				<select class="form-select form-select-sm" component="topic/quickreply/visibility" name="postVisibility" style="width: auto; min-width: 8rem;">
+					<option value="public">[[topic:composer.visibility-public]]</option>
+					<option value="anonymous">[[topic:composer.visibility-anonymous]]</option>
+					<option value="instructor_only">[[topic:composer.visibility-instructor-only]]</option>
+				</select>
+			</div>
+			<div class="d-flex gap-2">
 				<button type="button" component="topic/quickreply/upload/button" class="btn btn-ghost btn-sm border"><i class="fa fa-upload"></i></button>
 				<button type="button" component="topic/quickreply/expand" class="btn btn-ghost btn-sm border" title="[[topic:open-composer]]"><i class="fa fa-expand"></i></button>
 				<button type="submit" component="topic/quickreply/button" class="btn btn-sm btn-primary">[[topic:post-quick-reply]]</button>

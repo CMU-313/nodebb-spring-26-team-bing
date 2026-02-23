@@ -59,15 +59,19 @@ define('quickreply', [
 			if (!ready) {
 				return;
 			}
-			
-			var anonymous = (components.get('topic/quickreply/anonymize').prop('checked')) ? 'true' : 'false';
-			
+
+			var visibilityEl = components.get('topic/quickreply/visibility');
+			var visibility = visibilityEl.length ? (visibilityEl.val() || 'public') : 'public';
+			var anonymous = (visibility === 'anonymous') ? 'true' : 'false';
+			var instructorOnly = (visibility === 'instructor_only');
+
 			const replyMsg = element.val();
 			const replyData = {
 				tid: ajaxify.data.tid,
 				handle: undefined,
 				content: replyMsg,
 				anonymous: anonymous,
+				instructorOnly: instructorOnly,
 			};
 			const replyLen = replyMsg.length;
 			if (replyLen < parseInt(config.minimumPostLength, 10)) {
@@ -86,6 +90,7 @@ define('quickreply', [
 				}
 				if (data && data.queued) {
 					data.anonymous = anonymous;
+					data.instructorOnly = instructorOnly;
 					alerts.alert({
 						type: 'success',
 						title: '[[global:alert.success]]',
@@ -98,6 +103,7 @@ define('quickreply', [
 					});
 				}
 				data.anonymous = anonymous;
+				data.instructorOnly = instructorOnly;
 				element.val('');
 				storage.removeItem(qrDraftId);
 				QuickReply._autocomplete.hide();

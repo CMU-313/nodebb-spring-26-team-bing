@@ -29,7 +29,7 @@ module.exports = function (Posts) {
 		}
 
 		const topicData = await topics.getTopicFields(postData.tid, [
-			'cid', 'mainPid', 'title', 'timestamp', 'scheduled', 'slug', 'tags', 'thumbs',
+			'cid', 'mainPid', 'title', 'timestamp', 'scheduled', 'slug', 'tags', 'thumbs', 'instructorOnly',
 		]);
 
 		await scheduledTopicCheck(data, topicData);
@@ -131,6 +131,9 @@ module.exports = function (Posts) {
 		if (title) {
 			newTopicData.title = title;
 			newTopicData.slug = `${tid}/${slugify(title) || 'topic'}`;
+		}
+		if (data.instructorOnly !== undefined) {
+			newTopicData.instructorOnly = data.instructorOnly ? 1 : 0;
 		}
 
 		const tagsupdated = Array.isArray(data.tags) &&

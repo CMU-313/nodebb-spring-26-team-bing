@@ -150,7 +150,7 @@ module.exports = function (Topics) {
 					postObj.user.displayname = postObj.user.username;
 				}
 
-				// Handle anonymous posts
+				// Handle anonymous posts: grayed-out identity, show as "Anonymous"
 				if (postObj.anonymous === 'true' && postObj.user) {
 					postObj.user.username = 'Anonymous';
 					postObj.user.userslug = 'Anonymous';
@@ -158,6 +158,7 @@ module.exports = function (Topics) {
 					postObj.user.picture = null;
 					postObj.user['icon:text'] = 'A';
 					postObj.user['icon:bgColor'] = '#6c757d';
+					postObj.anonymousPost = true;
 				}
 			}
 		});

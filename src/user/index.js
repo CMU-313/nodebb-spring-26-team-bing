@@ -198,6 +198,17 @@ User.isAdministrator = async function (uid) {
 	return await privileges.users.isAdministrator(uid);
 };
 
+User.isInstructor = async function (uid) {
+	if (!uid || parseInt(uid, 10) <= 0) {
+		return false;
+	}
+	const [inGroup, isAdmin] = await Promise.all([
+		groups.isMember(uid, 'Instructors'),
+		User.isAdministrator(uid),
+	]);
+	return inGroup || isAdmin;
+};
+
 User.isGlobalModerator = async function (uid) {
 	return await privileges.users.isGlobalModerator(uid);
 };

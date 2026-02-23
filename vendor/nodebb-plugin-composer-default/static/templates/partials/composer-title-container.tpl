@@ -14,6 +14,12 @@
 	<div data-component="composer/title" class="position-relative flex-1" style="min-width: 0;">
 		{{{ if isTopicOrMain }}}
 		<input class="title form-control h-100 rounded-1 shadow-none" type="text" placeholder="[[topic:composer.title-placeholder]]" value="{topicTitle}" />
+		{{{ if canSetInstructorOnly }}}
+		<label class="form-check form-check-inline mt-1 mb-0">
+			<input type="checkbox" class="form-check-input composer-instructor-only" data-field="instructorOnly" {{{ if topic.instructorOnly }}}checked{{{ end }}} />
+			<span class="form-check-label small text-muted">[[topic:composer.instructor-only-label]]</span>
+		</label>
+		{{{ end }}}
 		{{{ else }}}
 		<span class="{{{ if !template.compose }}}d-none d-md-block{{{ else }}}d-block{{{ end }}} title h-100 text-truncate">{titleLabel}</span>
 		{{{ end }}}

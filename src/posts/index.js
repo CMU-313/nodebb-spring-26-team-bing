@@ -96,11 +96,23 @@ Posts.getPostIndices = async function (posts, uid) {
 };
 
 Posts.modifyPostByPrivilege = function (post, privileges) {
-	if (post && post.deleted && !(post.selfPost || privileges['posts:view_deleted'])) {
+	if (!post) {
+		return;
+	}
+	if (post.deleted && !(post.selfPost || privileges['posts:view_deleted'])) {
 		post.content = '[[topic:post-is-deleted]]';
 		if (post.user) {
 			post.user.signature = '';
 		}
+		return;
+	}
+	// Instructor-only posts: hide content from non-instructors (instructors and post author can see)
+	if (post.instructorOnly && !(privileges.isInstructor || post.selfPost)) {
+		post.content = '[[topic:post-instructor-only]]';
+		if (post.user) {
+			post.user.signature = '';
+		}
+		post.instructorOnlyHidden = true;
 	}
 };
 

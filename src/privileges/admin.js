@@ -57,6 +57,7 @@ privsAdmin.routeMap = {
 	'manage/admins-mods': 'admin:admins-mods',
 	'manage/users': 'admin:users',
 	'manage/groups': 'admin:groups',
+	'manage/instructors': 'admin:groups',
 	'manage/tags': 'admin:tags',
 	'settings/tags': 'admin:tags',
 	'extend/plugins': 'admin:settings',

@@ -126,6 +126,7 @@ plugin.filterComposerBuild = async function (hookData) {
 		globalPrivileges,
 		canTagTopics,
 		canScheduleTopics,
+		canSetInstructorOnly,
 	] = await Promise.all([
 		posts.isMain(req.query.pid),
 		getPostData(req),
@@ -140,6 +141,7 @@ plugin.filterComposerBuild = async function (hookData) {
 		privileges.global.get(req.uid),
 		canTag(req),
 		canSchedule(req),
+		user.isInstructor ? user.isInstructor(req.uid) : Promise.resolve(false),
 	]);
 
 	const isEditing = !!req.query.pid;
@@ -213,6 +215,7 @@ plugin.filterComposerBuild = async function (hookData) {
 			save_id: save_id,
 			privileges: globalPrivileges,
 			'composer:showHelpTab': meta.config['composer:showHelpTab'] === 1,
+			canSetInstructorOnly: !!canSetInstructorOnly && (!!req.query.cid || (!!req.query.pid && isMainPost)),
 		},
 	};
 };

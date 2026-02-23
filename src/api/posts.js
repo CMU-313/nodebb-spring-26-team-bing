@@ -119,6 +119,14 @@ postsAPI.edit = async function (caller, data) {
 	data.req = apiHelpers.buildReqObject(caller);
 	data.timestamp = parseInt(data.timestamp, 10) || Date.now();
 
+	if (data.instructorOnly !== undefined) {
+		const isInstructor = await user.isInstructor(caller.uid);
+		if (!isInstructor) {
+			throw new Error('[[error:no-privileges]]');
+		}
+		data.instructorOnly = !!data.instructorOnly;
+	}
+
 	const editResult = await posts.edit(data);
 
 	const selfPost = parseInt(caller.uid, 10) === parseInt(editResult.post.uid, 10);

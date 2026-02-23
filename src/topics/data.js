@@ -13,7 +13,7 @@ const intFields = [
 	'viewcount', 'postercount', 'followercount',
 	'deleted', 'locked', 'pinned', 'pinExpiry',
 	'timestamp', 'upvotes', 'downvotes',
-	'lastposttime', 'deleterUid',
+	'lastposttime', 'deleterUid', 'instructorOnly',
 ];
 
 module.exports = function (Topics) {
@@ -146,6 +146,16 @@ function modifyTopic(topic, fields) {
 			topic.thumbs = topic.thumbs ? JSON.parse(String(topic.thumbs || '[]')) : [];
 		} catch (e) {
 			topic.thumbs = [];
+		}
+	}
+
+	if (topic.hasOwnProperty('instructorOnly')) {
+		topic.instructorOnly = parseInt(topic.instructorOnly, 10) === 1;
+		if (topic.instructorOnly && topic.title) {
+			topic.title = `[Instructor Only] ${topic.title}`;
+			if (topic.titleRaw) {
+				topic.titleRaw = `[Instructor Only] ${topic.titleRaw}`;
+			}
 		}
 	}
 }

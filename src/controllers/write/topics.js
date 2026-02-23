@@ -90,6 +90,14 @@ Topics.unlock = async (req, res) => {
 	helpers.formatApiResponse(200, res);
 };
 
+Topics.setInstructorOnly = async (req, res) => {
+	const payload = await api.topics.setInstructorOnly(req, {
+		tid: req.params.tid,
+		instructorOnly: req.body.instructorOnly,
+	});
+	helpers.formatApiResponse(200, res, payload);
+};
+
 Topics.follow = async (req, res) => {
 	await api.topics.follow(req, req.params);
 	helpers.formatApiResponse(200, res);

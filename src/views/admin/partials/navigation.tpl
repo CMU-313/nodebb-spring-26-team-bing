@@ -41,6 +41,7 @@
 				{{{ end }}}
 				{{{ if user.privileges.admin:groups }}}
 				<a class="btn btn-ghost btn-sm text-start" href="{relative_path}/admin/manage/groups">[[admin/menu:manage/groups]]</a>
+				<a class="btn btn-ghost btn-sm text-start" href="{relative_path}/admin/manage/instructors">[[admin/menu:manage/instructors]]</a>
 				{{{ end }}}
 				{{{ if user.privileges.admin:admins-mods }}}
 				<a class="btn btn-ghost btn-sm text-start" href="{relative_path}/admin/manage/admins-mods">[[admin/menu:manage/admins-mods]]</a>

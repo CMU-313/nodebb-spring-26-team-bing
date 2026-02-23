@@ -59,11 +59,13 @@
 	</ul>
 	<div class="d-flex align-items-center gap-1">
 		<div class="draft-icon m-2 hidden-xs hidden-sm"></div>
-		<!-- add toggle button -->
-		<!-- <input type="checkbox" component="topic/quickreply/anonymize" class="checkbox">Post Anonymously</input> -->
-		<div class="form-check m-0">
-			<input class="form-check-input" component="topic/quickreply/anonymize" type="checkbox" name="anonymous" id="anonymous" checked="">
-			<label class="form-check-label" for="anonymous">Post Anonymously</label>
+		<div class="dropdown dropdown-left d-flex align-items-center">
+			<label class="form-label mb-0 me-1 small text-muted">[[topic:composer.visibility-label]]</label>
+			<select class="form-select form-select-sm composer-visibility-select" component="composer/visibility" name="postVisibility" style="width: auto; min-width: 8rem;">
+				<option value="public" {{{ if postVisibility === "public" }}}selected{{{ end }}}>[[topic:composer.visibility-public]]</option>
+				<option value="anonymous" {{{ if postVisibility === "anonymous" }}}selected{{{ end }}}>[[topic:composer.visibility-anonymous]]</option>
+				<option value="instructor_only" {{{ if postVisibility === "instructor_only" }}}selected{{{ end }}}>[[topic:composer.visibility-instructor-only]]</option>
+			</select>
 		</div>
 		<button class="btn btn-sm btn-link py-2 text-body fw-semibold text-nowrap" data-action="preview">
 			<i class="fa fa-eye"></i>
