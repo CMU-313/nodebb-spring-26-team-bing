@@ -73,9 +73,33 @@ module.exports = function (Posts) {
     };
 
 	Posts.getHotPosts = async function (uid, start, stop, term) {
-        let min = 0;
+		let min = 0;
 		if (terms[term]) {
 			min = Date.now() - terms[term];
 		}
+
+		// Fetch a larger set to account for filtering by privileges and unexpectedly large heat calculation
+		const count = parseInt(stop, 10) === -1 ? stop : Math.max(stop - start + 1, 100) * 2;
+		let pids = await db.getSortedSetRevRangeByScore('posts:pid', 0, count, '+inf', min);
+		pids = await privileges.posts.filter('topics:read', pids, uid);
+		
+		// Get post data with replies and creation timestamp for heat calculation
+		const postData = await Posts.getPostsFields(pids, ['pid', 'replies', 'timestamp']);
+		
+		// Calculate heat score for each post (activity/recency)
+		postData.forEach(post => {
+			post.heat = Posts.calculateHeat({
+				replies: post.replies,
+				createdAt: post.timestamp,
+			});
+		});
+		
+		// Sort by heat score (descending)
+		postData.sort((a, b) => b.heat - a.heat);
+		
+		// Apply pagination after sorting
+		const sortedPids = postData.slice(start, stop + 1).map(p => p.pid);
+		
+		return await Posts.getPostSummaryByPids(sortedPids, uid, { stripTags: true });
 	};
 };
