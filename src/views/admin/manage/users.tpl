@@ -58,6 +58,9 @@
 
 						<li><h6 class="dropdown-header">[[admin/manage/users:manage]]</h6></li>
 						<li><a href="#" class="dropdown-item rounded-1 manage-groups" role="menuitem"><i class="text-secondary fa fa-fw fa-users"></i> [[admin/manage/users:manage-groups]]</a></li>
+						<li><h6 class="dropdown-header">[[admin/manage/users:role]]</h6></li>
+						<li><a href="#" class="dropdown-item rounded-1 set-role-instructor" role="menuitem"><i class="text-secondary fa fa-fw fa-graduation-cap"></i> [[admin/manage/users:set-role-instructor]]</a></li>
+						<li><a href="#" class="dropdown-item rounded-1 set-role-student" role="menuitem"><i class="text-secondary fa fa-fw fa-user"></i> [[admin/manage/users:set-role-student]]</a></li>
 						<li><a href="#" class="dropdown-item rounded-1 set-reputation" role="menuitem"><i class="text-secondary fa fa-fw fa-star"></i> [[admin/manage/users:set-reputation]]</a></li>
 
 						<li><hr class="dropdown-divider"></li>

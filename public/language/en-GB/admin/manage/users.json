@@ -24,6 +24,9 @@
 	"download-csv": "Download CSV",
 	"custom-user-fields": "Custom User Fields",
 	"manage-groups": "Manage Groups",
+	"role": "Role (Student / Instructor)",
+	"set-role-instructor": "Set as Instructor",
+	"set-role-student": "Set as Student",
 	"set-reputation": "Set Reputation",
 	"add-group": "Add Group",
 	"create": "Create User",
@@ -117,6 +120,8 @@
 	"alerts.error-passwords-different": "Passwords must match!",
 	"alerts.error-x": "<strong>Error</strong><p>%1</p>",
 	"alerts.create-success": "User created!",
+	"alerts.role-instructor-success": "User(s) set as Instructor.",
+	"alerts.role-student-success": "User(s) set as Student.",
 
 	"alerts.prompt-email": "Emails: ",
 	"alerts.email-sent-to": "An invitation email has been sent to %1",

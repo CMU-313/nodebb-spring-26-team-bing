@@ -189,6 +189,30 @@ define('admin/manage/users', [
 			});
 		});
 
+		const INSTRUCTORS_GROUP_SLUG = 'instructors';
+
+		$('.set-role-instructor').on('click', function () {
+			const uids = getSelectedUids();
+			if (!uids.length) {
+				alerts.error('[[error:no-users-selected]]');
+				return false;
+			}
+			Promise.all(uids.map(uid => api.put(`/groups/${INSTRUCTORS_GROUP_SLUG}/membership/${uid}`)))
+				.then(() => onSuccess('[[admin/manage/users:alerts.role-instructor-success]]'))
+				.catch(alerts.error);
+		});
+
+		$('.set-role-student').on('click', function () {
+			const uids = getSelectedUids();
+			if (!uids.length) {
+				alerts.error('[[error:no-users-selected]]');
+				return false;
+			}
+			Promise.all(uids.map(uid => api.del(`/groups/${INSTRUCTORS_GROUP_SLUG}/membership/${uid}`)))
+				.then(() => onSuccess('[[admin/manage/users:alerts.role-student-success]]'))
+				.catch(alerts.error);
+		});
+
 		$('.set-reputation').on('click', function () {
 			const uids = getSelectedUids();
 			if (!uids.length) {

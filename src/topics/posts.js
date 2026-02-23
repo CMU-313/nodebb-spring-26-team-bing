@@ -8,6 +8,7 @@ const nconf = require('nconf');
 const db = require('../database');
 const user = require('../user');
 const posts = require('../posts');
+const groups = require('../groups');
 const meta = require('../meta');
 const activitypub = require('../activitypub');
 const plugins = require('../plugins');
@@ -118,12 +119,15 @@ module.exports = function (Topics) {
 			const userData = await method(uids);
 			return _.zipObject(uids, userData);
 		}
+		const uidsForRole = _.uniq(postData.filter(p => p && parseInt(p.uid, 10) > 0).map(p => p.uid));
 		const [
 			bookmarks,
 			voteData,
 			userData,
 			editors,
 			replies,
+			instructorFlags,
+			adminFlags,
 		] = await Promise.all([
 			posts.hasBookmarked(pids, uid),
 			posts.getVoteStatusByPostIDs(pids, uid),
@@ -131,7 +135,13 @@ module.exports = function (Topics) {
 			getPostUserData('editor', async uids => await user.getUsersFields(uids, ['uid', 'username', 'userslug'])),
 			getPostReplies(postData, uid),
 			Topics.addParentPosts(postData, uid),
+			uidsForRole.length ? groups.isMembers(uidsForRole, 'Instructors') : [],
+			uidsForRole.length ? user.isAdministrator(uidsForRole) : [],
 		]);
+		const uidToRole = {};
+		uidsForRole.forEach((uid, idx) => {
+			uidToRole[uid] = (instructorFlags[idx] || adminFlags[idx]) ? 'Instructor' : 'Student';
+		});
 
 		postData.forEach((postObj, i) => {
 			if (postObj) {
@@ -159,6 +169,9 @@ module.exports = function (Topics) {
 					postObj.user['icon:text'] = 'A';
 					postObj.user['icon:bgColor'] = '#6c757d';
 					postObj.anonymousPost = true;
+					postObj.user.roleLabel = '';
+				} else if (postObj.user) {
+					postObj.user.roleLabel = uidToRole[postObj.uid] || (parseInt(postObj.uid, 10) === 0 ? '' : 'Student');
 				}
 			}
 		});
