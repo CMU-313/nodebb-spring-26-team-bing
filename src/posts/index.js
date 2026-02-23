@@ -20,6 +20,7 @@ require('./topics')(Posts);
 require('./category')(Posts);
 require('./summary')(Posts);
 require('./recent')(Posts);
+require('./sorted')(Posts);
 require('./tools')(Posts);
 require('./votes')(Posts);
 require('./bookmarks')(Posts);
