@@ -302,6 +302,52 @@ describe('Post\'s', () => {
 		});
 	});
 
+	describe('forward post', () => {
+		it('should create a reply in target topic with forwarded content (blockquote) from source post', async () => {
+			const sourceTitle = 'Source Topic To Forward From';
+			const sourceContent = 'This is the original post content that gets forwarded.';
+			const targetTitle = 'Target Topic To Forward To';
+
+			const { topicData: sourceTopic, postData: sourcePost } = await topics.post({
+				uid: voteeUid,
+				cid: cid,
+				title: sourceTitle,
+				content: sourceContent,
+				anonymous: false,
+			});
+
+			const { topicData: targetTopic } = await topics.post({
+				uid: voterUid,
+				cid: cid,
+				title: targetTitle,
+				content: 'First post in target topic.',
+				anonymous: false,
+			});
+
+			const rawContent = await apiPosts.getRaw({ uid: voterUid }, { pid: sourcePost.pid });
+			assert.strictEqual(rawContent, sourceContent, 'getRaw should return source post content');
+
+			const relativePath = nconf.get('relative_path') || '';
+			const postUrl = nconf.get('url').replace(/\/$/, '') + relativePath + '/post/' + sourcePost.pid;
+			const forwardedHeader = '> ' + (sourceTitle ? '**Forwarded from** [' + sourceTitle.replace(/\]/g, '\\]') + '](' + postUrl + ')' : postUrl) + '\n>\n';
+			const quotedContent = (rawContent || '').split('\n').map(line => '> ' + line).join('\n');
+			const forwardBody = forwardedHeader + (quotedContent ? '\n' + quotedContent : '');
+
+			const replyData = await topics.reply({
+				uid: voterUid,
+				tid: targetTopic.tid,
+				content: forwardBody,
+			});
+
+			const replyPost = await posts.getPostFields(replyData.pid, ['content']);
+			assert.ok(replyPost.content, 'reply should have content');
+			assert.ok(replyPost.content.includes('Forwarded from'), 'reply content should contain forward header');
+			assert.ok(replyPost.content.includes(sourceTitle), 'reply content should contain source topic title');
+			assert.ok(replyPost.content.includes(sourceContent), 'reply content should contain original post content');
+			assert.ok(replyPost.content.includes(postUrl) || replyPost.content.includes(String(sourcePost.pid)), 'reply content should reference source post');
+		});
+	});
+
 	describe('delete/restore/purge', () => {
 		async function createTopicWithReply() {
 			const topicPostData = await topics.post({
