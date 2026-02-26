@@ -67,11 +67,12 @@ define('forum/topic/forward-post', [
 				if (!topicData || !topicData.slug) {
 					return alerts.error('[[error:no-topic]]');
 				}
+				const currentBody = (postContainer.find('textarea').val() || '').trim() || (ctx.body || '');
 				try {
 					sessionStorage.setItem(FORWARD_STORAGE_KEY, JSON.stringify({
 						tid: String(tid),
 						title: topicData.title || '',
-						body: ctx.body || '',
+						body: currentBody,
 					}));
 				} catch (err) {
 					return alerts.error(err);
