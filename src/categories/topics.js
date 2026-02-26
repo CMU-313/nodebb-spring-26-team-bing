@@ -98,6 +98,7 @@ module.exports = function (Categories) {
 			most_posts: `cid:${cid}:tids:posts`,
 			most_votes: `cid:${cid}:tids:votes`,
 			most_views: `cid:${cid}:tids:views`,
+			heat: `cid:${cid}:tids`,
 		};
 
 		const mainSet = sortToSet.hasOwnProperty(sort) ? sortToSet[sort] : `cid:${cid}:tids`;
