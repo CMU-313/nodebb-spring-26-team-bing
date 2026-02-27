@@ -63,6 +63,9 @@ define('forum/topic/forward-post', [
 			if (!tid) {
 				return;
 			}
+			if (ajaxify.data.tid && String(tid) === String(ajaxify.data.tid)) {
+				return alerts.error('Cannot forward a post to its own topic');
+			}
 			api.get(`/topics/${tid}`, {}).then(function (topicData) {
 				if (!topicData || !topicData.slug) {
 					return alerts.error('[[error:no-topic]]');
