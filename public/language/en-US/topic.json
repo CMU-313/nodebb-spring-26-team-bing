@@ -71,6 +71,8 @@
     "user-forked-topic-on": "%1 <a href=\"%2\">forked</a> this topic on %3",
     "bookmark-instructions": "Click here to return to the last read post in this thread.",
     "flag-post": "Flag this post",
+    "verify-post": "Verify this post",
+    "verified": "Verified",
     "flag-user": "Flag this user",
     "already-flagged": "Already Flagged",
     "view-flag-report": "View Flag Report",

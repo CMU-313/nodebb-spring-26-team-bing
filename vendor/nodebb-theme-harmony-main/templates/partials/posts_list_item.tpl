@@ -17,7 +17,15 @@
             {./content}
         </div>
     </div>
-    <div class="mb-3 d-flex flex-wrap gap-1 w-100">
+        <!-- verify UI for admins -->
+        <div class="verify-controls mt-1">
+            <a component="post/verify" href="#" class="btn btn-ghost btn-sm {{{ if !privileges['posts:verify'] }}}hidden{{{ end }}}" title="[[topic:verify-post]]" data-pid="{./pid}"><i class="fa fa-fw fa-check text-primary"></i></a>
+            <label class="verify-label align-items-center d-flex gap-1{{{ if !privileges['posts:verify'] }}} hidden{{{ end }}}">
+                <input component="post/verified-checkbox" type="checkbox" data-pid="{./pid}"{{{ if ./verified }}} checked{{{ end }}} />
+                [[topic:verified]]
+            </label>
+        </div>
+    </div>
         {buildCategoryLabel(./category, "a", "border")}
         <span data-tid="{./topic.tid}" component="topic/tags" class="lh-1 tag-list d-flex flex-wrap gap-1 {{{ if !./topic.tags.length }}}hidden{{{ end }}}">
             {{{ each ./topic.tags }}}

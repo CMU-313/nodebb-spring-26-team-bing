@@ -199,6 +199,15 @@ describe('Post\'s', () => {
 			await privileges.categories.give(['groups:topics:read'], cid, 'guests');
 		});
 
+		// verify UI presence for admins
+		it('should render verify checkbox on topic page for admins', async () => {
+			// use admin account created by authentication tests
+			const { jar } = await helpers.loginUser('admin', 'adminpwd');
+			// fetch the topic page HTML
+			const { body } = await request.get(`${nconf.get('url')}/topic/${topicData.tid}`, { jar });
+			assert(body.includes('component="post/verified-checkbox"'));
+		});
+
 		it('should unvote a post', async () => {
 			const result = await apiPosts.unvote({ uid: voterUid }, { pid: postData.pid, room_id: 'topic_1' });
 			assert.equal(result.post.upvotes, 0);
@@ -679,6 +688,36 @@ describe('Post\'s', () => {
 				err = _err;
 			}
 			assert.strictEqual(err.message, '[[error:no-privileges]]');
+		});
+
+		it('should allow admin to verify and unverify a post and reject regular users', async () => {
+			// use replyPid from earlier test setup
+			// ensure default is 0
+			const initial = await posts.getPostField(replyPid, 'verified');
+			assert.strictEqual(Number(initial) || 0, 0);
+
+			// admin can verify
+			await apiPosts.verify({ uid: globalModUid }, { pid: replyPid, verified: 1 });
+			const after = await posts.getPostField(replyPid, 'verified');
+			assert.strictEqual(Number(after), 1);
+			// and fetching via api returns updated flag
+			let postObj = await apiPosts.get({ uid: globalModUid }, { pid: replyPid });
+			assert.strictEqual(Number(postObj.verified), 1);
+
+			// admin can unverify
+			await apiPosts.verify({ uid: globalModUid }, { pid: replyPid, verified: 0 });
+			const final = await posts.getPostField(replyPid, 'verified');
+			assert.strictEqual(Number(final), 0);
+			postObj = await apiPosts.get({ uid: globalModUid }, { pid: replyPid });
+			assert.strictEqual(Number(postObj.verified), 0);
+
+			// regular user denied
+			try {
+				await apiPosts.verify({ uid: voterUid }, { pid: replyPid, verified: 1 });
+			} catch (err2) {
+				return assert.equal(err2.message, '[[error:no-privileges]]');
+			}
+			assert(false);
 		});
 	});
 

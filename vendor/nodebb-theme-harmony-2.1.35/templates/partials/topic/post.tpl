@@ -112,8 +112,15 @@
 					<a component="post/reply" href="#" class="btn btn-ghost btn-sm {{{ if !privileges.topics:reply }}}hidden{{{ end }}}" title="[[topic:reply]]"><i class="fa fa-fw fa-reply text-primary"></i></a>
 					<a component="post/quote" href="#" class="btn btn-ghost btn-sm {{{ if !privileges.topics:reply }}}hidden{{{ end }}}" title="[[topic:quote]]"><i class="fa fa-fw fa-quote-right text-primary"></i></a>
 
-					{{{ if ./announces }}}
-					<a component="post/announce-count" href="#" class="btn btn-ghost btn-sm d-flex gap-2 align-items-center" title="[[topic:announcers]]"><i class="fa fa-share-alt text-primary"></i> {./announces}</a>
+				<!-- verify button and checkbox, visible only to admins -->
+				{{{ if posts.display_verify_tools }}}
+				<a component="post/verify" href="#" class="btn btn-ghost btn-sm {{{ if !privileges['posts:verify'] }}}hidden{{{ end }}}" title="[[topic:verify-post]]" data-pid="{./pid}"><i class="fa fa-fw fa-check text-primary"></i></a>
+				<label class="verify-label align-items-center d-flex gap-1{{{ if !privileges['posts:verify'] }}} hidden{{{ end }}}">
+					<input component="post/verified-checkbox" type="checkbox" data-pid="{./pid}"{{{ if posts.verified }}} checked{{{ end }}} />
+					[[topic:verified]]
+				</label>
+				{{{ end }}}
+
 					{{{ end }}}
 
 					{{{ if !reputation:disabled }}}

@@ -33,6 +33,8 @@ const _privilegeMap = new Map([
 	['local:login', { label: '[[admin/manage/privileges:allow-local-login]]', type: 'viewing' }],
 	['ban', { label: '[[admin/manage/privileges:ban]]', type: 'moderation' }],
 	['mute', { label: '[[admin/manage/privileges:mute]]', type: 'moderation' }],
+	// Privilege allowing administrators to verify posts. only implicit through admin status.
+	['posts:verify', { label: '[[admin/manage/privileges:verify-posts]]', type: 'moderation' }],
 	['view:users:info', { label: '[[admin/manage/privileges:view-users-info]]', type: 'moderation' }],
 ]);
 

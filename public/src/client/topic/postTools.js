@@ -155,6 +155,34 @@ define('forum/topic/postTools', [
 			});
 		});
 
+		// verify button clicked
+		postContainer.on('click', '[component="post/verify"]', function (e) {
+			e.preventDefault();
+			const btn = $(this);
+			const pid = getData(btn, 'data-pid');
+			api.posts.verify({ uid: ajaxify.data.uid }, { pid: pid, verified: 1 }, function (err) {
+				if (err) {
+					return alerts.error(err);
+				}
+				// reflect in checkbox
+				const cb = components.get('post', 'pid', pid).find('[component="post/verified-checkbox"]');
+				cb.prop('checked', true);
+			});
+		});
+
+		// checkbox toggled directly
+		postContainer.on('change', '[component="post/verified-checkbox"]', function () {
+			const checkbox = $(this);
+			const pid = checkbox.data('pid');
+			const verified = checkbox.prop('checked') ? 1 : 0;
+			api.posts.verify({ uid: ajaxify.data.uid }, { pid: pid, verified: verified }, function (err) {
+				if (err) {
+					alerts.error(err);
+					checkbox.prop('checked', !verified);
+				}
+			});
+		});
+
 		postContainer.on('click', '[component="post/already-flagged"]', function () {
 			const flagId = $(this).data('flag-id');
 			require(['flags'], function (flags) {

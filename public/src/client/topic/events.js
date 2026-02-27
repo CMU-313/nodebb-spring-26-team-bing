@@ -36,6 +36,7 @@ define('forum/topic/events', [
 
 		'event:post_deleted': togglePostDeleteState,
 		'event:post_restored': togglePostDeleteState,
+		'event:post_verified': onPostVerified,
 
 		'posts.bookmark': togglePostBookmark,
 		'posts.unbookmark': togglePostBookmark,
@@ -93,6 +94,26 @@ define('forum/topic/events', [
 	function onTopicMoved(data) {
 		if (data && data.slug && String(data.tid) === String(ajaxify.data.tid)) {
 			ajaxify.go('topic/' + data.slug, null, true);
+		}
+	}
+
+	function onPostVerified(data) {
+		if (!data || typeof data.pid === 'undefined') {
+			return;
+		}
+		const pid = data.pid;
+		const postEl = components.get('post', 'pid', pid);
+		
+		// Update the verified checkbox state
+		postEl.find('[component="post/verified-checkbox"]').prop('checked', !!data.verified);
+		
+		// Update the post's tag display if needed
+		if (data.verified) {
+			// Add 'verified post' badge/tag
+			postEl.find('[component="post/tags"]').append('<span class="badge badge-primary">verified post</span>');
+		} else {
+			// Remove 'verified post' badge/tag
+			postEl.find('[component="post/tags"] .badge:contains("verified post")').remove();
 		}
 	}
 

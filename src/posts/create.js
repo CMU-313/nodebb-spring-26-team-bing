@@ -29,6 +29,8 @@ module.exports = function (Posts) {
 
 		const pid = data.pid || await db.incrObjectField('global', 'nextPid');
 		let postData = { pid, uid, tid, content, sourceContent, timestamp };
+		// add verified flag default to 0
+		postData.verified = 0;
 		postData.anonymous = data.anonymous || false;
 
 		if (data.toPid) {

@@ -21,7 +21,7 @@ privsTopics.get = async function (tid, uid) {
 		'topics:reply', 'topics:read', 'topics:schedule', 'topics:tag',
 		'topics:delete', 'posts:edit', 'posts:history',
 		'posts:upvote', 'posts:downvote',
-		'posts:delete', 'posts:view_deleted', 'read', 'purge',
+		'posts:delete', 'posts:view_deleted', 'posts:verify', 'read', 'purge',
 	];
 	const topicData = await topics.getTopicFields(tid, ['cid', 'uid', 'locked', 'deleted', 'scheduled']);
 	const [userPrivileges, isAdministrator, isModerator, disabled, topicTools] = await Promise.all([
@@ -55,6 +55,7 @@ privsTopics.get = async function (tid, uid) {
 		'posts:downvote': privData['posts:downvote'] || isAdministrator,
 		'posts:delete': (privData['posts:delete'] && (!topicData.locked || isModerator)) || isAdministrator,
 		'posts:view_deleted': privData['posts:view_deleted'] || isAdministrator,
+		'posts:verify': privData['posts:verify'] || isAdministrator,
 		read: privData.read || isAdministrator,
 		purge: (privData.purge && (isOwner || isModerator)) || isAdministrator,
 

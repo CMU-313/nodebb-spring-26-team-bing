@@ -374,6 +374,9 @@ PostDataObject:
           type: boolean
         display_post_menu:
           type: boolean
+        verified:
+          type: boolean
+          description: Whether an administrator has marked the post as verified
         flagId:
           type: number
           description: The flag identifier, if this particular post has been flagged before

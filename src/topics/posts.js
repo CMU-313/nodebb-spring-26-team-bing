@@ -144,6 +144,11 @@ module.exports = function (Topics) {
 				postObj.replies = replies[i];
 				postObj.selfPost = parseInt(uid, 10) > 0 && parseInt(uid, 10) === postObj.uid;
 
+				// Process tags and set verified property
+				const postTags = postObj.tags ? postObj.tags.split(',').filter(t => t.trim()) : [];
+				postObj.verified = postTags.includes('verified post');
+				postObj.tags = postTags.map(tag => ({ value: tag }));
+
 				// Username override for guests, if enabled
 				if (meta.config.allowGuestHandles && postObj.uid === 0 && postObj.handle) {
 					postObj.user.username = validator.escape(String(postObj.handle));
@@ -178,6 +183,8 @@ module.exports = function (Topics) {
 				post.display_delete_tools = topicPrivileges.isAdminOrMod || (post.selfPost && topicPrivileges['posts:delete']);
 				post.display_moderator_tools = post.display_edit_tools || post.display_delete_tools;
 				post.display_move_tools = topicPrivileges.isAdminOrMod && post.index !== 0;
+				// only admins / mods may verify
+				post.display_verify_tools = topicPrivileges.isAdminOrMod || topicPrivileges['posts:verify'];
 				post.display_post_menu = topicPrivileges.isAdminOrMod ||
 					(post.selfPost && !topicData.locked && !post.deleted) ||
 					(post.selfPost && post.deleted && parseInt(post.deleterUid, 10) === parseInt(topicPrivileges.uid, 10)) ||

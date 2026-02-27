@@ -12,6 +12,7 @@ const utils = require('../src/utils');
 const meta = require('../src/meta');
 const plugins = require('../src/plugins');
 const privileges = require('../src/privileges');
+const groups = require('../src/groups');
 const api = require('../src/api');
 const helpers = require('./helpers');
 
@@ -554,6 +555,21 @@ describe('authentication', () => {
 
 			assert.strictEqual(response.statusCode, 200);
 			assert.strictEqual(body.username, 'apiUserTarget');
+		});
+
+		// --- tests for new posts:verify global privilege ---
+		it('should include posts:verify in global privilege list', async () => {
+			const list = await privileges.global.getUserPrivilegeList();
+			assert(list.includes('posts:verify'));
+		});
+
+		it('admins implicitly have posts:verify while regular users do not', async () => {
+			const uid = await user.create({ username: 'verifyuser', password: 'verifypwd' });
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), false);
+			await groups.join('administrators', uid);
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), true);
+			await groups.leave('administrators', uid);
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), false);
 		});
 	});
 });

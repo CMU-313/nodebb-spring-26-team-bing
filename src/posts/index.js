@@ -26,6 +26,7 @@ require('./bookmarks')(Posts);
 require('./queue')(Posts);
 require('./diffs')(Posts);
 require('./uploads')(Posts);
+require('./tags')(Posts);
 
 Posts.attachments = require('./attachments');
 

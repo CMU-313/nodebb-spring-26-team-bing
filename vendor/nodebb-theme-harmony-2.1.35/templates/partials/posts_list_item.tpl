@@ -9,6 +9,13 @@
             <div class="post-author d-flex align-items-center gap-1">
                 <a class="lh-1 text-decoration-none" href="{config.relative_path}/user/{./user.userslug}">{buildAvatar(./user, "16px", true, "not-responsive")}</a>
                 <a class="lh-1 fw-semibold" href="{config.relative_path}/user/{./user.userslug}">{../user.displayname}</a>
+
+    <!-- admin verify controls -->
+    <a component="post/verify" href="#" class="btn btn-ghost btn-sm {{{ if !privileges['posts:verify'] }}}hidden{{{ end }}}" title="[[topic:verify-post]]" data-pid="{./pid}"><i class="fa fa-fw fa-check text-primary"></i></a>
+    <label class="verify-label align-items-center d-flex gap-1{{{ if !privileges['posts:verify'] }}} hidden{{{ end }}}">
+        <input component="post/verified-checkbox" type="checkbox" data-pid="{./pid}"{{{ if posts.verified }}} checked{{{ end }}} />
+        [[topic:verified]]
+    </label>
             </div>
             <span class="timeago text-muted lh-1" title="{./timestampISO}"></span>
         </div>

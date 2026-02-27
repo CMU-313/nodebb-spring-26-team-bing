@@ -277,6 +277,30 @@ postsAPI.purge = async function (caller, data) {
 	}
 };
 
+
+postsAPI.verify = async function (caller, data) {
+	if (!data || !data.pid) {
+		throw new Error('[[error:invalid-data]]');
+	}
+	const canVerify = await privileges.global.can('posts:verify', caller.uid);
+	if (!canVerify) {
+		throw new Error('[[error:no-privileges]]');
+	}
+	
+	// Add or remove the 'verified post' tag
+	const verified = data.verified ? true : false;
+	if (verified) {
+		await posts.addTags(['verified post'], [data.pid]);
+	} else {
+		await posts.removeTags(['verified post'], [data.pid]);
+	}
+	
+	// broadcast change to topic room so clients can update
+	const tid = await posts.getPostField(data.pid, 'tid');
+	websockets.in(`topic_${tid}`).emit('event:post_verified', { pid: data.pid, verified });
+	return { pid: data.pid, verified };
+};
+
 async function isMainAndLastPost(pid) {
 	const [isMain, topicData] = await Promise.all([
 		posts.isMain(pid),
