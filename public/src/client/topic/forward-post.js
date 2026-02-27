@@ -70,6 +70,7 @@ define('forum/topic/forward-post', [
 			if (!tid) {
 				return;
 			}
+			// Throw error if user forwards post to the post's topic
 			if (ajaxify.data.tid && String(tid) === String(ajaxify.data.tid)) {
 				return alerts.error('[[error:forward-post-same-topic]]');
 			}

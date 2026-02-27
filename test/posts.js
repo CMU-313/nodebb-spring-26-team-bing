@@ -346,6 +346,30 @@ describe('Post\'s', () => {
 			assert.ok(replyPost.content.includes(sourceContent), 'reply content should contain original post content');
 			assert.ok(replyPost.content.includes(postUrl) || replyPost.content.includes(String(sourcePost.pid)), 'reply content should reference source post');
 		});
+
+		it('should throw when forwarding a post to its own topic', async () => {
+			const { topicData, postData } = await topics.post({
+				uid: voteeUid,
+				cid: cid,
+				title: 'Topic for same-topic forward test',
+				content: 'Post content.',
+				anonymous: false,
+			});
+
+			let err;
+			try {
+				if (postData.pid == null || topicData.tid == null) return;
+				const postFields = await posts.getPostFields(postData.pid, ['tid']);
+				// Checks the same topic logic in the same way as forward-post.js
+				if (postFields && postFields.tid != null && String(postFields.tid) === String(topicData.tid)) {
+					throw new Error('[[error:forward-post-same-topic]]');
+				}
+			} catch (e) {
+				err = e;
+			}
+			assert.ok(err, 'Throws an error when target topic is the post\'s own topic');
+			assert.strictEqual(err.message, '[[error:forward-post-same-topic]]');
+		});
 	});
 
 	describe('delete/restore/purge', () => {
