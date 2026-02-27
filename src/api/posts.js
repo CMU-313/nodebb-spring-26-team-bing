@@ -96,9 +96,7 @@ postsAPI.getRaw = async (caller, { pid }) => {
 	if (!postVisibility.canViewPost(postData, caller.uid, isAdmin)) {
 		return null;
 	}
-	const selfPost = caller.uid && caller.uid === parseInt(postData.uid, 10);
-
-	if (postData.deleted && !(userPrivilege.isAdminOrMod || selfPost)) {
+	if (postData.deleted && !userPrivilege.isAdminOrMod) {
 		return null;
 	}
 	postData.pid = pid;
