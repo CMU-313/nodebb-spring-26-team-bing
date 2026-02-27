@@ -9,7 +9,7 @@ define('forum/topic/forward-post', [
 	// Block submitting the reply if user has not chosen a destination topic (composer still has forward search bar)
 	hooks.on('filter:composer.check', function (payload) {
 		if (payload.postContainer && payload.postContainer.find('.forward-post-search').length) {
-			payload.error = 'Choose a topic to forward to';
+			payload.error = '[[error:forward-post-choose-topic]]';
 		}
 	});
 
@@ -71,7 +71,7 @@ define('forum/topic/forward-post', [
 				return;
 			}
 			if (ajaxify.data.tid && String(tid) === String(ajaxify.data.tid)) {
-				return alerts.error('Cannot forward a post to its own topic');
+				return alerts.error('[[error:forward-post-same-topic]]');
 			}
 			api.get(`/topics/${tid}`, {}).then(function (topicData) {
 				if (!topicData || !topicData.slug) {
