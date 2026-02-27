@@ -19,7 +19,8 @@ Step 4: View the forwarded post
 
 ### Automated Testing
 Automated tests can be found in test/posts.js on lines 305-349. The test creates two topics: one to forward to and one to forward from. It creates a reply with the forwarded header and additional content, then retrieves the reply and ascertains that the retrieved reply does indeed contain the forwarded post. <br>
-This feature is highly dependent on manual user testing to check if the flow of the feauture ("Forward post"-> choose topic -> add content -> view forwarded reply) is correct. Therefore the automated test only checks whether or not the reply does indeed contain the forwarded content in the case that a post was forwarded. 
+Another test ensures that users cannot forward posts to their own topic. This test creates a post in a new topic, and uses the same comparison logic as the implementation code to check if the destination and source topics are identical. If so, it checks if an error was thrown. <br>
+This feature is highly dependent on manual user testing to check if the flow of the feauture ("Forward post"-> choose topic -> add content -> view forwarded reply) is correct. Therefore the automated test only checks whether or not the reply does indeed contain the forwarded content in the case that a post was forwarded, and the case that an error is thrown.
 
 
 ## Verifiable Posts/Answers
