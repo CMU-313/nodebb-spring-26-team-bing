@@ -10,6 +10,7 @@ const user = require('../user');
 const plugins = require('../plugins');
 const categories = require('../categories');
 const utils = require('../utils');
+const postVisibility = require('./visibility');
 
 module.exports = function (Posts) {
 	Posts.getPostSummaryByPids = async function (pids, uid, options) {
@@ -22,9 +23,11 @@ module.exports = function (Posts) {
 		options.escape = options.hasOwnProperty('escape') ? options.escape : false;
 		options.extraFields = options.hasOwnProperty('extraFields') ? options.extraFields : [];
 
-		const fields = ['pid', 'tid', 'toPid', 'url', 'content', 'sourceContent', 'uid', 'timestamp', 'deleted', 'upvotes', 'downvotes', 'replies', 'handle'].concat(options.extraFields);
+		const fields = ['pid', 'tid', 'toPid', 'url', 'content', 'sourceContent', 'uid', 'timestamp', 'deleted', 'upvotes', 'downvotes', 'replies', 'handle', 'anonymous', 'visibilityMode'].concat(options.extraFields);
 
 		let posts = await Posts.getPostsFields(pids, fields);
+		const isAdmin = await postVisibility.isViewerAdmin(uid);
+		posts = posts.filter(post => postVisibility.canViewPost(post, uid, isAdmin));
 		posts = posts.filter(Boolean);
 		posts = await user.blocks.filter(uid, posts);
 

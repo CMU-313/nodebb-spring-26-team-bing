@@ -21,6 +21,12 @@ PostObject:
     sourceContent:
       type: string
       nullable: true
+    visibilityMode:
+      type: string
+      enum:
+        - public
+        - anonymous
+        - instructors
     uid:
       type: number
       description: A user identifier
@@ -173,6 +179,12 @@ PostDataObject:
         anonymous:
           type: string
           default: 'false'
+        visibilityMode:
+          type: string
+          enum:
+            - public
+            - anonymous
+            - instructors
         timestamp:
           type: number
         votes:

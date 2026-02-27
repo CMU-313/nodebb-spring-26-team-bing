@@ -60,7 +60,8 @@ define('quickreply', [
 				return;
 			}
 			
-			var anonymous = (components.get('topic/quickreply/anonymize').prop('checked')) ? 'true' : 'false';
+			const visibilityMode = components.get('topic/quickreply/visibility').val() || 'public';
+			var anonymous = visibilityMode === 'anonymous' ? 'true' : 'false';
 			
 			const replyMsg = element.val();
 			const replyData = {
@@ -68,6 +69,7 @@ define('quickreply', [
 				handle: undefined,
 				content: replyMsg,
 				anonymous: anonymous,
+				visibilityMode: visibilityMode,
 			};
 			const replyLen = replyMsg.length;
 			if (replyLen < parseInt(config.minimumPostLength, 10)) {
@@ -86,6 +88,7 @@ define('quickreply', [
 				}
 				if (data && data.queued) {
 					data.anonymous = anonymous;
+					data.visibilityMode = visibilityMode;
 					alerts.alert({
 						type: 'success',
 						title: '[[global:alert.success]]',
@@ -98,6 +101,7 @@ define('quickreply', [
 					});
 				}
 				data.anonymous = anonymous;
+				data.visibilityMode = visibilityMode;
 				element.val('');
 				storage.removeItem(qrDraftId);
 				QuickReply._autocomplete.hide();
@@ -127,6 +131,7 @@ define('quickreply', [
 				tid: ajaxify.data.tid,
 				title: ajaxify.data.titleRaw,
 				body: textEl.val(),
+				visibilityMode: components.get('topic/quickreply/visibility').val() || 'public',
 			});
 			textEl.val('');
 		});

@@ -16,13 +16,15 @@ $(document).ready(function () {
 					title: data.title || '',
 					body: data.body || '',
 					tags: data.tags || [],
+					visibilityMode: data.visibilityMode || 'public',
 				});
 			});
 		} else {
 			ajaxify.go(
 				'compose?cid=' + data.cid +
 				(data.title ? '&title=' + encodeURIComponent(data.title) : '') +
-				(data.body ? '&body=' + encodeURIComponent(data.body) : '')
+				(data.body ? '&body=' + encodeURIComponent(data.body) : '') +
+				(data.visibilityMode ? '&visibilityMode=' + encodeURIComponent(data.visibilityMode) : '')
 			);
 		}
 	});
@@ -48,6 +50,7 @@ $(document).ready(function () {
 					toPid: data.pid,
 					title: data.title,
 					body: data.body,
+					visibilityMode: data.visibilityMode || 'public',
 				});
 			});
 		} else {
@@ -55,7 +58,8 @@ $(document).ready(function () {
 				'compose?tid=' + data.tid +
 				(data.pid ? '&toPid=' + data.pid : '') +
 				(data.title ? '&title=' + encodeURIComponent(data.title) : '') +
-				(data.body ? '&body=' + encodeURIComponent(data.body) : '')
+				(data.body ? '&body=' + encodeURIComponent(data.body) : '') +
+				(data.visibilityMode ? '&visibilityMode=' + encodeURIComponent(data.visibilityMode) : '')
 			);
 		}
 	});

@@ -200,6 +200,7 @@ define('composer', [
 			body: data.body || '',
 			tags: data.tags || [],
 			thumbs: data.thumbs || [],
+			visibilityMode: data.visibilityMode || 'public',
 			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
 			isMain: true,
 		};
@@ -271,6 +272,7 @@ define('composer', [
 				toPid: data.toPid,
 				title: data.title,
 				body: translated,
+				visibilityMode: data.visibilityMode || 'public',
 				modified: !!(translated && translated.length),
 				isMain: false,
 			});
@@ -488,6 +490,10 @@ define('composer', [
 				// }
 			],
 		};
+		data.visibilityMode = postData.visibilityMode || (postData.anonymous === 'true' ? 'anonymous' : 'public');
+		data.visibilityModePublic = data.visibilityMode === 'public';
+		data.visibilityModeAnonymous = data.visibilityMode === 'anonymous';
+		data.visibilityModeInstructors = data.visibilityMode === 'instructors';
 
 		if (data.mobile) {
 			mobileHistoryAppend();
@@ -665,13 +671,15 @@ define('composer', [
 		var titleEl = postContainer.find('.title');
 		var bodyEl = postContainer.find('textarea');
 		var thumbEl = postContainer.find('input#topic-thumb-url');
-		var anonymousEl = postContainer.find('#anonymous');
+		var visibilityModeEl = postContainer.find('[component="composer/visibility"]');
 		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
 		const submitBtn = postContainer.find('.composer-submit');
 
 
-		var anonymous = (anonymousEl.prop('checked')) ? 'true' : 'false';
+		const visibilityMode = visibilityModeEl.val() || 'public';
+		var anonymous = visibilityMode === 'anonymous' ? 'true' : 'false';
 		postData.anonymous = anonymous;
+		postData.visibilityMode = visibilityMode;
 
 		titleEl.val(titleEl.val().trim());
 		bodyEl.val(utils.rtrim(bodyEl.val()));
@@ -739,6 +747,7 @@ define('composer', [
 				thumbs: postData.thumbs || [],
 				timestamp: scheduler.getTimestamp(),
 				anonymous: anonymous,
+				visibilityMode: visibilityMode,
 			};
 		} else if (action === 'posts.reply') {
 			route = `/topics/${postData.tid}`;
@@ -749,6 +758,7 @@ define('composer', [
 				content: bodyEl.val(),
 				toPid: postData.toPid,
 				anonymous: anonymous,
+				visibilityMode: visibilityMode,
 			};
 		} else if (action === 'posts.edit') {
 			method = 'put';
@@ -763,6 +773,7 @@ define('composer', [
 				tags: tags.getTags(post_uuid),
 				timestamp: scheduler.getTimestamp(),
 				anonymous: anonymous,
+				visibilityMode: visibilityMode,
 			};
 		}
 		var submitHookData = {

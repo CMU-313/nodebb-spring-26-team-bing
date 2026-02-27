@@ -35,6 +35,9 @@ topicsController.get = async function getTopic(req, res, next) {
 	if (!topicData) {
 		return next();
 	}
+	if (!await topics.canViewTopic(topicData, req.uid)) {
+		return helpers.notAllowed(req, res);
+	}
 	const [
 		userPrivileges,
 		settings,
@@ -392,6 +395,9 @@ topicsController.pagination = async function (req, res, next) {
 	const topic = await topics.getTopicData(tid);
 	if (!topic) {
 		return next();
+	}
+	if (!await topics.canViewTopic(topic, req.uid)) {
+		return helpers.notAllowed(req, res);
 	}
 	const [userPrivileges, settings] = await Promise.all([
 		privileges.topics.get(tid, req.uid),

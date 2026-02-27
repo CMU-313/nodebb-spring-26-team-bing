@@ -235,6 +235,12 @@ TopicObjectSlim:
           type: number
         titleRaw:
           type: string
+        visibilityMode:
+          type: string
+          enum:
+            - public
+            - anonymous
+            - instructors
         locked:
           type: number
         pinned:

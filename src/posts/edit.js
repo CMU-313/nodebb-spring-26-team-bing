@@ -13,6 +13,7 @@ const pubsub = require('../pubsub');
 const utils = require('../utils');
 const slugify = require('../slugify');
 const translator = require('../translator');
+const postVisibility = require('./visibility');
 
 module.exports = function (Posts) {
 	pubsub.on('post:edit', pid => Posts.clearCachedPost(pid));
@@ -128,6 +129,10 @@ module.exports = function (Posts) {
 			mainPid: data.pid,
 			timestamp: rescheduling(data, topicData) ? data.timestamp : topicData.timestamp,
 		};
+		if (Object.prototype.hasOwnProperty.call(data, 'visibilityMode') ||
+			Object.prototype.hasOwnProperty.call(data, 'anonymous')) {
+			newTopicData.visibilityMode = postVisibility.normalizeVisibilityMode(data.visibilityMode, data.anonymous);
+		}
 		if (title) {
 			newTopicData.title = title;
 			newTopicData.slug = `${tid}/${slugify(title) || 'topic'}`;
@@ -209,6 +214,13 @@ module.exports = function (Posts) {
 			sourceContent: data.sourceContent,
 			editor: data.uid,
 		};
+
+		const hasVisibilityMode = Object.prototype.hasOwnProperty.call(data, 'visibilityMode');
+		const hasAnonymous = Object.prototype.hasOwnProperty.call(data, 'anonymous');
+		if (hasVisibilityMode || hasAnonymous) {
+			editPostData.visibilityMode = postVisibility.normalizeVisibilityMode(data.visibilityMode, data.anonymous);
+			editPostData.anonymous = editPostData.visibilityMode === 'anonymous' ? 'true' : 'false';
+		}
 
 		// For posts in scheduled topics, if edited before, use edit timestamp
 		editPostData.edited = topicData.scheduled ? (postData.edited || postData.timestamp) + 1 : Date.now();

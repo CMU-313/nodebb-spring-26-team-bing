@@ -8,6 +8,7 @@ const posts = require('../posts');
 const privileges = require('../privileges');
 const activitypub = require('../activitypub');
 const utils = require('../utils');
+const postVisibility = require('../posts/visibility');
 
 const helpers = require('./helpers');
 
@@ -27,14 +28,16 @@ postsController.redirectToPost = async function (req, res, next) {
 		}
 	}
 
-	const [canRead, path] = await Promise.all([
+	const [canRead, path, postData, isAdmin] = await Promise.all([
 		privileges.posts.can('topics:read', pid, req.uid),
 		posts.generatePostPath(pid, req.uid),
+		posts.getPostFields(pid, ['uid', 'visibilityMode', 'anonymous']),
+		postVisibility.isViewerAdmin(req.uid),
 	]);
 	if (!path) {
 		return next();
 	}
-	if (!canRead) {
+	if (!canRead || !postVisibility.canViewPost(postData, req.uid, isAdmin)) {
 		return helpers.notAllowed(req, res);
 	}
 

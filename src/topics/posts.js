@@ -13,6 +13,7 @@ const activitypub = require('../activitypub');
 const plugins = require('../plugins');
 const utils = require('../utils');
 const privileges = require('../privileges');
+const postVisibility = require('../posts/visibility');
 
 const backlinkRegex = new RegExp(`(?:${nconf.get('url').replace('/', '\\/')}|\b|\\s)\\/topic\\/(\\d+)(?:\\/\\w+)?`, 'g');
 
@@ -50,8 +51,12 @@ module.exports = function (Topics) {
 		if (!postData.length) {
 			return [];
 		}
+		const hasMainPost = topicData.mainPid &&
+			start === 0 &&
+			postData[0] &&
+			String(postData[0].pid) === String(topicData.mainPid);
 		let replies = postData;
-		if (topicData.mainPid && start === 0) {
+		if (hasMainPost) {
 			postData[0].index = 0;
 			replies = postData.slice(1);
 		}
@@ -150,8 +155,10 @@ module.exports = function (Topics) {
 					postObj.user.displayname = postObj.user.username;
 				}
 
+				postObj.visibilityMode = postVisibility.normalizeVisibilityMode(postObj.visibilityMode, postObj.anonymous);
+
 				// Handle anonymous posts
-				if (postObj.anonymous === 'true' && postObj.user) {
+				if (postObj.visibilityMode === 'anonymous' && postObj.user) {
 					postObj.user.username = 'Anonymous';
 					postObj.user.userslug = 'Anonymous';
 					postObj.user.displayname = 'Anonymous';
