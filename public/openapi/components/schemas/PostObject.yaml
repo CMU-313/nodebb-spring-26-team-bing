@@ -21,6 +21,9 @@ PostObject:
     sourceContent:
       type: string
       nullable: true
+    anonymous:
+      type: string
+      default: 'false'
     visibilityMode:
       type: string
       enum:
