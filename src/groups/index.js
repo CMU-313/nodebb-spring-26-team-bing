@@ -128,6 +128,22 @@ Groups.getGroupsAndMembers = async function (groupNames) {
 	return groups;
 };
 
+// returns true if the supplied uid is the owner of ANY non-privilege group
+Groups.isOwnerOfAny = async function (uid) {
+	if (!uid || parseInt(uid, 10) <= 0) {
+		return false;
+	}
+	// fetch all non-privilege groups (includes ephemeral by default)
+	const groupsList = await Groups.getNonPrivilegeGroups('groups:createtime', 0, -1);
+	for (let i = 0; i < groupsList.length; i += 1) {
+		const group = groupsList[i];
+		if (group && await Groups.ownership.isOwner(uid, group.name)) {
+			return true;
+		}
+	}
+	return false;
+};
+
 Groups.get = async function (groupName, options) {
 	if (!groupName) {
 		throw new Error('[[error:invalid-group]]');

@@ -133,6 +133,42 @@ describe('Post\'s', () => {
 		});
 	});
 
+	// verification feature tests
+	let verifyPid;
+	let groupOwnerUid;
+	let regularUid;
+	it('prepare a group and post for verification tests', async () => {
+		groupOwnerUid = await user.create({ username: 'groupowner' });
+		regularUid = await user.create({ username: 'regularuser' });
+		// create a group and make groupOwnerUid its owner
+		await groups.create({ name: 'VerifyGroup', description: 'for verify tests' });
+		await groups.ownership.grant(groupOwnerUid, 'VerifyGroup');
+		const result = await topics.post({ uid: regularUid, cid: cid, title: 'verify topic', content: 'ok' });
+		verifyPid = result.postData.pid;
+	});
+
+	it('should not allow non-group-owner to verify a post', async () => {
+		let err;
+		try {
+			await apiPosts.verify({ uid: regularUid }, { pid: verifyPid, verified: true });
+		} catch (_err) {
+			err = _err;
+		}
+		assert(err && err.message && err.message.includes('not-allowed'));
+		// ensure summary still shows false
+		const summary = await apiPosts.getSummary({ uid: regularUid }, { pid: verifyPid });
+		assert.strictEqual(summary.verified, false);
+	});
+
+	it('should allow group-owner to verify and unverify a post', async () => {
+		await apiPosts.verify({ uid: groupOwnerUid }, { pid: verifyPid, verified: true });
+		let verifiedVal = await posts.getPostField(verifyPid, 'verified');
+		assert.strictEqual(verifiedVal, true);
+		await apiPosts.verify({ uid: groupOwnerUid }, { pid: verifyPid, verified: false });
+		verifiedVal = await posts.getPostField(verifyPid, 'verified');
+		assert.strictEqual(verifiedVal, false);
+	});
+
 	describe('voting', () => {
 		it('should fail to upvote post if group does not have upvote permission', async () => {
 			await privileges.categories.rescind(['groups:posts:upvote', 'groups:posts:downvote'], cid, 'registered-users');

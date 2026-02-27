@@ -155,6 +155,20 @@ define('forum/topic/postTools', [
 			});
 		});
 
+		// group admin verify checkbox
+		postContainer.on('change', '[component="post/verify"]', function () {
+			const pid = getData($(this), 'data-pid');
+			const verified = $(this).is(':checked');
+			api.put(`/posts/${encodeURIComponent(pid)}/verify`, { verified }, function (err) {
+				if (err) {
+					alerts.error(err);
+					return;
+				}
+				// the easiest way to update the badge is to reload the page
+				location.reload();
+			});
+		});
+
 		postContainer.on('click', '[component="post/already-flagged"]', function () {
 			const flagId = $(this).data('flag-id');
 			require(['flags'], function (flags) {

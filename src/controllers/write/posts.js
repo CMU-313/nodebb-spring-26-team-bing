@@ -163,6 +163,14 @@ Posts.unbookmark = async (req, res) => {
 	helpers.formatApiResponse(200, res);
 };
 
+// allow group owner/admin to mark a post as verified/unverified
+Posts.verify = async (req, res) => {
+	const { pid } = req.params;
+	const { verified } = req.body;
+	await api.posts.verify(req, { pid, verified: !!verified });
+	helpers.formatApiResponse(200, res);
+};
+
 Posts.getDiffs = async (req, res) => {
 	helpers.formatApiResponse(200, res, await api.posts.getDiffs(req, { ...req.params }));
 };

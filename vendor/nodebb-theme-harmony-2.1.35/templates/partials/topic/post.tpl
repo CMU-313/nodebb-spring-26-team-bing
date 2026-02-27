@@ -56,6 +56,10 @@
 				<span class="badge bg-danger rounded-1">[[user:banned]]</span>
 				{{{ end }}}
 
+				{{{ if posts.verified }}}
+				<span class="badge bg-success rounded-1">[[topic:verified-answer]]</span>
+				{{{ end }}}
+
 				<div class="d-flex gap-1 align-items-center">
 					<span class="text-muted">{generateWrote(@value, config.timeagoCutoff)}</span>
 
@@ -74,8 +78,9 @@
 				</div>
 				{{{ end }}}
 			</div>
-			<div class="d-flex align-items-center gap-1 justify-content-end">
-				<span class="bookmarked opacity-0 text-primary"><i class="fa fa-bookmark-o"></i></span>
+			<div class="d-flex align-items-center gap-1 justify-content-end">					{{{ if config.isGroupAdmin }}}
+					<input component="post/verify" type="checkbox" class="form-check-input me-1" data-pid="{./pid}" {{{ if posts.verified }}}checked{{{ end }}} title="[[topic:verified-answer]]">
+					{{{ end }}}				<span class="bookmarked opacity-0 text-primary"><i class="fa fa-bookmark-o"></i></span>
 				<a href="{config.relative_path}/post/{encodeURIComponent(./pid)}" class="post-index text-muted d-none d-md-inline">#{increment(./index, "1")}</a>
 			</div>
 		</div>

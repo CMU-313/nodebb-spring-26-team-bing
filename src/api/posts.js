@@ -178,6 +178,25 @@ postsAPI.delete = async function (caller, data) {
 	});
 };
 
+// toggle verification flag on a post; only allowed for group owners or admins
+postsAPI.verify = async function (caller, data) {
+	if (!caller.uid) {
+		throw new Error('[[error:not-logged-in]]');
+	}
+	const isOwner = await groups.isOwnerOfAny(caller.uid);
+	const isAdmin = await user.isAdministrator(caller.uid);
+	if (!isOwner && !isAdmin) {
+		throw new Error('[[error:not-allowed]]');
+	}
+	const postData = await posts.getPostData(data.pid);
+	if (!postData) {
+		throw new Error('[[error:no-post]]');
+	}
+	// mark as integer 1/0
+	await posts.setPostField(data.pid, 'verified', data.verified ? 1 : 0);
+	return { pid: data.pid, verified: !!data.verified };
+};
+
 postsAPI.restore = async function (caller, data) {
 	await deleteOrRestore(caller, data, {
 		command: 'restore',

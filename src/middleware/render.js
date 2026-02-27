@@ -18,6 +18,7 @@ const topics = require('../topics');
 const messaging = require('../messaging');
 const flags = require('../flags');
 const meta = require('../meta');
+const groups = require('../groups');
 const widgets = require('../widgets');
 const utils = require('../utils');
 const helpers = require('./helpers');
@@ -177,6 +178,7 @@ module.exports = function (middleware) {
 			isAdmin: user.isAdministrator(req.uid),
 			isGlobalMod: user.isGlobalModerator(req.uid),
 			isModerator: user.isModeratorOfAnyCategory(req.uid),
+			isGroupAdmin: groups.isOwnerOfAny(req.uid),
 			privileges: privileges.global.get(req.uid),
 			blocks: user.blocks.list(req.uid),
 			user: user.getUserData(req.uid),
@@ -199,9 +201,7 @@ module.exports = function (middleware) {
 		results.user.isAdmin = results.isAdmin;
 		results.user.isGlobalMod = results.isGlobalMod;
 		results.user.isMod = !!results.isModerator;
-		results.user.privileges = results.privileges;
-		results.user.blocks = results.blocks;
-		results.user.timeagoCode = results.timeagoCode;
+	results.user.isGroupAdmin = results.isGroupAdmin;
 		results.user[results.user.status] = true;
 		results.user.lastRoomId = results.roomIds.length ? results.roomIds[0] : null;
 
@@ -225,8 +225,11 @@ module.exports = function (middleware) {
 		templateValues.showModMenu = results.user.isAdmin || results.user.isGlobalMod || results.user.isMod;
 		templateValues.canChat = (results.privileges.chat || results.privileges['chat:privileged']) && meta.config.disableChat !== 1;
 		templateValues.user = results.user;
-		templateValues.userJSON = jsesc(JSON.stringify(results.user), { isScriptContext: true });
-		templateValues.useCustomCSS = meta.config.useCustomCSS && meta.config.customCSS;
+		templateValues.userJSON = jsesc(JSON.stringify(results.user), { isScriptContext: true });	// flag for client-side convenience
+	templateValues.isGroupAdmin = results.isGroupAdmin;
+			// also expose on config for easier template access
+			res.locals.config.isGroupAdmin = results.isGroupAdmin;
+			templateValues.config.isGroupAdmin = results.isGroupAdmin;		templateValues.useCustomCSS = meta.config.useCustomCSS && meta.config.customCSS;
 		templateValues.customCSS = templateValues.useCustomCSS ? (meta.config.renderedCustomCSS || '') : '';
 		templateValues.useCustomHTML = meta.config.useCustomHTML;
 		templateValues.customHTML = templateValues.useCustomHTML ? meta.config.customHTML : '';

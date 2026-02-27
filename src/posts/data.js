@@ -7,7 +7,7 @@ const utils = require('../utils');
 const intFields = [
 	'uid', 'pid', 'tid', 'deleted', 'timestamp',
 	'upvotes', 'downvotes', 'deleterUid', 'edited',
-	'replies', 'bookmarks', 'announces',
+	'replies', 'bookmarks', 'announces', 'verified',
 ];
 
 module.exports = function (Posts) {
@@ -58,6 +58,10 @@ module.exports = function (Posts) {
 function modifyPost(post, fields) {
 	if (post) {
 		db.parseIntFields(post, intFields, fields);
+		if (post.hasOwnProperty('verified')) {
+			// normalize to boolean for easier template logic
+			post.verified = post.verified === 1;
+		}
 		if (post.hasOwnProperty('upvotes') && post.hasOwnProperty('downvotes')) {
 			post.votes = post.upvotes - post.downvotes;
 		}
