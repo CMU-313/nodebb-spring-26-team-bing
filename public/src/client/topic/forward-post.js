@@ -1,8 +1,8 @@
 'use strict';
 
 define('forum/topic/forward-post', [
-	'api', 'alerts', 'search',
-], function (api, alerts, search) {
+	'api', 'alerts', 'search', 'translator',
+], function (api, alerts, search, translator) {
 	const ForwardPost = {};
 	const FORWARD_STORAGE_KEY = 'nodebb_forward_reply';
 
@@ -62,6 +62,9 @@ define('forum/topic/forward-post', [
 			const tid = $(this).attr('data-tid');
 			if (!tid) {
 				return;
+			}
+			if (ajaxify.data.tid && String(tid) === String(ajaxify.data.tid)) {
+				return alerts.error('Cannot forward a post to its own topic');
 			}
 			api.get(`/topics/${tid}`, {}).then(function (topicData) {
 				if (!topicData || !topicData.slug) {
