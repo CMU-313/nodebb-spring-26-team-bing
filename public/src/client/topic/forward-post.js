@@ -1,10 +1,17 @@
 'use strict';
 
 define('forum/topic/forward-post', [
-	'api', 'alerts', 'search',
-], function (api, alerts, search) {
+	'api', 'alerts', 'search', 'hooks',
+], function (api, alerts, search, hooks) {
 	const ForwardPost = {};
 	const FORWARD_STORAGE_KEY = 'nodebb_forward_reply';
+
+	// Block submitting the reply if user has not chosen a destination topic (composer still has forward search bar)
+	hooks.on('filter:composer.check', function (payload) {
+		if (payload.postContainer && payload.postContainer.find('.forward-post-search').length) {
+			payload.error = 'Choose a topic to forward to';
+		}
+	});
 
 	// Add topic search bar into the composer
 	$(window).on('action:composer.loaded', function (ev, data) {
