@@ -34,6 +34,8 @@ PostObject:
       type: number
     votes:
       type: number
+    verified:
+      type: boolean
     timestampISO:
       type: string
       description: An ISO 8601 formatted date string (complementing `timestamp`)
@@ -185,6 +187,8 @@ PostDataObject:
           type: number
         announces:
           type: number
+        verified:
+          type: boolean
         bookmarks:
           type: number
         deleterUid:
