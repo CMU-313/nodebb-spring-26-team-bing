@@ -266,6 +266,7 @@ describe('authentication', () => {
 		});
 	});
 
+	
 	it('should fail to login if ip address is invalid', async () => {
 		const jar = request.jar();
 		const csrf_token = await helpers.getCsrfToken(jar);
