@@ -13,7 +13,7 @@ describe('Topic Heat Sorting', () => {
 	let adminUid;
 
 	before(async () => {
-        // different admin uid to avoid collision with other test cases
+		// different admin uid to avoid collision with other test cases
 		adminUid = await user.create({ username: 'heatadmin', password: '123456' });
 		categoryObj = await categories.create({
 			name: 'Heat Test Category',
@@ -419,18 +419,15 @@ describe('Topic Heat Sorting', () => {
 
 	describe('Heat Score Comparison', () => {
 		it('should correctly identify highest heat topic', async () => {
-			const topics_list = [];
-
-			// Create three topics with known heat values
-			for (let i = 0; i < 3; i++) {
-				const topicObj = await topics.post({
+			const topicObjects = await Promise.all(
+				Array.from({ length: 3 }, (_, i) => topics.post({
 					uid: adminUid,
 					cid: categoryObj.cid,
 					title: `Topic ${i}`,
 					content: `Content ${i}`,
-				});
-				topics_list.push(topicObj.topicData.tid);
-			}
+				}))
+			);
+			const topics_list = topicObjects.map(topicObj => topicObj.topicData.tid);
 
 			// Topic 0: Low heat
 			await topics.setTopicFields(topics_list[0], {
@@ -466,18 +463,15 @@ describe('Topic Heat Sorting', () => {
 		});
 
 		it('should break ties using secondary metrics', async () => {
-			const topics_list = [];
-
-			// Create two topics with same viewcount
-			for (let i = 0; i < 2; i++) {
-				const topicObj = await topics.post({
+			const topicObjects = await Promise.all(
+				Array.from({ length: 2 }, (_, i) => topics.post({
 					uid: adminUid,
 					cid: categoryObj.cid,
 					title: `Tied Topic ${i}`,
 					content: `Content ${i}`,
-				});
-				topics_list.push(topicObj.topicData.tid);
-			}
+				}))
+			);
+			const topics_list = topicObjects.map(topicObj => topicObj.topicData.tid);
 
 			// Both have same views but different posts
 			await topics.setTopicFields(topics_list[0], {
@@ -538,17 +532,15 @@ describe('Topic Heat Sorting', () => {
 		});
 
 		it('should maintain relative ordering with incremental updates', async () => {
-			const topics_list = [];
-
-			for (let i = 0; i < 2; i++) {
-				const topicObj = await topics.post({
+			const topicObjects = await Promise.all(
+				Array.from({ length: 2 }, (_, i) => topics.post({
 					uid: adminUid,
 					cid: categoryObj.cid,
 					title: `Update Test Topic ${i}`,
 					content: `Content ${i}`,
-				});
-				topics_list.push(topicObj.topicData.tid);
-			}
+				}))
+			);
+			const topics_list = topicObjects.map(topicObj => topicObj.topicData.tid);
 
 			// Initial: topic 0 is higher
 			await topics.setTopicFields(topics_list[0], {
