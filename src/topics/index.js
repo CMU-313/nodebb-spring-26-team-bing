@@ -13,6 +13,7 @@ const categories = require('../categories');
 const activitypub = require('../activitypub');
 const privileges = require('../privileges');
 const social = require('../social');
+const postVisibility = require('../posts/visibility');
 
 const Topics = module.exports;
 
@@ -67,6 +68,10 @@ Topics.getTopicsByTids = async function (tids, options) {
 	let uid = options;
 	if (typeof options === 'object') {
 		uid = options.uid;
+	}
+	tids = await Topics.filterTidsByVisibility(tids, uid);
+	if (!tids.length) {
+		return [];
 	}
 
 	async function loadTopics() {
@@ -157,6 +162,41 @@ Topics.getTopicsByTids = async function (tids, options) {
 
 	const hookResult = await plugins.hooks.fire('filter:topics.get', { topics: filteredTopics, uid: uid });
 	return hookResult.topics;
+};
+
+Topics.filterTidsByVisibility = async function (tids, uid) {
+	if (!Array.isArray(tids) || !tids.length) {
+		return [];
+	}
+
+	const topicData = await Topics.getTopicsFields(tids, ['tid', 'uid', 'visibilityMode']);
+	const hasInstructorOnly = topicData.some(topic =>
+		topic && postVisibility.normalizeVisibilityMode(topic.visibilityMode) === 'instructors');
+	const isAdmin = hasInstructorOnly ? await postVisibility.isViewerAdmin(uid) : false;
+
+	return topicData
+		.filter((topic) => {
+			if (!topic) {
+				return false;
+			}
+			const mode = postVisibility.normalizeVisibilityMode(topic.visibilityMode);
+			if (mode !== 'instructors') {
+				return true;
+			}
+			return String(uid) === String(topic.uid) || isAdmin;
+		})
+		.map(topic => topic.tid);
+};
+
+Topics.canViewTopic = async function (topicData, uid) {
+	if (!topicData) {
+		return false;
+	}
+	const mode = postVisibility.normalizeVisibilityMode(topicData.visibilityMode);
+	if (mode !== 'instructors') {
+		return true;
+	}
+	return String(uid) === String(topicData.uid) || await postVisibility.isViewerAdmin(uid);
 };
 
 Topics.getTopicWithPosts = async function (topicData, set, uid, start, stop, reverse) {

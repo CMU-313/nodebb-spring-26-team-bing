@@ -16,6 +16,7 @@ const translator = require.main.require('./src/translator');
 const utils = require.main.require('./src/utils');
 const helpers = require.main.require('./src/controllers/helpers');
 const SocketPlugins = require.main.require('./src/socket.io/plugins');
+const postVisibility = require.main.require('./src/posts/visibility');
 const socketMethods = require('./websockets');
 
 const plugin = module.exports;
@@ -147,6 +148,10 @@ plugin.filterComposerBuild = async function (hookData) {
 	const save_id = utils.generateSaveId(req.uid);
 	const discardRoute = generateDiscardRoute(req, topicData);
 	const body = await generateBody(req, postData);
+	const visibilityMode = postVisibility.normalizeVisibilityMode(
+		req.query.visibilityMode || (postData && postData.visibilityMode),
+		req.query.anonymous || (postData && postData.anonymous)
+	);
 
 	let action = 'topics.post';
 	let isMain = isMainPost;
@@ -190,6 +195,10 @@ plugin.filterComposerBuild = async function (hookData) {
 			topic: topicData,
 			thumb: topicData ? topicData.thumb : '',
 			body: body,
+			visibilityMode,
+			visibilityModePublic: visibilityMode === 'public',
+			visibilityModeAnonymous: visibilityMode === 'anonymous',
+			visibilityModeInstructors: visibilityMode === 'instructors',
 
 			isMain: isMain,
 			isTopicOrMain: !!req.query.cid || isMain,

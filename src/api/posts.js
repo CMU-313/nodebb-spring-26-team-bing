@@ -19,6 +19,7 @@ const websockets = require('../socket.io');
 const socketHelpers = require('../socket.io/helpers');
 const translator = require('../translator');
 const notifications = require('../notifications');
+const postVisibility = require('../posts/visibility');
 
 const postsAPI = module.exports;
 
@@ -30,7 +31,8 @@ postsAPI.get = async function (caller, data) {
 	]);
 	const userPrivilege = userPrivileges[0];
 
-	if (!post || !userPrivilege.read || !userPrivilege['topics:read']) {
+	const isAdmin = await postVisibility.isViewerAdmin(caller.uid);
+	if (!post || !userPrivilege.read || !userPrivilege['topics:read'] || !postVisibility.canViewPost(post, caller.uid, isAdmin)) {
 		return null;
 	}
 
@@ -46,7 +48,14 @@ postsAPI.get = async function (caller, data) {
 };
 
 postsAPI.getIndex = async (caller, { pid, sort }) => {
-	const tid = await posts.getPostField(pid, 'tid');
+	const [tid, postData, isAdmin] = await Promise.all([
+		posts.getPostField(pid, 'tid'),
+		posts.getPostFields(pid, ['uid', 'visibilityMode', 'anonymous']),
+		postVisibility.isViewerAdmin(caller.uid),
+	]);
+	if (!postVisibility.canViewPost(postData, caller.uid, isAdmin)) {
+		return null;
+	}
 	const topicPrivileges = await privileges.topics.get(tid, caller.uid);
 	if (!topicPrivileges.read || !topicPrivileges['topics:read']) {
 		return null;
@@ -63,6 +72,9 @@ postsAPI.getSummary = async (caller, { pid }) => {
 	}
 
 	const postsData = await posts.getPostSummaryByPids([pid], caller.uid, { stripTags: false });
+	if (!postsData.length) {
+		return null;
+	}
 	posts.modifyPostByPrivilege(postsData[0], topicPrivileges);
 	return postsData[0];
 };
@@ -74,10 +86,17 @@ postsAPI.getRaw = async (caller, { pid }) => {
 		return null;
 	}
 
-	const postData = await posts.getPostFields(pid, ['content', 'deleted']);
-	const selfPost = caller.uid && caller.uid === parseInt(postData.uid, 10);
-
-	if (postData.deleted && !(userPrivilege.isAdminOrMod || selfPost)) {
+	const [postData, isAdmin] = await Promise.all([
+		posts.getPostFields(pid, ['content', 'deleted', 'uid', 'visibilityMode', 'anonymous']),
+		postVisibility.isViewerAdmin(caller.uid),
+	]);
+	if (!postData) {
+		return null;
+	}
+	if (!postVisibility.canViewPost(postData, caller.uid, isAdmin)) {
+		return null;
+	}
+	if (postData.deleted && !userPrivilege.isAdminOrMod) {
 		return null;
 	}
 	postData.pid = pid;
@@ -558,8 +577,15 @@ postsAPI.getReplies = async (caller, { pid }) => {
 		throw new Error('[[error:invalid-data]]');
 	}
 	const { uid } = caller;
-	const canRead = await privileges.posts.can('topics:read', pid, caller.uid);
+	const [canRead, parentPost, isAdmin] = await Promise.all([
+		privileges.posts.can('topics:read', pid, caller.uid),
+		posts.getPostFields(pid, ['uid', 'visibilityMode', 'anonymous']),
+		postVisibility.isViewerAdmin(caller.uid),
+	]);
 	if (!canRead) {
+		return null;
+	}
+	if (!postVisibility.canViewPost(parentPost, caller.uid, isAdmin)) {
 		return null;
 	}
 

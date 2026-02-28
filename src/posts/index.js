@@ -7,6 +7,7 @@ const utils = require('../utils');
 const user = require('../user');
 const privileges = require('../privileges');
 const plugins = require('../plugins');
+const postVisibility = require('./visibility');
 
 const Posts = module.exports;
 
@@ -48,6 +49,8 @@ Posts.getPostsByPids = async function (pids, uid) {
 	}
 
 	let posts = await Posts.getPostsData(pids);
+	const isAdmin = await postVisibility.isViewerAdmin(uid);
+	posts = posts.filter(post => postVisibility.canViewPost(post, uid, isAdmin));
 	posts = await Promise.all(posts.map(Posts.parsePost));
 	const data = await plugins.hooks.fire('filter:post.getPosts', { posts: posts, uid: uid });
 	if (!data || !Array.isArray(data.posts)) {

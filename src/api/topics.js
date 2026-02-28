@@ -41,6 +41,7 @@ topicsAPI.get = async function (caller, data) {
 		!topic ||
 		!userPrivileges.read ||
 		!userPrivileges['topics:read'] ||
+		!await topics.canViewTopic(topic, caller.uid) ||
 		!privileges.topics.canViewDeletedScheduled(topic, userPrivileges)
 	) {
 		return null;

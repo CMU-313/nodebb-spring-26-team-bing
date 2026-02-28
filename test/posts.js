@@ -52,6 +52,107 @@ describe('Post\'s', () => {
 		await groups.join('Global Moderators', globalModUid);
 	});
 
+	describe('visibility modes', () => {
+		let authorUid;
+		let regularUid;
+		let adminUid;
+		let visibilityTopic;
+
+		before(async () => {
+			authorUid = await user.create({ username: 'visibility-author' });
+			regularUid = await user.create({ username: 'visibility-regular' });
+			adminUid = await user.create({ username: 'visibility-admin' });
+			await groups.join('administrators', adminUid);
+			visibilityTopic = await topics.post({
+				uid: authorUid,
+				cid: cid,
+				title: 'Visibility modes topic',
+				content: 'Main post for visibility tests',
+				visibilityMode: 'public',
+			});
+		});
+
+		it('should persist public visibility by default', async () => {
+			const reply = await topics.reply({
+				uid: authorUid,
+				tid: visibilityTopic.topicData.tid,
+				content: 'public visibility reply',
+			});
+			const fields = await posts.getPostFields(reply.pid, ['visibilityMode', 'anonymous']);
+			assert.strictEqual(fields.visibilityMode, 'public');
+			assert.strictEqual(fields.anonymous, 'false');
+		});
+
+		it('should persist anonymous visibility and keep masking behavior', async () => {
+			const reply = await topics.reply({
+				uid: authorUid,
+				tid: visibilityTopic.topicData.tid,
+				content: 'anonymous visibility reply',
+				visibilityMode: 'anonymous',
+			});
+			const fields = await posts.getPostFields(reply.pid, ['visibilityMode', 'anonymous']);
+			assert.strictEqual(fields.visibilityMode, 'anonymous');
+			assert.strictEqual(fields.anonymous, 'true');
+
+			const topicData = await topics.getTopicData(visibilityTopic.topicData.tid);
+			const postData = await topics.getTopicPosts(topicData, `tid:${topicData.tid}:posts`, 0, -1, regularUid, false);
+			const anonymousPost = postData.find(post => post.pid === reply.pid);
+			assert.strictEqual(anonymousPost.user.username, 'Anonymous');
+		});
+
+		it('should enforce instructor visibility for author/admin and hide from regular users', async () => {
+			const reply = await topics.reply({
+				uid: authorUid,
+				tid: visibilityTopic.topicData.tid,
+				content: 'instructor visibility reply',
+				visibilityMode: 'instructors',
+			});
+
+			const [authorView, adminView, regularView] = await Promise.all([
+				apiPosts.get({ uid: authorUid }, { pid: reply.pid }),
+				apiPosts.get({ uid: adminUid }, { pid: reply.pid }),
+				apiPosts.get({ uid: regularUid }, { pid: reply.pid }),
+			]);
+			assert(authorView);
+			assert(adminView);
+			assert.strictEqual(regularView, null);
+
+			const topicData = await topics.getTopicData(visibilityTopic.topicData.tid);
+			const [authorPosts, adminPosts, regularPosts] = await Promise.all([
+				topics.getTopicPosts(topicData, `tid:${topicData.tid}:posts`, 0, -1, authorUid, false),
+				topics.getTopicPosts(topicData, `tid:${topicData.tid}:posts`, 0, -1, adminUid, false),
+				topics.getTopicPosts(topicData, `tid:${topicData.tid}:posts`, 0, -1, regularUid, false),
+			]);
+			assert(authorPosts.some(post => post.pid === reply.pid));
+			assert(adminPosts.some(post => post.pid === reply.pid));
+			assert(!regularPosts.some(post => post.pid === reply.pid));
+		});
+
+		it('should hide instructor-only topics from non-admin non-authors', async () => {
+			const result = await topics.post({
+				uid: authorUid,
+				cid: cid,
+				title: 'Instructor only topic',
+				content: 'Main post visible to instructors only',
+				visibilityMode: 'instructors',
+			});
+			const tid = result.topicData.tid;
+			const [authorTopics, adminTopics, regularTopics, authorTopic, regularTopic] = await Promise.all([
+				topics.getTopicsByTids([tid], { uid: authorUid }),
+				topics.getTopicsByTids([tid], { uid: adminUid }),
+				topics.getTopicsByTids([tid], { uid: regularUid }),
+				apiTopics.get({ uid: authorUid }, { tid }),
+				apiTopics.get({ uid: regularUid }, { tid }),
+			]);
+
+			assert.strictEqual(authorTopics.length, 1);
+			assert.strictEqual(adminTopics.length, 1);
+			assert.strictEqual(regularTopics.length, 0);
+			assert(authorTopic);
+			assert.strictEqual(regularTopic, null);
+		});
+	});
+
 	it('should update category teaser properly', async () => {
 		const getCategoriesAsync = async () => (await request.get(`${nconf.get('url')}/api/categories`, { })).body;
 		const postResult = await topics.post({ uid: globalModUid, cid: cid, title: 'topic title', content: '123456789' });

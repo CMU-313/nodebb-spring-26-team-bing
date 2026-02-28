@@ -52,6 +52,14 @@ define('quickreply', [
 				element.val(text);
 			},
 		});
+		const visibilityEl = components.get('topic/quickreply/visibility');
+		const anonymizeEl = components.get('topic/quickreply/anonymize');
+		if (visibilityEl.length && anonymizeEl.length) {
+			anonymizeEl.prop('checked', visibilityEl.val() === 'anonymous');
+			visibilityEl.on('change', function () {
+				anonymizeEl.prop('checked', $(this).val() === 'anonymous');
+			});
+		}
 
 		let ready = true;
 		components.get('topic/quickreply/button').on('click', function (e) {
@@ -60,7 +68,15 @@ define('quickreply', [
 				return;
 			}
 			
-			var anonymous = (components.get('topic/quickreply/anonymize').prop('checked')) ? 'true' : 'false';
+			const visibilityEl = components.get('topic/quickreply/visibility');
+			const anonymousEl = components.get('topic/quickreply/anonymize');
+			let visibilityMode = 'public';
+			if (visibilityEl.length) {
+				visibilityMode = visibilityEl.val() || 'public';
+			} else if (anonymousEl.length && anonymousEl.prop('checked')) {
+				visibilityMode = 'anonymous';
+			}
+			var anonymous = visibilityMode === 'anonymous' ? 'true' : 'false';
 			
 			const replyMsg = element.val();
 			const replyData = {
@@ -68,6 +84,7 @@ define('quickreply', [
 				handle: undefined,
 				content: replyMsg,
 				anonymous: anonymous,
+				visibilityMode: visibilityMode,
 			};
 			const replyLen = replyMsg.length;
 			if (replyLen < parseInt(config.minimumPostLength, 10)) {
@@ -86,6 +103,7 @@ define('quickreply', [
 				}
 				if (data && data.queued) {
 					data.anonymous = anonymous;
+					data.visibilityMode = visibilityMode;
 					alerts.alert({
 						type: 'success',
 						title: '[[global:alert.success]]',
@@ -98,6 +116,7 @@ define('quickreply', [
 					});
 				}
 				data.anonymous = anonymous;
+				data.visibilityMode = visibilityMode;
 				element.val('');
 				storage.removeItem(qrDraftId);
 				QuickReply._autocomplete.hide();
@@ -123,10 +142,19 @@ define('quickreply', [
 			e.preventDefault();
 			storage.removeItem(qrDraftId);
 			const textEl = components.get('topic/quickreply/text');
+			const visibilityEl = components.get('topic/quickreply/visibility');
+			const anonymizeEl = components.get('topic/quickreply/anonymize');
+			let visibilityMode = 'public';
+			if (visibilityEl.length) {
+				visibilityMode = visibilityEl.val() || 'public';
+			} else if (anonymizeEl.length && anonymizeEl.prop('checked')) {
+				visibilityMode = 'anonymous';
+			}
 			hooks.fire('action:composer.post.new', {
 				tid: ajaxify.data.tid,
 				title: ajaxify.data.titleRaw,
 				body: textEl.val(),
+				visibilityMode: visibilityMode,
 			});
 			textEl.val('');
 		});

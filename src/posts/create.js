@@ -9,6 +9,7 @@ const categories = require('../categories');
 const groups = require('../groups');
 const activitypub = require('../activitypub');
 const utils = require('../utils');
+const postVisibility = require('./visibility');
 
 module.exports = function (Posts) {
 	Posts.create = async function (data) {
@@ -29,7 +30,8 @@ module.exports = function (Posts) {
 
 		const pid = data.pid || await db.incrObjectField('global', 'nextPid');
 		let postData = { pid, uid, tid, content, sourceContent, timestamp };
-		postData.anonymous = data.anonymous || false;
+		postData.visibilityMode = postVisibility.normalizeVisibilityMode(data.visibilityMode, data.anonymous);
+		postData.anonymous = postData.visibilityMode === 'anonymous' ? 'true' : 'false';
 
 		if (data.toPid) {
 			postData.toPid = data.toPid;
