@@ -767,6 +767,7 @@ describe('Categories', () => {
 					'groups:signature': true,
 					'groups:local:login': true,
 					'groups:group:create': false,
+					'groups:posts:verify': false,
 				});
 
 				done();
