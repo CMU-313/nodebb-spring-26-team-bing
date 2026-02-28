@@ -713,6 +713,7 @@ describe('Categories', () => {
 					'view:users': false,
 					'view:tags': false,
 					'view:groups': false,
+					'posts:verify': false,
 				});
 
 				done();
