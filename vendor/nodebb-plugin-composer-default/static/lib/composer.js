@@ -348,6 +348,10 @@ define('composer', [
 		postContainer.on('change', 'input, textarea', function () {
 			composer.posts[post_uuid].modified = true;
 		});
+		postContainer.on('change', '[component="composer/visibility"]', function () {
+			const anonymous = $(this).val() === 'anonymous';
+			postContainer.find('#anonymous').prop('checked', anonymous);
+		});
 
 		postContainer.on('click', '.composer-submit', function (e) {
 			e.preventDefault();
@@ -401,6 +405,8 @@ define('composer', [
 
 		drafts.init(postContainer, postData);
 		const draft = drafts.get(postData.save_id);
+		const currentMode = postContainer.find('[component="composer/visibility"]').val() || 'public';
+		postContainer.find('#anonymous').prop('checked', currentMode === 'anonymous');
 
 		preview.render(postContainer, function () {
 			preview.matchScroll(postContainer);
@@ -672,11 +678,17 @@ define('composer', [
 		var bodyEl = postContainer.find('textarea');
 		var thumbEl = postContainer.find('input#topic-thumb-url');
 		var visibilityModeEl = postContainer.find('[component="composer/visibility"]');
+		var anonymousEl = postContainer.find('#anonymous');
 		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
 		const submitBtn = postContainer.find('.composer-submit');
 
 
-		const visibilityMode = visibilityModeEl.val() || 'public';
+		let visibilityMode = 'public';
+		if (visibilityModeEl.length) {
+			visibilityMode = visibilityModeEl.val() || 'public';
+		} else if (anonymousEl.length && anonymousEl.prop('checked')) {
+			visibilityMode = 'anonymous';
+		}
 		var anonymous = visibilityMode === 'anonymous' ? 'true' : 'false';
 		postData.anonymous = anonymous;
 		postData.visibilityMode = visibilityMode;

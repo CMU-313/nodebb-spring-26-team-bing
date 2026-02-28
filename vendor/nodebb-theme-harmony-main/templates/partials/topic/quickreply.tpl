@@ -22,6 +22,7 @@
 						<option value="anonymous">Post Anonymously</option>
 						<option value="instructors">Post to Instructors</option>
 					</select>
+					<input class="d-none" component="topic/quickreply/anonymize" type="checkbox" name="anonymous" id="quickreply-anonymous">
 				</div>
 				<button type="button" component="topic/quickreply/upload/button" class="btn btn-ghost btn-sm border"><i class="fa fa-upload"></i></button>
 				<button type="button" component="topic/quickreply/expand" class="btn btn-ghost btn-sm border" title="[[topic:open-composer]]"><i class="fa fa-expand"></i></button>

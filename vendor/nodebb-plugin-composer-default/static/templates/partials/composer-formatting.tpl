@@ -66,6 +66,7 @@
 				<option value="anonymous" {{{ if visibilityModeAnonymous }}}selected{{{ end }}}>Post Anonymously</option>
 				<option value="instructors" {{{ if visibilityModeInstructors }}}selected{{{ end }}}>Post to Instructors</option>
 			</select>
+			<input class="d-none" component="topic/quickreply/anonymize" type="checkbox" name="anonymous" id="anonymous">
 		</div>
 		<button class="btn btn-sm btn-link py-2 text-body fw-semibold text-nowrap" data-action="preview">
 			<i class="fa fa-eye"></i>
