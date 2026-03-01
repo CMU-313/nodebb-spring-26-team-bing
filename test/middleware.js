@@ -100,6 +100,7 @@ describe('Middlewares', () => {
 					'admin:tags': true,
 					'admin:settings': true,
 					superadmin: true,
+					'posts:verify': true,
 				});
 				done();
 			});

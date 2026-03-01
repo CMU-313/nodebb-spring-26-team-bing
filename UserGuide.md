@@ -113,3 +113,4 @@ age_hours = (current_time - last_post_time) / 3600000
 
 Automated tests can be found in test/topics/heat.js which tests for accurate heat score calculation, proper handling of topics with zero, null, or high engagement, prioritizing different modes of activity (upvotes, posts, views), use of age decay, and correct sort order.
 
+## Instructor-only Posts
