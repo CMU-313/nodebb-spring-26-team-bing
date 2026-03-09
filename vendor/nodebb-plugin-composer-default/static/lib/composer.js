@@ -813,6 +813,8 @@ define('composer', [
 						(ajaxify.data.template.topic && parseInt(postData.tid, 10) !== parseInt(ajaxify.data.tid, 10)))
 					) {
 						ajaxify.go('post/' + data.pid);
+					} else {
+						ajaxify.refresh();
 					}
 				} else {
 					removeComposerHistory();

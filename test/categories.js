@@ -713,6 +713,7 @@ describe('Categories', () => {
 					'view:users': false,
 					'view:tags': false,
 					'view:groups': false,
+					'posts:verify': false,
 				});
 
 				done();
@@ -766,6 +767,7 @@ describe('Categories', () => {
 					'groups:signature': true,
 					'groups:local:login': true,
 					'groups:group:create': false,
+					'groups:posts:verify': false,
 				});
 
 				done();

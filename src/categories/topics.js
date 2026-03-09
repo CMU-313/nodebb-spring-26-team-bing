@@ -66,8 +66,17 @@ module.exports = function (Categories) {
 			const weights = set.map((s, index) => (index ? 0 : 1));
 			normalTids = await db.getSortedSetRevIntersect({ sets: set, start: start, stop: stop, weights: weights });
 		} else {
-			normalTids = await db.getSortedSetRevRange(set, start, stop);
+			// For heat sorting, fetch more tids to account for re-ordering
+			const multiplier = data._calculateHeat ? 3 : 1;
+			const adjustedStop = data.stop === -1 ? data.stop : (start + (normalTidsToGet * multiplier) - 1);
+			normalTids = await db.getSortedSetRevRange(set, start, adjustedStop);
 		}
+		
+		// Apply heat sorting if requested
+		if (data._calculateHeat) {
+			normalTids = await applyHeatSort(normalTids, normalTidsToGet);
+		}
+		
 		normalTids = normalTids.filter(tid => !pinnedTids.includes(tid));
 		return pinnedTidsOnPage.concat(normalTids);
 	};
@@ -92,6 +101,13 @@ module.exports = function (Categories) {
 	Categories.buildTopicsSortedSet = async function (data) {
 		const { cid, uid } = data;
 		const sort = data.sort || (data.settings && data.settings.categoryTopicSort) || meta.config.categoryTopicSort || 'recently_replied';
+		
+		// When heat is requested, mark for in-memory calculation
+		if (sort === 'heat') {
+			data._calculateHeat = true;
+			data._normalTidsToGet = data.stop - data.start + 1; // Save original limit for later
+		}
+		
 		const sortToSet = {
 			recently_replied: `cid:${cid}:tids`,
 			recently_created: `cid:${cid}:tids:create`,
@@ -285,4 +301,31 @@ module.exports = function (Categories) {
 
 		return sorted;
 	};
+
+	async function applyHeatSort(tids, limit) {
+		if (!tids.length) { return tids; }
+		const topicFields = await topics.getTopicsFields(tids, ['tid', 'viewcount', 'postcount', 'upvotes', 'lastposttime']);
+		
+		// Calculate heat for each topic
+		const heatScores = topicFields.map((topic) => {
+			if (!topic) { return 0; }
+			const ageHours = (Date.now() - parseInt(topic.lastposttime, 10)) / 3600000;
+			const ageDecay = Math.max(0.5, 1 - (ageHours / 168)); // Decay over 1 week
+			
+			const heat = 
+				((parseInt(topic.viewcount, 10) || 0) * 1) +
+				((parseInt(topic.postcount, 10) || 0) * 5) +
+				((parseInt(topic.upvotes, 10) || 0) * 20) +
+				(ageDecay * 100);
+			
+			return heat;
+		});
+		
+		// Sort by heat score descending and trim to limit
+		return tids
+			.map((tid, i) => ({ tid, heat: heatScores[i] }))
+			.sort((a, b) => b.heat - a.heat)
+			.slice(0, limit)
+			.map(item => item.tid);
+	}
 };

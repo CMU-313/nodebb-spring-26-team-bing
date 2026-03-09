@@ -102,6 +102,7 @@ define('quickreply', [
 				storage.removeItem(qrDraftId);
 				QuickReply._autocomplete.hide();
 				hooks.fire('action:quickreply.success', { data });
+				ajaxify.refresh();
 			});
 		});
 

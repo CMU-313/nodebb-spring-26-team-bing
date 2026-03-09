@@ -11,6 +11,7 @@ const user = require('../src/user');
 const utils = require('../src/utils');
 const meta = require('../src/meta');
 const plugins = require('../src/plugins');
+const groups = require('../src/groups');
 const privileges = require('../src/privileges');
 const api = require('../src/api');
 const helpers = require('./helpers');
@@ -266,6 +267,7 @@ describe('authentication', () => {
 		});
 	});
 
+	
 	it('should fail to login if ip address is invalid', async () => {
 		const jar = request.jar();
 		const csrf_token = await helpers.getCsrfToken(jar);
@@ -554,6 +556,22 @@ describe('authentication', () => {
 
 			assert.strictEqual(response.statusCode, 200);
 			assert.strictEqual(body.username, 'apiUserTarget');
+		});
+	});
+
+	describe('privileges', () => {
+		it('should include posts:verify in global privilege list', async () => {
+			const list = await privileges.global.getUserPrivilegeList();
+			assert(list.includes('posts:verify'));
+		});
+
+		it('admins implicitly have posts:verify while regular users do not', async () => {
+			const uid = await user.create({ username: 'verifyuser', password: 'verifypwd' });
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), false);
+			await groups.join('administrators', uid);
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), true);
+			await groups.leave('administrators', uid);
+			assert.strictEqual(await privileges.global.can('posts:verify', uid), false);
 		});
 	});
 });
