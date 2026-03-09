@@ -76,7 +76,7 @@ define('forum/topic/postTools', [
 	PostTools.toggle = function (pid, isDeleted) {
 		const postEl = components.get('post', 'pid', pid);
 
-		postEl.find('[component="post/quote"], [component="post/bookmark"], [component="post/reply"], [component="post/flag"], [component="user/chat"]')
+		postEl.find('[component="post/quote"], [component="post/bookmark"], [component="post/reply"], [component="post/forward"], [component="post/flag"], [component="user/chat"]')
 			.toggleClass('hidden', isDeleted);
 
 		postEl.find('[component="post/delete"]').toggleClass('hidden', isDeleted).parent().attr('hidden', isDeleted ? '' : null);
@@ -114,6 +114,11 @@ define('forum/topic/postTools', [
 		$('.topic').on('click', '[component="topic/reply"]', function (e) {
 			e.preventDefault();
 			onReplyClicked($(this), tid);
+		});
+
+		postContainer.on('click', '[component="post/forward"]', function (e) {
+			e.preventDefault();
+			onForwardClicked($(this), tid);
 		});
 
 		$('.topic').on('click', '[component="topic/reply-as-topic"]', function () {
@@ -322,6 +327,32 @@ define('forum/topic/postTools', [
 				});
 			}
 		});
+	}
+
+	async function onForwardClicked(button, tid) {
+		const pid = getData(button, 'data-pid');
+		if (!pid) return;
+
+		try {
+			const { content } = await api.get(`/posts/${encodeURIComponent(pid)}/raw`);
+			const postUrl = config.relative_path + '/post/' + encodeURIComponent(pid);
+			const title = ajaxify.data.titleRaw || '';
+			const forwardedHeader = '> ' + (title ? '**Forwarded from** [' + title.replace(/\]/g, '\\]') + '](' + postUrl + ')' : postUrl);
+			const quotedContent = (content || '').split('\n').map(function (line) { return '> ' + line; }).join('\n');
+			const forwardBody = forwardedHeader + (quotedContent ? '\n' + quotedContent : '');
+
+			app.forwardPostContext = {
+				body: forwardBody,
+			};
+
+			hooks.fire('action:composer.post.new', {
+				tid: tid,
+				title: ajaxify.data.titleRaw,
+				body: forwardBody,
+			});
+		} catch (err) {
+			alerts.error(err);
+		}
 	}
 
 	async function onQuoteClicked(button, tid) {
