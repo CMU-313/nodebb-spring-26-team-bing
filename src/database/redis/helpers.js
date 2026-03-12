@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const helpers = module.exports;
 
@@ -18,7 +18,7 @@ helpers.resultsToBool = function (results) {
 
 helpers.objectFieldsToString = function (obj) {
 	const stringified = Object.fromEntries(
-		Object.entries(obj).map(([key, value]) => [key, String(value)])
+		Object.entries(obj).map(([key, value]) => [key, String(value)]),
 	);
 	return stringified;
 };
@@ -27,11 +27,11 @@ helpers.normalizeLexRange = function (min, max, reverse) {
 	let minmin;
 	let maxmax;
 	if (reverse) {
-		minmin = '+';
-		maxmax = '-';
+		minmin = "+";
+		maxmax = "-";
 	} else {
-		minmin = '-';
-		maxmax = '+';
+		minmin = "-";
+		maxmax = "+";
 	}
 
 	if (min !== minmin && !min.match(/^[[(]/)) {

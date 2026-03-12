@@ -1,14 +1,14 @@
-'use strict';
+"use strict";
 
-const nconf = require('nconf');
-const path = require('path');
-const crypto = require('crypto');
+const nconf = require("nconf");
+const path = require("path");
+const crypto = require("crypto");
 
-const api = require('../../api');
-const activitypub = require('../../activitypub');
-const user = require('../../user');
+const api = require("../../api");
+const activitypub = require("../../activitypub");
+const user = require("../../user");
 
-const helpers = require('../helpers');
+const helpers = require("../helpers");
 
 const Users = module.exports;
 
@@ -16,9 +16,13 @@ Users.redirectBySlug = async (req, res) => {
 	const uid = await user.getUidByUserslug(req.params.userslug);
 
 	if (uid) {
-		const path = req.path.split('/').slice(3).join('/');
-		const urlObj = new URL(nconf.get('url') + req.url);
-		res.redirect(308, nconf.get('relative_path') + encodeURI(`/api/v3/users/${uid}/${path}${urlObj.search}`));
+		const path = req.path.split("/").slice(3).join("/");
+		const urlObj = new URL(nconf.get("url") + req.url);
+		res.redirect(
+			308,
+			nconf.get("relative_path") +
+				encodeURI(`/api/v3/users/${uid}/${path}${urlObj.search}`),
+		);
 	} else {
 		helpers.formatApiResponse(404, res);
 	}
@@ -34,11 +38,18 @@ Users.exists = async (req, res) => {
 };
 
 Users.get = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.users.get(req, { ...req.params }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.users.get(req, { ...req.params }),
+	);
 };
 
 Users.update = async (req, res) => {
-	const userObj = await api.users.update(req, { ...req.body, uid: req.params.uid });
+	const userObj = await api.users.update(req, {
+		...req.body,
+		uid: req.params.uid,
+	});
 	helpers.formatApiResponse(200, res, userObj);
 };
 
@@ -48,12 +59,18 @@ Users.delete = async (req, res) => {
 };
 
 Users.deleteContent = async (req, res) => {
-	await api.users.deleteContent(req, { ...req.params, password: req.body.password });
+	await api.users.deleteContent(req, {
+		...req.params,
+		password: req.body.password,
+	});
 	helpers.formatApiResponse(200, res);
 };
 
 Users.deleteAccount = async (req, res) => {
-	await api.users.deleteAccount(req, { ...req.params, password: req.body.password });
+	await api.users.deleteAccount(req, {
+		...req.params,
+		password: req.body.password,
+	});
 	helpers.formatApiResponse(200, res);
 };
 
@@ -68,7 +85,11 @@ Users.changePicture = async (req, res) => {
 };
 
 Users.getStatus = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.users.getStatus(req, { ...req.params }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.users.getStatus(req, { ...req.params }),
+	);
 };
 
 Users.checkStatus = async (req, res) => {
@@ -79,11 +100,18 @@ Users.checkStatus = async (req, res) => {
 };
 
 Users.getPrivateRoomId = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.users.getPrivateRoomId(req, { ...req.params }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.users.getPrivateRoomId(req, { ...req.params }),
+	);
 };
 
 Users.updateSettings = async (req, res) => {
-	const settings = await api.users.updateSettings(req, { ...req.body, uid: req.params.uid });
+	const settings = await api.users.updateSettings(req, {
+		...req.body,
+		uid: req.params.uid,
+	});
 	helpers.formatApiResponse(200, res, settings);
 };
 
@@ -93,9 +121,9 @@ Users.changePassword = async (req, res) => {
 };
 
 Users.follow = async (req, res) => {
-	const remote = String(req.params.uid).includes('@');
+	const remote = String(req.params.uid).includes("@");
 	if (remote) {
-		await activitypub.out.follow('uid', req.uid, req.params.uid);
+		await activitypub.out.follow("uid", req.uid, req.params.uid);
 	} else {
 		await api.users.follow(req, req.params);
 	}
@@ -104,9 +132,9 @@ Users.follow = async (req, res) => {
 };
 
 Users.unfollow = async (req, res) => {
-	const remote = String(req.params.uid).includes('@');
+	const remote = String(req.params.uid).includes("@");
 	if (remote) {
-		await activitypub.out.undo.follow('uid', req.uid, req.params.uid);
+		await activitypub.out.undo.follow("uid", req.uid, req.params.uid);
 	} else {
 		await api.users.unfollow(req, req.params);
 	}
@@ -135,7 +163,10 @@ Users.unmute = async (req, res) => {
 
 Users.generateToken = async (req, res) => {
 	const { description } = req.body;
-	const token = await api.users.generateToken(req, { description, ...req.params });
+	const token = await api.users.generateToken(req, {
+		description,
+		...req.params,
+	});
 	helpers.formatApiResponse(200, res, token);
 };
 
@@ -156,7 +187,7 @@ Users.invite = async (req, res) => {
 		await api.users.invite(req, { emails, groupsToJoin, ...req.params });
 		helpers.formatApiResponse(200, res);
 	} catch (e) {
-		if (e.message.startsWith('[[error:invite-maximum-met')) {
+		if (e.message.startsWith("[[error:invite-maximum-met")) {
 			return helpers.formatApiResponse(403, res, e);
 		}
 
@@ -165,12 +196,20 @@ Users.invite = async (req, res) => {
 };
 
 Users.getInviteGroups = async function (req, res) {
-	return helpers.formatApiResponse(200, res, await api.users.getInviteGroups(req, { ...req.params }));
+	return helpers.formatApiResponse(
+		200,
+		res,
+		await api.users.getInviteGroups(req, { ...req.params }),
+	);
 };
 
 Users.addEmail = async (req, res) => {
 	const { email, skipConfirmation } = req.body;
-	const emails = await api.users.addEmail(req, { email, skipConfirmation, ...req.params });
+	const emails = await api.users.addEmail(req, {
+		email,
+		skipConfirmation,
+		...req.params,
+	});
 
 	helpers.formatApiResponse(200, res, { emails });
 };
@@ -200,29 +239,36 @@ Users.confirmEmail = async (req, res) => {
 Users.checkExportByType = async (req, res) => {
 	const stat = await api.users.checkExportByType(req, { ...req.params });
 	const modified = new Date(stat.mtimeMs);
-	res.set('Last-Modified', modified.toUTCString());
-	res.set('ETag', `"${crypto.createHash('md5').update(String(stat.mtimeMs)).digest('hex')}"`);
+	res.set("Last-Modified", modified.toUTCString());
+	res.set(
+		"ETag",
+		`"${crypto.createHash("md5").update(String(stat.mtimeMs)).digest("hex")}"`,
+	);
 	res.sendStatus(204);
 };
 
 Users.getExportByType = async (req, res, next) => {
-	const data = await api.users.getExportByType(req, ({ ...req.params }));
+	const data = await api.users.getExportByType(req, { ...req.params });
 	if (!data) {
 		return next();
 	}
 
 	res.status(200);
-	res.sendFile(data.filename, {
-		root: path.join(__dirname, '../../../build/export'),
-		headers: {
-			'Content-Type': data.mime,
-			'Content-Disposition': `attachment; filename=${data.filename}`,
+	res.sendFile(
+		data.filename,
+		{
+			root: path.join(__dirname, "../../../build/export"),
+			headers: {
+				"Content-Type": data.mime,
+				"Content-Disposition": `attachment; filename=${data.filename}`,
+			},
 		},
-	}, (err) => {
-		if (err) {
-			throw err;
-		}
-	});
+		(err) => {
+			if (err) {
+				throw err;
+			}
+		},
+	);
 };
 
 Users.generateExportsByType = async (req, res) => {

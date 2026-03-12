@@ -12,7 +12,7 @@ RuleObject:
     value:
       type: string
       description: The value that incoming content will be matched against (used alongside `type`)
-      example: 'example'
+      example: "example"
     cid:
       type: number
       description: The category ID of a local category
@@ -20,4 +20,4 @@ RuleObject:
 RulesArray:
   type: array
   items:
-    $ref: '#/RuleObject'
+    $ref: "#/RuleObject"

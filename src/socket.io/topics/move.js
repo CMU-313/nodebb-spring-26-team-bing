@@ -1,20 +1,20 @@
-'use strict';
+"use strict";
 
-const async = require('async');
-const topics = require('../../topics');
-const categories = require('../../categories');
-const privileges = require('../../privileges');
-const events = require('../../events');
+const async = require("async");
+const topics = require("../../topics");
+const categories = require("../../categories");
+const privileges = require("../../privileges");
+const events = require("../../events");
 
-const api = require('../../api');
-const sockets = require('..');
+const api = require("../../api");
+const sockets = require("..");
 
 module.exports = function (SocketTopics) {
 	SocketTopics.move = async function (socket, data) {
-		sockets.warnDeprecated(socket, 'PUT /api/v3/topics/:tid/move');
+		sockets.warnDeprecated(socket, "PUT /api/v3/topics/:tid/move");
 
 		if (!data || !Array.isArray(data.tids) || !data.cid) {
-			throw new Error('[[error:invalid-data]]');
+			throw new Error("[[error:invalid-data]]");
 		}
 
 		await api.topics.move(socket, {
@@ -23,14 +23,17 @@ module.exports = function (SocketTopics) {
 		});
 	};
 
-
 	SocketTopics.moveAll = async function (socket, data) {
 		if (!data || !data.cid || !data.currentCid) {
-			throw new Error('[[error:invalid-data]]');
+			throw new Error("[[error:invalid-data]]");
 		}
-		const canMove = await privileges.categories.canMoveAllTopics(data.currentCid, data.cid, socket.uid);
+		const canMove = await privileges.categories.canMoveAllTopics(
+			data.currentCid,
+			data.cid,
+			socket.uid,
+		);
 		if (!canMove) {
-			throw new Error('[[error:no-privileges]]');
+			throw new Error("[[error:no-privileges]]");
 		}
 
 		const tids = await categories.getAllTopicIds(data.currentCid, 0, -1);

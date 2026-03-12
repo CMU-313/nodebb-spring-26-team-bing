@@ -1,67 +1,72 @@
-'use strict';
+"use strict";
 
-const activitypub = require('../../src/activitypub');
-const utils = require('../../src/utils');
-const slugify = require('../../src/slugify');
+const activitypub = require("../../src/activitypub");
+const utils = require("../../src/utils");
+const slugify = require("../../src/slugify");
 
 const Helpers = module.exports;
 
 Helpers.mocks = {};
 
-Helpers.mocks._baseUrl = 'https://example.org';
+Helpers.mocks._baseUrl = "https://example.org";
 
 Helpers.mocks.person = (override = {}) => {
 	const uuid = utils.generateUUID();
 	let id = `${Helpers.mocks._baseUrl}/${uuid}`;
-	if (override.hasOwnProperty('id')) {
+	if (override.hasOwnProperty("id")) {
 		id = override.id;
 	}
 
-
 	const actor = {
-		'@context': [
-			'https://www.w3.org/ns/activitystreams',
-			'https://w3id.org/security/v1',
+		"@context": [
+			"https://www.w3.org/ns/activitystreams",
+			"https://w3id.org/security/v1",
 		],
 		id,
 		url: `${id}`,
 		inbox: `${id}/inbox`,
 		outbox: `${id}/outbox`,
 
-		type: 'Person',
+		type: "Person",
 		name: slugify(id),
 		preferredUsername: id,
 
 		publicKey: {
 			id: `${id}#key`,
 			owner: `${id}`,
-			publicKeyPem: 'todo',
+			publicKeyPem: "todo",
 		},
 		...override,
 	};
 
 	activitypub._cache.set(`0;${id}`, actor);
-	activitypub.helpers._webfingerCache.set(`${actor.preferredUsername}@example.org`, {
-		actorUri: id,
-		username: id,
-		hostname: 'example.org',
-	});
+	activitypub.helpers._webfingerCache.set(
+		`${actor.preferredUsername}@example.org`,
+		{
+			actorUri: id,
+			username: id,
+			hostname: "example.org",
+		},
+	);
 
 	return { id, actor };
 };
 
 Helpers.mocks.group = (override = {}) => {
 	const { id, actor } = Helpers.mocks.person({
-		type: 'Group',
+		type: "Group",
 		...override,
 	});
 
 	activitypub._cache.set(`0;${id}`, actor);
-	activitypub.helpers._webfingerCache.set(`${actor.preferredUsername}@example.org`, {
-		actorUri: id,
-		username: id,
-		hostname: 'example.org',
-	});
+	activitypub.helpers._webfingerCache.set(
+		`${actor.preferredUsername}@example.org`,
+		{
+			actorUri: id,
+			username: id,
+			hostname: "example.org",
+		},
+	);
 
 	return { id, actor };
 };
@@ -70,14 +75,14 @@ Helpers.mocks.note = (override = {}) => {
 	const uuid = utils.generateUUID();
 	const id = `${Helpers.mocks._baseUrl}/object/${uuid}`;
 	const note = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id,
 		url: id,
-		type: 'Note',
-		to: ['https://www.w3.org/ns/activitystreams#Public'],
-		cc: ['https://example.org/user/foobar/followers'],
+		type: "Note",
+		to: ["https://www.w3.org/ns/activitystreams#Public"],
+		cc: ["https://example.org/user/foobar/followers"],
 		inReplyTo: null,
-		attributedTo: 'https://example.org/user/foobar',
+		attributedTo: "https://example.org/user/foobar",
 		name: utils.generateUUID(),
 		content: `<p>${utils.generateUUID()}</p>`,
 		published: new Date().toISOString(),
@@ -86,7 +91,7 @@ Helpers.mocks.note = (override = {}) => {
 
 	// If any values contain the hardcoded string "remove", remove that prop
 	Object.entries(note).forEach(([key, value]) => {
-		if (value === 'remove') {
+		if (value === "remove") {
 			delete note[key];
 		}
 	});
@@ -102,12 +107,12 @@ Helpers.mocks.create = (object) => {
 
 	object = object || Helpers.mocks.note().note;
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id,
-		type: 'Create',
-		to: ['https://www.w3.org/ns/activitystreams#Public'],
-		cc: ['https://example.org/user/foobar/followers'],
-		actor: 'https://example.org/user/foobar',
+		type: "Create",
+		to: ["https://www.w3.org/ns/activitystreams#Public"],
+		cc: ["https://example.org/user/foobar/followers"],
+		actor: "https://example.org/user/foobar",
 		object,
 	};
 
@@ -121,10 +126,10 @@ Helpers.mocks.accept = (actor, object) => {
 	const id = `${Helpers.mocks._baseUrl}/activity/${uuid}`;
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id,
-		type: 'Accept',
-		to: ['https://www.w3.org/ns/activitystreams#Public'],
+		type: "Accept",
+		to: ["https://www.w3.org/ns/activitystreams#Public"],
 		actor,
 		object,
 	};
@@ -143,9 +148,9 @@ Helpers.mocks.like = (override = {}) => {
 	}
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id: `${Helpers.mocks._baseUrl}/like/${encodeURIComponent(object.id || object)}`,
-		type: 'Like',
+		type: "Like",
 		actor,
 		object,
 	};
@@ -166,9 +171,9 @@ Helpers.mocks.follow = (override = {}) => {
 	delete override.object;
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id: `${Helpers.mocks._baseUrl}/follow/${encodeURIComponent(object.id || object)}`,
-		type: 'Follow',
+		type: "Follow",
 		to: [activitypub._constants.publicAddress],
 		cc: [`${actor}/followers`],
 		actor,
@@ -192,9 +197,9 @@ Helpers.mocks.announce = (override = {}) => {
 	delete override.object;
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id: `${Helpers.mocks._baseUrl}/announce/${encodeURIComponent(object.id || object)}`,
-		type: 'Announce',
+		type: "Announce",
 		to: [activitypub._constants.publicAddress],
 		cc: [`${actor}/followers`],
 		actor,
@@ -216,9 +221,9 @@ Helpers.mocks.update = (override = {}) => {
 	}
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id: `${Helpers.mocks._baseUrl}/update/${encodeURIComponent(object.id || object)}`,
-		type: 'Update',
+		type: "Update",
 		to: [activitypub._constants.publicAddress],
 		cc: [`${actor}/followers`],
 		actor,
@@ -239,9 +244,9 @@ Helpers.mocks.delete = (override = {}) => {
 	}
 
 	const activity = {
-		'@context': 'https://www.w3.org/ns/activitystreams',
+		"@context": "https://www.w3.org/ns/activitystreams",
 		id: `${Helpers.mocks._baseUrl}/delete/${encodeURIComponent(object.id || object)}`,
-		type: 'Delete',
+		type: "Delete",
 		to: [activitypub._constants.publicAddress],
 		cc: [`${actor}/followers`],
 		actor,
@@ -250,4 +255,3 @@ Helpers.mocks.delete = (override = {}) => {
 
 	return { activity };
 };
-

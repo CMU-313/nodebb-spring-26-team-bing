@@ -1,72 +1,81 @@
-'use strict';
+"use strict";
 
-define('composer/formatting', [
-	'composer/preview', 'composer/resize', 'topicThumbs', 'screenfull',
+define("composer/formatting", [
+	"composer/preview",
+	"composer/resize",
+	"topicThumbs",
+	"screenfull",
 ], function (preview, resize, topicThumbs, screenfull) {
 	var formatting = {};
 
 	var formattingDispatchTable = {
 		picture: function () {
 			var postContainer = this;
-			postContainer.find('#files')
-				.attr('accept', 'image/*')
-				.click();
+			postContainer.find("#files").attr("accept", "image/*").click();
 		},
 
 		upload: function () {
 			var postContainer = this;
-			postContainer.find('#files')
-				.attr('accept', '')
-				.click();
+			postContainer.find("#files").attr("accept", "").click();
 		},
 
 		thumbs: function () {
 			formatting.exitFullscreen();
 			var postContainer = this;
-			require(['composer'], function (composer) {
-				const uuid = postContainer.get(0).getAttribute('data-uuid');
+			require(["composer"], function (composer) {
+				const uuid = postContainer.get(0).getAttribute("data-uuid");
 				const composerObj = composer.posts[uuid];
 
-				if (composerObj.action === 'topics.post' || (composerObj.action === 'posts.edit' && composerObj.isMain)) {
-					topicThumbs.modal.open({ id: uuid, postData: composerObj }).then(() => {
-						postContainer.trigger('thumb.uploaded');
+				if (
+					composerObj.action === "topics.post" ||
+					(composerObj.action === "posts.edit" && composerObj.isMain)
+				) {
+					topicThumbs.modal
+						.open({ id: uuid, postData: composerObj })
+						.then(() => {
+							postContainer.trigger("thumb.uploaded");
 
-						// Update client-side with count
-						composer.updateThumbCount(uuid, postContainer);
-					});
+							// Update client-side with count
+							composer.updateThumbCount(uuid, postContainer);
+						});
 				}
 			});
 		},
 
 		tags: function () {
 			var postContainer = this;
-			postContainer.find('.tags-container').toggleClass('hidden');
+			postContainer.find(".tags-container").toggleClass("hidden");
 		},
 
 		zen: function () {
 			var postContainer = this;
-			$(window).one('resize', function () {
+			$(window).one("resize", function () {
 				function onResize() {
 					if (!screenfull.isFullscreen) {
 						app.toggleNavbar(true);
-						$('html').removeClass('zen-mode');
+						$("html").removeClass("zen-mode");
 						resize.reposition(postContainer);
-						$(window).off('resize', onResize);
+						$(window).off("resize", onResize);
 					}
 				}
 
 				if (screenfull.isFullscreen) {
 					app.toggleNavbar(false);
-					$('html').addClass('zen-mode');
-					postContainer.find('.write').focus();
+					$("html").addClass("zen-mode");
+					postContainer.find(".write").focus();
 
-					$(window).on('resize', onResize);
-					$(window).one('action:composer.topics.post action:composer.posts.reply action:composer.posts.edit action:composer.discard', screenfull.exit);
+					$(window).on("resize", onResize);
+					$(window).one(
+						"action:composer.topics.post action:composer.posts.reply action:composer.posts.edit action:composer.discard",
+						screenfull.exit,
+					);
 				}
 			});
 
 			screenfull.toggle(postContainer.get(0));
-			$(window).trigger('action:composer.fullscreen', { postContainer: postContainer });
+			$(window).trigger("action:composer.fullscreen", {
+				postContainer: postContainer,
+			});
 		},
 	};
 
@@ -79,16 +88,16 @@ define('composer/formatting', [
 	};
 
 	formatting.addComposerButtons = function () {
-		const formattingBarEl = $('.formatting-bar');
-		const fileForm = formattingBarEl.find('.formatting-group #fileForm');
+		const formattingBarEl = $(".formatting-bar");
+		const fileForm = formattingBarEl.find(".formatting-group #fileForm");
 		buttons.forEach((btn) => {
 			let markup = ``;
 			if (Array.isArray(btn.dropdownItems) && btn.dropdownItems.length) {
 				markup = generateFormattingDropdown(btn);
 			} else {
 				markup = `
-					<li title="${btn.title || ''}">
-						<button data-format="${btn.name}" class="btn btn-sm btn-link text-reset position-relative" aria-label="${btn.title || ''}">
+					<li title="${btn.title || ""}">
+						<button data-format="${btn.name}" class="btn btn-sm btn-link text-reset position-relative" aria-label="${btn.title || ""}">
 							<i class="${btn.iconClass}"></i>
 							${generateBadgetHtml(btn)}
 						</button>
@@ -98,24 +107,29 @@ define('composer/formatting', [
 			fileForm.before(markup);
 		});
 
-		const els = formattingBarEl.find('.formatting-group>li');
-		els.tooltip({
-			container: '#content',
-			animation: false,
-			trigger: 'manual',
-		}).on('mouseenter', function (ev) {
-			const target = $(ev.target);
-			const isDropdown = target.hasClass('dropdown-menu') || !!target.parents('.dropdown-menu').length;
-			if (!isDropdown) {
-				$(this).tooltip('show');
-			}
-		}).on('click mouseleave', function () {
-			$(this).tooltip('hide');
-		});
+		const els = formattingBarEl.find(".formatting-group>li");
+		els
+			.tooltip({
+				container: "#content",
+				animation: false,
+				trigger: "manual",
+			})
+			.on("mouseenter", function (ev) {
+				const target = $(ev.target);
+				const isDropdown =
+					target.hasClass("dropdown-menu") ||
+					!!target.parents(".dropdown-menu").length;
+				if (!isDropdown) {
+					$(this).tooltip("show");
+				}
+			})
+			.on("click mouseleave", function () {
+				$(this).tooltip("hide");
+			});
 	};
 
 	function generateBadgetHtml(btn) {
-		let badgeHtml = '';
+		let badgeHtml = "";
 		if (btn.badge) {
 			badgeHtml = `<span class="px-1 position-absolute top-0 start-100 translate-middle badge rounded text-bg-info"></span>`;
 		}
@@ -146,7 +160,7 @@ define('composer/formatting', [
 	}
 
 	formatting.addButton = function (iconClass, onClick, title, name) {
-		name = name || iconClass.replace('fa fa-', '');
+		name = name || iconClass.replace("fa fa-", "");
 		formattingDispatchTable[name] = onClick;
 		buttons.push({
 			name,
@@ -177,17 +191,27 @@ define('composer/formatting', [
 	};
 
 	formatting.addHandler = function (postContainer) {
-		postContainer.on('click', '.formatting-bar [data-format]', function (event) {
-			var format = $(this).attr('data-format');
-			var textarea = $(this).parents('[component="composer"]').find('textarea')[0];
+		postContainer.on(
+			"click",
+			".formatting-bar [data-format]",
+			function (event) {
+				var format = $(this).attr("data-format");
+				var textarea = $(this)
+					.parents('[component="composer"]')
+					.find("textarea")[0];
 
-			if (formattingDispatchTable.hasOwnProperty(format)) {
-				formattingDispatchTable[format].call(
-					postContainer, textarea, textarea.selectionStart, textarea.selectionEnd, event
-				);
-				preview.render(postContainer);
-			}
-		});
+				if (formattingDispatchTable.hasOwnProperty(format)) {
+					formattingDispatchTable[format].call(
+						postContainer,
+						textarea,
+						textarea.selectionStart,
+						textarea.selectionEnd,
+						event,
+					);
+					preview.render(postContainer);
+				}
+			},
+		);
 	};
 
 	return formatting;

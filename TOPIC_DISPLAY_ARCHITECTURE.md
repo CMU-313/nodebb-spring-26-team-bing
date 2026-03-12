@@ -1,6 +1,7 @@
 # Topic Display Architecture - Complete Tracing Guide
 
 ## Overview
+
 When a user views a topic/post in NodeBB, multiple files work together to fetch, process, and display all the topic information (title, content, tags, posting user, etc.).
 
 ---
@@ -14,6 +15,7 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 **Key Function:** `topicsController.get()` (lines 25-157)
 
 **What it does:**
+
 - Receives HTTP GET request for a topic (line 25)
 - Fetches basic topic data using `topics.getTopicData(tid)` (line 33)
 - Gets user privileges and permissions (lines 37-43)
@@ -27,10 +29,11 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 - Prepares metadata tags (SEO, OpenGraph) (lines 193-272)
 - **Finally renders the template with all data** (line 157):
   ```javascript
-  res.render('topic', topicData);
+  res.render("topic", topicData);
   ```
 
 **All Available Variables in `topicData`:**
+
 - `tid` - Topic ID
 - `cid` - Category ID
 - `title` - Topic title (escaped)
@@ -70,9 +73,9 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 **Provides data fetching functions used by the controller.**
 
 **Key Functions:**
+
 - `Topics.getTopicData(tid)` - Fetches single topic metadata
   - Returns: topic ID, title, category, creator info, timestamps, etc.
-  
 - `Topics.getTopicWithPosts(topicData, set, uid, start, stop, reverse)` (line 158)
   - **Fetches all posts for a topic with complete data**
   - Calls `Topics.getTopicPosts()` to get posts array
@@ -80,7 +83,6 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
   - Returns enriched topicData with `posts` array attached
 
 - `Topics.getTopicsData(tids)` - Gets metadata for multiple topics
-  
 - `Topics.addPostData(postData, uid)` - Enriches post data with user info
 
 ---
@@ -90,12 +92,12 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 **Handles fetching and processing posts within a topic.**
 
 **Key Functions:**
+
 - `Topics.getTopicPosts(topicData, set, start, stop, uid, reverse)` (line 22)
   - Gets posts from a specific range/index
   - Includes main post and nested replies
   - Filters based on user privileges
   - Enriches with user data, timestamps, content
-  
 - `Topics.getTopicWithPosts()` - Main function that orchestrates the post fetching
   - Uses `posts.getPostsByPids()` to fetch post content
   - Enumerates events (edits, moves, etc.)
@@ -107,9 +109,9 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 **Low-level post data retrieval.**
 
 **Key Functions:**
+
 - `Posts.getPostsByPids(pids, uid)` - Gets post content by post IDs
   - Returns: pid, uid, content, timestamp, edited, votes, etc.
-  
 - `Posts.getPostsFields(pids, fields)` - Gets specific fields from posts
 
 ---
@@ -119,6 +121,7 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 **This is the main HTML template that renders all topic information.**
 
 **What it displays:**
+
 ```html
 <!-- Breadcrumbs navigation -->
 <!-- IMPORT partials/breadcrumbs-json-ld.tpl -->
@@ -145,9 +148,9 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 <!-- Posts list -->
 <ul component="topic" class="posts timeline">
   {{{ each posts }}}
-    <li component="post">
-      <!-- IMPORT partials/topic/post.tpl -->
-      <!-- Each post displays:
+  <li component="post">
+    <!-- IMPORT partials/topic/post.tpl -->
+    <!-- Each post displays:
         - Post content
         - User info (avatar, username, reputation)
         - Timestamp
@@ -155,7 +158,7 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
         - Votes
         - Reply buttons
       -->
-    </li>
+  </li>
   {{{ end }}}
 </ul>
 
@@ -215,23 +218,23 @@ HTML rendered with all topic information displayed
 
 ### Controller Variables → Template Usage
 
-| Controller Variable | Template Variable | Template File |
-|---|---|---|
-| `tid` | `{tid}` | topic.tpl |
-| `title` | `{title}` | topic.tpl |
-| `titleRaw` | `{titleRaw}` | For SEO |
-| `posts[]` | `{posts}` | topic.tpl (each loop) |
-| `posts[].content` | `{posts.content}` | partials/topic/post.tpl |
-| `posts[].user` | `{posts.user}` | Shows username, avatar, reputation |
-| `posts[].timestamp` | `{posts.timestamp}` | Shows post time |
-| `posts[].index` | `{posts.index}` | Post position tracking |
-| `category` | `{category}` | Topic header - shows category badge |
-| `tags` | `{tags}` | partials/topic/tags.tpl |
-| `author` | `{author}` | Topic creator info |
-| `upvotes` | `{upvotes}` | Statistics display |
-| `postcount` | `{postcount}` | Statistics - total replies |
-| `thumbs` | `{thumbs}` | partials/topic/thumbs.tpl |
-| `privileges` | `{privileges}` | Controls edit/delete buttons visibility |
+| Controller Variable | Template Variable   | Template File                           |
+| ------------------- | ------------------- | --------------------------------------- |
+| `tid`               | `{tid}`             | topic.tpl                               |
+| `title`             | `{title}`           | topic.tpl                               |
+| `titleRaw`          | `{titleRaw}`        | For SEO                                 |
+| `posts[]`           | `{posts}`           | topic.tpl (each loop)                   |
+| `posts[].content`   | `{posts.content}`   | partials/topic/post.tpl                 |
+| `posts[].user`      | `{posts.user}`      | Shows username, avatar, reputation      |
+| `posts[].timestamp` | `{posts.timestamp}` | Shows post time                         |
+| `posts[].index`     | `{posts.index}`     | Post position tracking                  |
+| `category`          | `{category}`        | Topic header - shows category badge     |
+| `tags`              | `{tags}`            | partials/topic/tags.tpl                 |
+| `author`            | `{author}`          | Topic creator info                      |
+| `upvotes`           | `{upvotes}`         | Statistics display                      |
+| `postcount`         | `{postcount}`       | Statistics - total replies              |
+| `thumbs`            | `{thumbs}`          | partials/topic/thumbs.tpl               |
+| `privileges`        | `{privileges}`      | Controls edit/delete buttons visibility |
 
 ---
 
@@ -246,4 +249,3 @@ HTML rendered with all topic information displayed
 5. **DISPLAY**: Template `/vendor/nodebb-theme-harmony-main/templates/topic.tpl` renders HTML
 
 All variable names are consistent between controller and template, making it easy to trace any field back to its source.
-

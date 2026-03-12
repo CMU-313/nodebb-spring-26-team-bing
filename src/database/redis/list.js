@@ -1,18 +1,24 @@
-'use strict';
+"use strict";
 
 module.exports = function (module) {
 	module.listPrepend = async function (key, value) {
 		if (!key) {
 			return;
 		}
-		await module.client.lPush(key, Array.isArray(value) ? value.map(String) : String(value));
+		await module.client.lPush(
+			key,
+			Array.isArray(value) ? value.map(String) : String(value),
+		);
 	};
 
 	module.listAppend = async function (key, value) {
 		if (!key) {
 			return;
 		}
-		await module.client.rPush(key, Array.isArray(value) ? value.map(String) : String(value));
+		await module.client.rPush(
+			key,
+			Array.isArray(value) ? value.map(String) : String(value),
+		);
 	};
 
 	module.listRemoveLast = async function (key) {
@@ -28,7 +34,7 @@ module.exports = function (module) {
 		}
 		if (Array.isArray(value)) {
 			const batch = module.client.multi();
-			value.forEach(value => batch.lRem(key, 0, value));
+			value.forEach((value) => batch.lRem(key, 0, value));
 			await batch.execAsPipeline();
 		} else {
 			await module.client.lRem(key, 0, value);

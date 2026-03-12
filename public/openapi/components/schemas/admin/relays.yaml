@@ -15,4 +15,4 @@ RelayObject:
 RelaysArray:
   type: array
   items:
-    $ref: '#/RelayObject'
+    $ref: "#/RelayObject"

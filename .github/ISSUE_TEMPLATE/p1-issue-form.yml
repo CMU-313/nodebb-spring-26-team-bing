@@ -16,7 +16,7 @@ body:
     attributes:
       label: Uniqueness check
       options:
-      - label: I have searched open issues and confirmed this **file + smell** is not already taken.
+        - label: I have searched open issues and confirmed this **file + smell** is not already taken.
     validations:
       required: true
 

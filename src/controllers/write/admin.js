@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const categories = require('../../categories');
-const api = require('../../api');
-const helpers = require('../helpers');
-const messaging = require('../../messaging');
-const events = require('../../events');
-const activitypub = require('../../activitypub');
+const categories = require("../../categories");
+const api = require("../../api");
+const helpers = require("../helpers");
+const messaging = require("../../messaging");
+const events = require("../../events");
+const activitypub = require("../../activitypub");
 
 const Admin = module.exports;
 
@@ -25,12 +25,16 @@ Admin.getAnalyticsKeys = async (req, res) => {
 };
 
 Admin.getAnalyticsData = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.admin.getAnalyticsData(req, {
-		set: req.params.set,
-		until: parseInt(req.query.until, 10) || Date.now(),
-		amount: req.query.amount,
-		units: req.query.units,
-	}));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.admin.getAnalyticsData(req, {
+			set: req.params.set,
+			until: parseInt(req.query.until, 10) || Date.now(),
+			amount: req.query.amount,
+			units: req.query.units,
+		}),
+	);
 };
 
 Admin.generateToken = async (req, res) => {
@@ -40,14 +44,22 @@ Admin.generateToken = async (req, res) => {
 };
 
 Admin.getToken = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.utils.tokens.get(req.params.token));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.utils.tokens.get(req.params.token),
+	);
 };
 
 Admin.updateToken = async (req, res) => {
 	const { uid, description } = req.body;
 	const { token } = req.params;
 
-	helpers.formatApiResponse(200, res, await api.utils.tokens.update(token, { uid, description }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.utils.tokens.update(token, { uid, description }),
+	);
 };
 
 Admin.rollToken = async (req, res) => {
@@ -67,12 +79,12 @@ Admin.chats = {};
 Admin.chats.deleteRoom = async (req, res) => {
 	const roomData = await messaging.getRoomData(req.params.roomId);
 	if (!roomData) {
-		throw new Error('[[error:no-room]]');
+		throw new Error("[[error:no-room]]");
 	}
 	await messaging.deleteRooms([req.params.roomId]);
 
 	events.log({
-		type: 'chat-room-deleted',
+		type: "chat-room-deleted",
 		roomId: req.params.roomId,
 		roomName: roomData.roomName ? roomData.roomName : `No room name`,
 		uid: req.uid,

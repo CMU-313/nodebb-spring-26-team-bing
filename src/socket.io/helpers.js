@@ -1,19 +1,19 @@
-'use strict';
+"use strict";
 
-const _ = require('lodash');
+const _ = require("lodash");
 
-const db = require('../database');
-const websockets = require('./index');
-const user = require('../user');
-const posts = require('../posts');
-const topics = require('../topics');
-const categories = require('../categories');
-const privileges = require('../privileges');
-const notifications = require('../notifications');
-const plugins = require('../plugins');
-const utils = require('../utils');
-const batch = require('../batch');
-const translator = require('../translator');
+const db = require("../database");
+const websockets = require("./index");
+const user = require("../user");
+const posts = require("../posts");
+const topics = require("../topics");
+const categories = require("../categories");
+const privileges = require("../privileges");
+const notifications = require("../notifications");
+const plugins = require("../plugins");
+const utils = require("../utils");
+const batch = require("../batch");
+const translator = require("../translator");
 
 const SocketHelpers = module.exports;
 
@@ -22,29 +22,39 @@ SocketHelpers.notifyNew = async function (uid, type, result) {
 	if (post && post.topic && parseInt(post.topic.cid, 10) === -1) {
 		return;
 	}
-	let uids = await user.getUidsFromSet('users:online', 0, -1);
-	uids = uids.filter(toUid => parseInt(toUid, 10) !== uid);
-	await batch.processArray(uids, async (uids) => {
-		await notifyUids(uid, uids, type, result);
-	}, {
-		interval: 1000,
-	});
+	let uids = await user.getUidsFromSet("users:online", 0, -1);
+	uids = uids.filter((toUid) => parseInt(toUid, 10) !== uid);
+	await batch.processArray(
+		uids,
+		async (uids) => {
+			await notifyUids(uid, uids, type, result);
+		},
+		{
+			interval: 1000,
+		},
+	);
 };
 
 async function notifyUids(uid, uids, type, result) {
 	const post = result.posts[0];
 	const { tid, cid } = post.topic;
-	uids = await privileges.topics.filterUids('topics:read', tid, uids);
+	uids = await privileges.topics.filterUids("topics:read", tid, uids);
 	const watchStateUids = uids;
 
 	const watchStates = await getWatchStates(watchStateUids, tid, cid);
 
-	const categoryWatchStates = _.zipObject(watchStateUids, watchStates.categoryWatchStates);
-	const topicFollowState = _.zipObject(watchStateUids, watchStates.topicFollowed);
+	const categoryWatchStates = _.zipObject(
+		watchStateUids,
+		watchStates.categoryWatchStates,
+	);
+	const topicFollowState = _.zipObject(
+		watchStateUids,
+		watchStates.topicFollowed,
+	);
 	uids = filterTidCidIgnorers(watchStateUids, watchStates);
 	uids = await user.blocks.filterUids(uid, uids);
 	uids = await user.blocks.filterUids(post.topic.uid, uids);
-	const data = await plugins.hooks.fire('filter:sockets.sendNewPostToUids', {
+	const data = await plugins.hooks.fire("filter:sockets.sendNewPostToUids", {
 		uidsTo: uids,
 		uidFrom: uid,
 		type: type,
@@ -53,28 +63,30 @@ async function notifyUids(uid, uids, type, result) {
 
 	post.ip = undefined;
 
-	await Promise.all(data.uidsTo.map(async (toUid) => {
-		const copyResult = _.cloneDeep(result);
-		const postToUid = copyResult.posts[0];
-		postToUid.categoryWatchState = categoryWatchStates[toUid];
-		postToUid.topic.isFollowing = topicFollowState[toUid];
+	await Promise.all(
+		data.uidsTo.map(async (toUid) => {
+			const copyResult = _.cloneDeep(result);
+			const postToUid = copyResult.posts[0];
+			postToUid.categoryWatchState = categoryWatchStates[toUid];
+			postToUid.topic.isFollowing = topicFollowState[toUid];
 
-		await plugins.hooks.fire('filter:sockets.sendNewPostToUid', {
-			uid: toUid,
-			uidFrom: uid,
-			post: postToUid,
-		});
-
-		websockets.in(`uid_${toUid}`).emit('event:new_post', copyResult);
-		if (copyResult.topic && type === 'newTopic') {
-			await plugins.hooks.fire('filter:sockets.sendNewTopicToUid', {
+			await plugins.hooks.fire("filter:sockets.sendNewPostToUid", {
 				uid: toUid,
 				uidFrom: uid,
-				topic: copyResult.topic,
+				post: postToUid,
 			});
-			websockets.in(`uid_${toUid}`).emit('event:new_topic', copyResult.topic);
-		}
-	}));
+
+			websockets.in(`uid_${toUid}`).emit("event:new_post", copyResult);
+			if (copyResult.topic && type === "newTopic") {
+				await plugins.hooks.fire("filter:sockets.sendNewTopicToUid", {
+					uid: toUid,
+					uidFrom: uid,
+					topic: copyResult.topic,
+				});
+				websockets.in(`uid_${toUid}`).emit("event:new_topic", copyResult.topic);
+			}
+		}),
+	);
 }
 
 async function getWatchStates(uids, tid, cid) {
@@ -86,35 +98,51 @@ async function getWatchStates(uids, tid, cid) {
 }
 
 function filterTidCidIgnorers(uids, watchStates) {
-	return uids.filter((uid, index) => watchStates.topicFollowed[index] ||
-			(!watchStates.topicIgnored[index] && watchStates.categoryWatchStates[index] !== categories.watchStates.ignoring));
+	return uids.filter(
+		(uid, index) =>
+			watchStates.topicFollowed[index] ||
+			(!watchStates.topicIgnored[index] &&
+				watchStates.categoryWatchStates[index] !==
+					categories.watchStates.ignoring),
+	);
 }
 
-SocketHelpers.sendNotificationToPostOwner = async function (pid, fromuid, command, notification) {
+SocketHelpers.sendNotificationToPostOwner = async function (
+	pid,
+	fromuid,
+	command,
+	notification,
+) {
 	if (!pid || !fromuid || !notification) {
 		return;
 	}
 	fromuid = utils.isNumber(fromuid) ? parseInt(fromuid, 10) : fromuid;
 	const [postData, fromCategory] = await Promise.all([
-		posts.getPostFields(pid, ['tid', 'uid', 'content']),
+		posts.getPostFields(pid, ["tid", "uid", "content"]),
 		!utils.isNumber(fromuid) && categories.exists(fromuid),
 	]);
 	const [canRead, isIgnoring] = await Promise.all([
-		privileges.posts.can('topics:read', pid, postData.uid),
+		privileges.posts.can("topics:read", pid, postData.uid),
 		topics.isIgnoring([postData.tid], postData.uid),
 	]);
 	if (!canRead || isIgnoring[0] || !postData.uid || fromuid === postData.uid) {
 		return;
 	}
 	const [userData, topicTitle, postObj] = await Promise.all([
-		fromCategory ? categories.getCategoryFields(fromuid, ['name']) : user.getUserFields(fromuid, ['username']),
-		topics.getTopicField(postData.tid, 'title'),
+		fromCategory
+			? categories.getCategoryFields(fromuid, ["name"])
+			: user.getUserFields(fromuid, ["username"]),
+		topics.getTopicField(postData.tid, "title"),
 		posts.parsePost(postData),
 	]);
 
 	const title = utils.decodeHTMLEntities(topicTitle);
-	const titleEscaped = title.replace(/%/g, '&#37;').replace(/,/g, '&#44;');
-	const bodyShort = translator.compile(notification, userData.displayname || userData.name, titleEscaped);
+	const titleEscaped = title.replace(/%/g, "&#37;").replace(/,/g, "&#44;");
+	const bodyShort = translator.compile(
+		notification,
+		userData.displayname || userData.name,
+		titleEscaped,
+	);
 
 	const notifObj = await notifications.create({
 		type: command,
@@ -132,8 +160,12 @@ SocketHelpers.sendNotificationToPostOwner = async function (pid, fromuid, comman
 	notifications.push(notifObj, [postData.uid]);
 };
 
-
-SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, command, notification) {
+SocketHelpers.sendNotificationToTopicOwner = async function (
+	tid,
+	fromuid,
+	command,
+	notification,
+) {
 	if (!tid || !fromuid || !notification) {
 		return;
 	}
@@ -141,8 +173,8 @@ SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, comma
 	fromuid = parseInt(fromuid, 10);
 
 	const [userData, topicData] = await Promise.all([
-		user.getUserFields(fromuid, ['username']),
-		topics.getTopicFields(tid, ['uid', 'slug', 'title']),
+		user.getUserFields(fromuid, ["username"]),
+		topics.getTopicFields(tid, ["uid", "slug", "title"]),
 	]);
 
 	if (fromuid === topicData.uid) {
@@ -153,7 +185,7 @@ SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, comma
 
 	const ownerUid = topicData.uid;
 	const title = utils.decodeHTMLEntities(topicData.title);
-	const titleEscaped = title.replace(/%/g, '&#37;').replace(/,/g, '&#44;');
+	const titleEscaped = title.replace(/%/g, "&#37;").replace(/,/g, "&#44;");
 
 	const notifObj = await notifications.create({
 		bodyShort: `[[${notification}, ${displayname}, ${titleEscaped}]]`,
@@ -168,7 +200,14 @@ SocketHelpers.sendNotificationToTopicOwner = async function (tid, fromuid, comma
 };
 
 SocketHelpers.upvote = async function (data, notification) {
-	if (!data || !data.post || !data.post.uid || !data.post.votes || !data.post.pid || !data.fromuid) {
+	if (
+		!data ||
+		!data.post ||
+		!data.post.uid ||
+		!data.post.votes ||
+		!data.post.pid ||
+		!data.fromuid
+	) {
 		return;
 	}
 
@@ -188,7 +227,9 @@ SocketHelpers.upvote = async function (data, notification) {
 			return votes > 0 && votes % 10 === 0;
 		},
 		threshold: function () {
-			return [1, 5, 10, 25].includes(votes) || (votes >= 50 && votes % 50 === 0);
+			return (
+				[1, 5, 10, 25].includes(votes) || (votes >= 50 && votes % 50 === 0)
+			);
 		},
 		logarithmic: function () {
 			return votes > 1 && Math.log10(votes) % 1 === 0;
@@ -201,24 +242,31 @@ SocketHelpers.upvote = async function (data, notification) {
 	const should = shouldNotify[settings.upvoteNotifFreq] || shouldNotify.all;
 
 	if (should()) {
-		SocketHelpers.sendNotificationToPostOwner(pid, fromuid, 'upvote', notification);
+		SocketHelpers.sendNotificationToPostOwner(
+			pid,
+			fromuid,
+			"upvote",
+			notification,
+		);
 	}
 };
 
 SocketHelpers.rescindUpvoteNotification = async function (pid, fromuid) {
 	await notifications.rescind(`upvote:post:${pid}:uid:${fromuid}`);
-	const uid = await posts.getPostField(pid, 'uid');
+	const uid = await posts.getPostField(pid, "uid");
 	const count = await user.notifications.getUnreadCount(uid);
-	websockets.in(`uid_${uid}`).emit('event:notifications.updateCount', count);
+	websockets.in(`uid_${uid}`).emit("event:notifications.updateCount", count);
 };
 
 SocketHelpers.emitToUids = async function (event, data, uids) {
-	uids.forEach(toUid => websockets.in(`uid_${toUid}`).emit(event, data));
+	uids.forEach((toUid) => websockets.in(`uid_${toUid}`).emit(event, data));
 };
 
 SocketHelpers.removeSocketsFromRoomByUids = async function (uids, roomId) {
 	const sockets = _.flatten(
-		await Promise.all(uids.map(uid => websockets.in(`uid_${uid}`).fetchSockets()))
+		await Promise.all(
+			uids.map((uid) => websockets.in(`uid_${uid}`).fetchSockets()),
+		),
 	);
 
 	for (const s of sockets) {
@@ -231,4 +279,4 @@ SocketHelpers.removeSocketsFromRoomByUids = async function (uids, roomId) {
 	}
 };
 
-require('../promisify')(SocketHelpers);
+require("../promisify")(SocketHelpers);

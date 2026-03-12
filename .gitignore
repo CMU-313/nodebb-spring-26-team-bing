@@ -63,6 +63,7 @@ tx.exe
 ##Coverage output
 coverage
 .nyc_output
+prettier-output.txt
 
 *.log
 test/files/normalise.jpg.png

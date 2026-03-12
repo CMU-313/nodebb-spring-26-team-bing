@@ -1,31 +1,33 @@
-'use strict';
+"use strict";
 
 module.exports = function (opts) {
-	const { TTLCache } = require('@isaacs/ttlcache');
-	const os = require('os');
-	const winston = require('winston');
-	const chalk = require('chalk');
+	const { TTLCache } = require("@isaacs/ttlcache");
+	const os = require("os");
+	const winston = require("winston");
+	const chalk = require("chalk");
 
-	const pubsub = require('../pubsub');
+	const pubsub = require("../pubsub");
 
 	const ttlCache = new TTLCache(opts);
 	if (!opts.name) {
-		winston.warn(`[cache/init] ${chalk.white.bgRed.bold('WARNING')} The cache name is not set. This will be required in the future.\n ${new Error('t').stack} `);
+		winston.warn(
+			`[cache/init] ${chalk.white.bgRed.bold("WARNING")} The cache name is not set. This will be required in the future.\n ${new Error("t").stack} `,
+		);
 	}
 
 	const cache = {};
 	cache.name = opts.name;
 	cache.hits = 0;
 	cache.misses = 0;
-	cache.enabled = opts.hasOwnProperty('enabled') ? opts.enabled : true;
+	cache.enabled = opts.hasOwnProperty("enabled") ? opts.enabled : true;
 	const cacheSet = ttlCache.set;
 
 	// expose properties
 	const propertyMap = new Map([
-		['max', 'max'],
-		['itemCount', 'size'],
-		['size', 'size'],
-		['ttl', 'ttl'],
+		["max", "max"],
+		["itemCount", "size"],
+		["size", "size"],
+		["ttl", "ttl"],
 	]);
 	propertyMap.forEach((ttlProp, cacheProp) => {
 		Object.defineProperty(cache, cacheProp, {
@@ -77,7 +79,7 @@ module.exports = function (opts) {
 			keys = [keys];
 		}
 		pubsub.publish(`${cache.name}:ttlCache:del`, keys);
-		keys.forEach(key => ttlCache.delete(key));
+		keys.forEach((key) => ttlCache.delete(key));
 	};
 	cache.delete = cache.del;
 
@@ -103,7 +105,7 @@ module.exports = function (opts) {
 
 	pubsub.on(`${cache.name}:ttlCache:del`, (keys) => {
 		if (Array.isArray(keys)) {
-			keys.forEach(key => ttlCache.delete(key));
+			keys.forEach((key) => ttlCache.delete(key));
 		}
 	});
 

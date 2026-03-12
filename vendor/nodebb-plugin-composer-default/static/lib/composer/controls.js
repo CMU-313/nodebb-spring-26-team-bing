@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-define('composer/controls', ['composer/preview'], function (preview) {
+define("composer/controls", ["composer/preview"], function (preview) {
 	var controls = {};
 
 	/** ********************************************** */
@@ -13,7 +13,7 @@ define('composer/controls', ['composer/preview'], function (preview) {
 			value: value,
 			preventDefault: false,
 		};
-		$(window).trigger('action:composer.insertIntoTextarea', payload);
+		$(window).trigger("action:composer.insertIntoTextarea", payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -25,8 +25,8 @@ define('composer/controls', ['composer/preview'], function (preview) {
 
 		$textarea.val(
 			currentVal.slice(0, payload.textarea.selectionStart) +
-			payload.value +
-			currentVal.slice(payload.textarea.selectionStart)
+				payload.value +
+				currentVal.slice(payload.textarea.selectionStart),
 		);
 
 		preview.render(postContainer);
@@ -39,7 +39,10 @@ define('composer/controls', ['composer/preview'], function (preview) {
 			value: value,
 			preventDefault: false,
 		};
-		$(window).trigger('action:composer.replaceSelectionInTextareaWith', payload);
+		$(window).trigger(
+			"action:composer.replaceSelectionInTextareaWith",
+			payload,
+		);
 
 		if (payload.preventDefault) {
 			return;
@@ -51,14 +54,18 @@ define('composer/controls', ['composer/preview'], function (preview) {
 
 		$textarea.val(
 			currentVal.slice(0, payload.textarea.selectionStart) +
-			payload.value +
-			currentVal.slice(payload.textarea.selectionEnd)
+				payload.value +
+				currentVal.slice(payload.textarea.selectionEnd),
 		);
 
 		preview.render(postContainer);
 	};
 
-	controls.wrapSelectionInTextareaWith = function (textarea, leading, trailing) {
+	controls.wrapSelectionInTextareaWith = function (
+		textarea,
+		leading,
+		trailing,
+	) {
 		var payload = {
 			context: this,
 			textarea: textarea,
@@ -66,7 +73,7 @@ define('composer/controls', ['composer/preview'], function (preview) {
 			trailing: trailing,
 			preventDefault: false,
 		};
-		$(window).trigger('action:composer.wrapSelectionInTextareaWith', payload);
+		$(window).trigger("action:composer.wrapSelectionInTextareaWith", payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -79,21 +86,28 @@ define('composer/controls', ['composer/preview'], function (preview) {
 		var $textarea = $(textarea);
 		var currentVal = $textarea.val();
 
-		var matches = /^(\s*)([\s\S]*?)(\s*)$/.exec(currentVal.slice(textarea.selectionStart, textarea.selectionEnd));
+		var matches = /^(\s*)([\s\S]*?)(\s*)$/.exec(
+			currentVal.slice(textarea.selectionStart, textarea.selectionEnd),
+		);
 
 		if (!matches[2]) {
 			// selection is entirely whitespace
-			matches = [null, '', currentVal.slice(textarea.selectionStart, textarea.selectionEnd), ''];
+			matches = [
+				null,
+				"",
+				currentVal.slice(textarea.selectionStart, textarea.selectionEnd),
+				"",
+			];
 		}
 
 		$textarea.val(
 			currentVal.slice(0, textarea.selectionStart) +
-			matches[1] +
-			leading +
-			matches[2] +
-			trailing +
-			matches[3] +
-			currentVal.slice(textarea.selectionEnd)
+				matches[1] +
+				leading +
+				matches[2] +
+				trailing +
+				matches[3] +
+				currentVal.slice(textarea.selectionEnd),
 		);
 
 		return [matches[1].length, matches[3].length];
@@ -107,7 +121,7 @@ define('composer/controls', ['composer/preview'], function (preview) {
 			end: end,
 			preventDefault: false,
 		};
-		$(window).trigger('action:composer.updateTextareaSelection', payload);
+		$(window).trigger("action:composer.updateTextareaSelection", payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -120,14 +134,14 @@ define('composer/controls', ['composer/preview'], function (preview) {
 	controls.getBlockData = function (textareaEl, query, selectionStart) {
 		// Determines whether the cursor is sitting inside a block-type element (bold, italic, etc.)
 		var value = textareaEl.value;
-		query = query.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
-		var regex = new RegExp(query, 'g');
+		query = query.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+		var regex = new RegExp(query, "g");
 		var match;
 		var matchIndices = [];
 		var payload;
 
 		// Isolate the line the cursor is on
-		value = value.split('\n').reduce(function (memo, line) {
+		value = value.split("\n").reduce(function (memo, line) {
 			if (memo !== null) {
 				return memo;
 			}
@@ -135,7 +149,7 @@ define('composer/controls', ['composer/preview'], function (preview) {
 			memo = selectionStart <= line.length ? line : null;
 
 			if (memo === null) {
-				selectionStart -= (line.length + 1);
+				selectionStart -= line.length + 1;
 			}
 
 			return memo;
@@ -147,13 +161,15 @@ define('composer/controls', ['composer/preview'], function (preview) {
 		}
 
 		payload = {
-			in: !!(matchIndices.reduce(function (memo, cur) {
-				if (selectionStart >= cur + 2) {
-					memo += 1;
-				}
+			in: !!(
+				matchIndices.reduce(function (memo, cur) {
+					if (selectionStart >= cur + 2) {
+						memo += 1;
+					}
 
-				return memo;
-			}, 0) % 2),
+					return memo;
+				}, 0) % 2
+			),
 			atEnd: matchIndices.reduce(function (memo, cur) {
 				if (memo) {
 					return memo;

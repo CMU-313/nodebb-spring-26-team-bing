@@ -1,18 +1,18 @@
-'use strict';
+"use strict";
 
-define('composer/uploads', [
-	'composer/preview',
-	'composer/categoryList',
-	'translator',
-	'alerts',
-	'uploadHelpers',
-	'jquery-form',
+define("composer/uploads", [
+	"composer/preview",
+	"composer/categoryList",
+	"translator",
+	"alerts",
+	"uploadHelpers",
+	"jquery-form",
 ], function (preview, categoryList, translator, alerts, uploadHelpers) {
 	var uploads = {
 		inProgress: {},
 	};
 
-	var uploadingText = '';
+	var uploadingText = "";
 
 	uploads.initialize = function (post_uuid) {
 		initializeDragAndDrop(post_uuid);
@@ -20,19 +20,29 @@ define('composer/uploads', [
 
 		addChangeHandlers(post_uuid);
 
-		translator.translate('[[modules:composer.uploading, ' + 0 + '%]]', function (translated) {
-			uploadingText = translated;
-		});
+		translator.translate(
+			"[[modules:composer.uploading, " + 0 + "%]]",
+			function (translated) {
+				uploadingText = translated;
+			},
+		);
 	};
 
 	function addChangeHandlers(post_uuid) {
 		var postContainer = $('.composer[data-uuid="' + post_uuid + '"]');
 
-		postContainer.find('#files').on('change', function (e) {
-			var files = (e.target || {}).files ||
-				($(this).val() ? [{ name: $(this).val(), type: utils.fileMimeType($(this).val()) }] : null);
+		postContainer.find("#files").on("change", function (e) {
+			var files =
+				(e.target || {}).files ||
+				($(this).val()
+					? [{ name: $(this).val(), type: utils.fileMimeType($(this).val()) }]
+					: null);
 			if (files) {
-				uploadContentFiles({ files: files, post_uuid: post_uuid, route: '/api/post/upload' });
+				uploadContentFiles({
+					files: files,
+					post_uuid: post_uuid,
+					route: "/api/post/upload",
+				});
 			}
 		});
 	}
@@ -45,7 +55,7 @@ define('composer/uploads', [
 				uploadContentFiles({
 					files: upload.files,
 					post_uuid: post_uuid,
-					route: '/api/post/upload',
+					route: "/api/post/upload",
 					formData: upload.formData,
 				});
 			},
@@ -61,7 +71,7 @@ define('composer/uploads', [
 					files: upload.files,
 					fileNames: upload.fileNames,
 					post_uuid: post_uuid,
-					route: '/api/post/upload',
+					route: "/api/post/upload",
 					formData: upload.formData,
 				});
 			},
@@ -69,7 +79,7 @@ define('composer/uploads', [
 	}
 
 	function escapeRegExp(text) {
-		return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+		return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 	}
 
 	function insertText(str, index, insert) {
@@ -80,11 +90,11 @@ define('composer/uploads', [
 		var files = [...params.files];
 		var post_uuid = params.post_uuid;
 		var postContainer = $('.composer[data-uuid="' + post_uuid + '"]');
-		var textarea = postContainer.find('textarea');
+		var textarea = postContainer.find("textarea");
 		var text = textarea.val();
-		var uploadForm = postContainer.find('#fileForm');
+		var uploadForm = postContainer.find("#fileForm");
 		var doneUploading = false;
-		uploadForm.attr('action', config.relative_path + params.route);
+		uploadForm.attr("action", config.relative_path + params.route);
 
 		var cid = categoryList.getSelectedCid();
 		if (!cid && ajaxify.data.cid) {
@@ -94,24 +104,44 @@ define('composer/uploads', [
 		var isImage = false;
 		for (i = 0; i < files.length; ++i) {
 			isImage = files[i].type.match(/image./);
-			if ((isImage && !app.user.privileges['upload:post:image']) || (!isImage && !app.user.privileges['upload:post:file'])) {
-				return alerts.error('[[error:no-privileges]]');
+			if (
+				(isImage && !app.user.privileges["upload:post:image"]) ||
+				(!isImage && !app.user.privileges["upload:post:file"])
+			) {
+				return alerts.error("[[error:no-privileges]]");
 			}
 		}
 
 		var filenameMapping = [];
-		let filesText = '';
+		let filesText = "";
 		for (i = 0; i < files.length; ++i) {
 			// The filename map has datetime and iterator prepended so that they can be properly tracked even if the
 			// filenames are identical.
-			filenameMapping.push(i + '_' + Date.now() + '_' + (params.fileNames ? params.fileNames[i] : files[i].name));
+			filenameMapping.push(
+				i +
+					"_" +
+					Date.now() +
+					"_" +
+					(params.fileNames ? params.fileNames[i] : files[i].name),
+			);
 			isImage = files[i].type.match(/image./);
 
-			if (!app.user.isAdmin && files[i].size > parseInt(config.maximumFileSize, 10) * 1024) {
+			if (
+				!app.user.isAdmin &&
+				files[i].size > parseInt(config.maximumFileSize, 10) * 1024
+			) {
 				uploadForm[0].reset();
-				return alerts.error('[[error:file-too-big, ' + config.maximumFileSize + ']]');
+				return alerts.error(
+					"[[error:file-too-big, " + config.maximumFileSize + "]]",
+				);
 			}
-			filesText += (isImage ? '!' : '') + '[' + filenameMapping[i] + '](' + uploadingText + ') ';
+			filesText +=
+				(isImage ? "!" : "") +
+				"[" +
+				filenameMapping[i] +
+				"](" +
+				uploadingText +
+				") ";
 		}
 
 		const cursorPosition = textarea.getCursorPosition();
@@ -119,32 +149,34 @@ define('composer/uploads', [
 		text = insertText(text, cursorPosition, filesText);
 
 		if (uploadForm.length) {
-			postContainer.find('[data-action="post"]').prop('disabled', true);
+			postContainer.find('[data-action="post"]').prop("disabled", true);
 		}
 		textarea.val(text);
 
-		$(window).trigger('action:composer.uploadStart', {
+		$(window).trigger("action:composer.uploadStart", {
 			post_uuid: post_uuid,
 			files: filenameMapping.map(function (filename, i) {
 				return {
-					filename: filename.replace(/^\d+_\d{13}_/, ''),
+					filename: filename.replace(/^\d+_\d{13}_/, ""),
 					isImage: /image./.test(files[i].type),
 				};
 			}),
 			text: uploadingText,
 		});
 
-		uploadForm.off('submit').submit(function () {
+		uploadForm.off("submit").submit(function () {
 			function updateTextArea(filename, text, trim) {
 				var newFilename;
 				if (trim) {
-					newFilename = filename.replace(/^\d+_\d{13}_/, '');
+					newFilename = filename.replace(/^\d+_\d{13}_/, "");
 				}
 				var current = textarea.val();
-				var re = new RegExp(escapeRegExp(filename) + ']\\([^)]+\\)', 'g');
-				textarea.val(current.replace(re, (newFilename || filename) + '](' + text + ')'));
+				var re = new RegExp(escapeRegExp(filename) + "]\\([^)]+\\)", "g");
+				textarea.val(
+					current.replace(re, (newFilename || filename) + "](" + text + ")"),
+				);
 
-				$(window).trigger('action:composer.uploadUpdate', {
+				$(window).trigger("action:composer.uploadUpdate", {
 					post_uuid: post_uuid,
 					filename: filename,
 					text: text,
@@ -155,12 +187,12 @@ define('composer/uploads', [
 			uploads.inProgress[post_uuid].push(1);
 
 			if (params.formData) {
-				params.formData.append('cid', cid);
+				params.formData.append("cid", cid);
 			}
 
 			$(this).ajaxSubmit({
 				headers: {
-					'x-csrf-token': config.csrf_token,
+					"x-csrf-token": config.csrf_token,
 				},
 				resetForm: true,
 				clearForm: true,
@@ -169,7 +201,7 @@ define('composer/uploads', [
 
 				error: function (xhr) {
 					doneUploading = true;
-					postContainer.find('[data-action="post"]').prop('disabled', false);
+					postContainer.find('[data-action="post"]').prop("disabled", false);
 					const errorMsg = onUploadError(xhr, post_uuid);
 					for (var i = 0; i < files.length; ++i) {
 						updateTextArea(filenameMapping[i], errorMsg, true);
@@ -178,14 +210,17 @@ define('composer/uploads', [
 				},
 
 				uploadProgress: function (event, position, total, percent) {
-					translator.translate('[[modules:composer.uploading, ' + percent + '%]]', function (translated) {
-						if (doneUploading) {
-							return;
-						}
-						for (var i = 0; i < files.length; ++i) {
-							updateTextArea(filenameMapping[i], translated);
-						}
-					});
+					translator.translate(
+						"[[modules:composer.uploading, " + percent + "%]]",
+						function (translated) {
+							if (doneUploading) {
+								return;
+							}
+							for (var i = 0; i < files.length; ++i) {
+								updateTextArea(filenameMapping[i], translated);
+							}
+						},
+					);
 				},
 
 				success: function (res) {
@@ -193,16 +228,22 @@ define('composer/uploads', [
 					doneUploading = true;
 					if (uploads && uploads.length) {
 						for (var i = 0; i < uploads.length; ++i) {
-							uploads[i].filename = filenameMapping[i].replace(/^\d+_\d{13}_/, '');
+							uploads[i].filename = filenameMapping[i].replace(
+								/^\d+_\d{13}_/,
+								"",
+							);
 							uploads[i].isImage = /image./.test(files[i].type);
 							updateTextArea(filenameMapping[i], uploads[i].url, true);
 						}
 					}
 					preview.render(postContainer);
-					textarea.prop('selectionEnd', cursorPosition + textarea.val().length - textLen);
+					textarea.prop(
+						"selectionEnd",
+						cursorPosition + textarea.val().length - textLen,
+					);
 					textarea.focus();
-					postContainer.find('[data-action="post"]').prop('disabled', false);
-					$(window).trigger('action:composer.upload', {
+					postContainer.find('[data-action="post"]').prop("disabled", false);
+					$(window).trigger("action:composer.upload", {
 						post_uuid: post_uuid,
 						files: uploads,
 					});
@@ -221,15 +262,17 @@ define('composer/uploads', [
 	}
 
 	function onUploadError(xhr, post_uuid) {
-		var msg = (xhr.responseJSON &&
-			(xhr.responseJSON.error || (xhr.responseJSON.status && xhr.responseJSON.status.message))) ||
-			'[[error:parse-error]]';
+		var msg =
+			(xhr.responseJSON &&
+				(xhr.responseJSON.error ||
+					(xhr.responseJSON.status && xhr.responseJSON.status.message))) ||
+			"[[error:parse-error]]";
 
 		if (xhr && xhr.status === 413) {
-			msg = '[[error:api.413]]';
+			msg = "[[error:api.413]]";
 		}
 		alerts.error(msg);
-		$(window).trigger('action:composer.uploadError', {
+		$(window).trigger("action:composer.uploadError", {
 			post_uuid: post_uuid,
 			message: msg,
 		});
@@ -238,4 +281,3 @@ define('composer/uploads', [
 
 	return uploads;
 });
-

@@ -1,22 +1,22 @@
-'use strict';
+"use strict";
 
-const url = require('url');
+const url = require("url");
 
-const nconf = require.main.require('nconf');
-const validator = require('validator');
+const nconf = require.main.require("nconf");
+const validator = require("validator");
 
-const plugins = require.main.require('./src/plugins');
-const topics = require.main.require('./src/topics');
-const categories = require.main.require('./src/categories');
-const posts = require.main.require('./src/posts');
-const user = require.main.require('./src/user');
-const meta = require.main.require('./src/meta');
-const privileges = require.main.require('./src/privileges');
-const translator = require.main.require('./src/translator');
-const utils = require.main.require('./src/utils');
-const helpers = require.main.require('./src/controllers/helpers');
-const SocketPlugins = require.main.require('./src/socket.io/plugins');
-const socketMethods = require('./websockets');
+const plugins = require.main.require("./src/plugins");
+const topics = require.main.require("./src/topics");
+const categories = require.main.require("./src/categories");
+const posts = require.main.require("./src/posts");
+const user = require.main.require("./src/user");
+const meta = require.main.require("./src/meta");
+const privileges = require.main.require("./src/privileges");
+const translator = require.main.require("./src/translator");
+const utils = require.main.require("./src/utils");
+const helpers = require.main.require("./src/controllers/helpers");
+const SocketPlugins = require.main.require("./src/socket.io/plugins");
+const socketMethods = require("./websockets");
 
 const plugin = module.exports;
 
@@ -24,22 +24,26 @@ plugin.socketMethods = socketMethods;
 
 plugin.init = async function (data) {
 	const { router } = data;
-	const routeHelpers = require.main.require('./src/routes/helpers');
-	const controllers = require('./controllers');
+	const routeHelpers = require.main.require("./src/routes/helpers");
+	const controllers = require("./controllers");
 	SocketPlugins.composer = socketMethods;
-	routeHelpers.setupAdminPageRoute(router, '/admin/plugins/composer-default', controllers.renderAdminPage);
+	routeHelpers.setupAdminPageRoute(
+		router,
+		"/admin/plugins/composer-default",
+		controllers.renderAdminPage,
+	);
 };
 
 plugin.appendConfig = async function (config) {
-	config['composer-default'] = await meta.settings.get('composer-default');
+	config["composer-default"] = await meta.settings.get("composer-default");
 	return config;
 };
 
 plugin.addAdminNavigation = async function (header) {
 	header.plugins.push({
-		route: '/plugins/composer-default',
-		icon: 'fa-edit',
-		name: 'Composer (Default)',
+		route: "/plugins/composer-default",
+		icon: "fa-edit",
+		name: "Composer (Default)",
 	});
 	return header;
 };
@@ -57,27 +61,27 @@ plugin.getFormattingOptions = async function () {
 		defaultVisibility,
 		options: [
 			{
-				name: 'tags',
-				title: '[[global:tags.tags]]',
-				className: 'fa fa-tags',
+				name: "tags",
+				title: "[[global:tags.tags]]",
+				className: "fa fa-tags",
 				visibility: {
 					...defaultVisibility,
 					desktop: false,
 				},
 			},
 			{
-				name: 'zen',
-				title: '[[modules:composer.zen-mode]]',
-				className: 'fa fa-arrows-alt',
+				name: "zen",
+				title: "[[modules:composer.zen-mode]]",
+				className: "fa fa-arrows-alt",
 				visibility: defaultVisibility,
 			},
 		],
 	};
 	if (parseInt(meta.config.allowTopicsThumbnail, 10) === 1) {
 		payload.options.push({
-			name: 'thumbs',
-			title: '[[topic:composer.thumb-title]]',
-			className: 'fa fa-address-card-o',
+			name: "thumbs",
+			title: "[[topic:composer.thumb-title]]",
+			className: "fa fa-address-card-o",
 			badge: true,
 			visibility: {
 				...defaultVisibility,
@@ -86,12 +90,12 @@ plugin.getFormattingOptions = async function () {
 		});
 	}
 
-	payload = await plugins.hooks.fire('filter:composer.formatting', payload);
+	payload = await plugins.hooks.fire("filter:composer.formatting", payload);
 
 	payload.options.forEach((option) => {
 		option.visibility = {
 			...defaultVisibility,
-			...option.visibility || {},
+			...(option.visibility || {}),
 		};
 	});
 
@@ -104,12 +108,12 @@ plugin.filterComposerBuild = async function (hookData) {
 	if (req.query.p) {
 		try {
 			const a = url.parse(req.query.p, true, true);
-			return helpers.redirect(res, `/${(a.path || '').replace(/^\/*/, '')}`);
+			return helpers.redirect(res, `/${(a.path || "").replace(/^\/*/, "")}`);
 		} catch (e) {
-			return helpers.redirect(res, '/');
+			return helpers.redirect(res, "/");
 		}
 	} else if (!req.query.pid && !req.query.tid && !req.query.cid) {
-		return helpers.redirect(res, '/');
+		return helpers.redirect(res, "/");
 	}
 
 	await checkPrivileges(req, res);
@@ -131,7 +135,14 @@ plugin.filterComposerBuild = async function (hookData) {
 		getPostData(req),
 		getTopicData(req),
 		categories.getCategoryFields(req.query.cid, [
-			'name', 'icon', 'color', 'bgColor', 'backgroundImage', 'imageClass', 'minTags', 'maxTags',
+			"name",
+			"icon",
+			"color",
+			"bgColor",
+			"backgroundImage",
+			"imageClass",
+			"minTags",
+			"maxTags",
 		]),
 		user.isAdministrator(req.uid),
 		isModerator(req),
@@ -148,20 +159,21 @@ plugin.filterComposerBuild = async function (hookData) {
 	const discardRoute = generateDiscardRoute(req, topicData);
 	const body = await generateBody(req, postData);
 
-	let action = 'topics.post';
+	let action = "topics.post";
 	let isMain = isMainPost;
 	if (req.query.tid) {
-		action = 'posts.reply';
+		action = "posts.reply";
 	} else if (req.query.pid) {
-		action = 'posts.edit';
+		action = "posts.edit";
 	} else {
 		isMain = true;
 	}
-	globalPrivileges['topics:tag'] = canTagTopics;
+	globalPrivileges["topics:tag"] = canTagTopics;
 	const cid = parseInt(req.query.cid, 10);
-	const topicTitle = topicData && topicData.title ?
-		topicData.title :
-		validator.escape(String(req.query.title || ''));
+	const topicTitle =
+		topicData && topicData.title
+			? topicData.title
+			: validator.escape(String(req.query.title || ""));
 	return {
 		req: req,
 		res: res,
@@ -175,20 +187,19 @@ plugin.filterComposerBuild = async function (hookData) {
 			discardRoute: discardRoute,
 
 			resizable: false,
-			allowTopicsThumbnail: parseInt(meta.config.allowTopicsThumbnail, 10) === 1 && isMain,
+			allowTopicsThumbnail:
+				parseInt(meta.config.allowTopicsThumbnail, 10) === 1 && isMain,
 
 			// can't use title property as that is used for page title
 			topicTitle: topicTitle,
 			titleLength: topicTitle ? topicTitle.length : 0,
 			titleLabel: translator.compile(
-				isEditing ?
-					'topic:composer.editing-in' :
-					'topic:composer.replying-to',
-				`"${topicTitle}"`
+				isEditing ? "topic:composer.editing-in" : "topic:composer.replying-to",
+				`"${topicTitle}"`,
 			),
 
 			topic: topicData,
-			thumb: topicData ? topicData.thumb : '',
+			thumb: topicData ? topicData.thumb : "",
 			body: body,
 
 			isMain: isMain,
@@ -205,24 +216,31 @@ plugin.filterComposerBuild = async function (hookData) {
 			isTopic: !!req.query.cid,
 			isEditing: isEditing,
 			canSchedule: canScheduleTopics,
-			showHandleInput: meta.config.allowGuestHandles === 1 &&
+			showHandleInput:
+				meta.config.allowGuestHandles === 1 &&
 				(req.uid === 0 || (isEditing && isGuestPost && (isAdmin || isMod))),
-			handle: postData ? postData.handle || '' : undefined,
+			handle: postData ? postData.handle || "" : undefined,
 			formatting: formatting,
 			isAdminOrMod: isAdmin || isMod,
 			save_id: save_id,
 			privileges: globalPrivileges,
-			'composer:showHelpTab': meta.config['composer:showHelpTab'] === 1,
+			"composer:showHelpTab": meta.config["composer:showHelpTab"] === 1,
 		},
 	};
 };
 
 async function checkPrivileges(req, res) {
-	const notAllowed = (
-		(req.query.cid && !await privileges.categories.can('topics:create', req.query.cid, req.uid)) ||
-		(req.query.tid && !await privileges.topics.can('topics:reply', req.query.tid, req.uid)) ||
-		(req.query.pid && !await privileges.posts.can('posts:edit', req.query.pid, req.uid))
-	);
+	const notAllowed =
+		(req.query.cid &&
+			!(await privileges.categories.can(
+				"topics:create",
+				req.query.cid,
+				req.uid,
+			))) ||
+		(req.query.tid &&
+			!(await privileges.topics.can("topics:reply", req.query.tid, req.uid))) ||
+		(req.query.pid &&
+			!(await privileges.posts.can("posts:edit", req.query.pid, req.uid)));
 
 	if (notAllowed) {
 		await helpers.notAllowed(req, res);
@@ -231,27 +249,30 @@ async function checkPrivileges(req, res) {
 
 function generateDiscardRoute(req, topicData) {
 	if (req.query.cid) {
-		return `${nconf.get('relative_path')}/category/${validator.escape(String(req.query.cid))}`;
-	} else if ((req.query.tid || req.query.pid)) {
+		return `${nconf.get("relative_path")}/category/${validator.escape(String(req.query.cid))}`;
+	} else if (req.query.tid || req.query.pid) {
 		if (topicData) {
-			return `${nconf.get('relative_path')}/topic/${topicData.slug}`;
+			return `${nconf.get("relative_path")}/topic/${topicData.slug}`;
 		}
-		return `${nconf.get('relative_path')}/`;
+		return `${nconf.get("relative_path")}/`;
 	}
 }
 
 async function generateBody(req, postData) {
-	let body = '';
+	let body = "";
 	// Quoted reply
 	if (req.query.toPid && parseInt(req.query.quoted, 10) === 1 && postData) {
-		const username = await user.getUserField(postData.uid, 'username');
-		const translated = await translator.translate(`[[modules:composer.user-said, ${username}]]`);
-		body = `${translated}\n` +
-			`> ${postData ? `${postData.content.replace(/\n/g, '\n> ')}\n\n` : ''}`;
+		const username = await user.getUserField(postData.uid, "username");
+		const translated = await translator.translate(
+			`[[modules:composer.user-said, ${username}]]`,
+		);
+		body =
+			`${translated}\n` +
+			`> ${postData ? `${postData.content.replace(/\n/g, "\n> ")}\n\n` : ""}`;
 	} else if (req.query.body || req.query.content) {
 		body = validator.escape(String(req.query.body || req.query.content));
 	}
-	body = postData ? postData.content : '';
+	body = postData ? postData.content : "";
 	return translator.escape(body);
 }
 
@@ -282,14 +303,22 @@ async function isModerator(req) {
 
 async function canTag(req) {
 	if (parseInt(req.query.cid, 10)) {
-		return await privileges.categories.can('topics:tag', req.query.cid, req.uid);
+		return await privileges.categories.can(
+			"topics:tag",
+			req.query.cid,
+			req.uid,
+		);
 	}
 	return true;
 }
 
 async function canSchedule(req) {
 	if (parseInt(req.query.cid, 10)) {
-		return await privileges.categories.can('topics:schedule', req.query.cid, req.uid);
+		return await privileges.categories.can(
+			"topics:schedule",
+			req.query.cid,
+			req.uid,
+		);
 	}
 	return false;
 }
@@ -307,7 +336,7 @@ async function cidFromQuery(query) {
 	if (query.cid) {
 		return query.cid;
 	} else if (query.tid) {
-		return await topics.getTopicField(query.tid, 'cid');
+		return await topics.getTopicField(query.tid, "cid");
 	} else if (query.pid) {
 		return await posts.getCidByPid(query.pid);
 	}

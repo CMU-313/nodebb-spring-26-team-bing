@@ -15,7 +15,7 @@ post:
               description: The relay actor endpoint
               example: https://example.org/actor
   responses:
-    '200':
+    "200":
       description: rule successfully created
       content:
         application/json:

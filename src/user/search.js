@@ -1,58 +1,59 @@
+"use strict";
 
-'use strict';
+const _ = require("lodash");
 
-const _ = require('lodash');
-
-const meta = require('../meta');
-const plugins = require('../plugins');
-const db = require('../database');
-const groups = require('../groups');
-const activitypub = require('../activitypub');
-const utils = require('../utils');
+const meta = require("../meta");
+const plugins = require("../plugins");
+const db = require("../database");
+const groups = require("../groups");
+const activitypub = require("../activitypub");
+const utils = require("../utils");
 
 module.exports = function (User) {
 	const filterFnMap = {
-		online: user => user.status !== 'offline' && (Date.now() - user.lastonline < 300000),
-		flagged: user => parseInt(user.flags, 10) > 0,
-		verified: user => !!user['email:confirmed'],
-		unverified: user => !user['email:confirmed'],
+		online: (user) =>
+			user.status !== "offline" && Date.now() - user.lastonline < 300000,
+		flagged: (user) => parseInt(user.flags, 10) > 0,
+		verified: (user) => !!user["email:confirmed"],
+		unverified: (user) => !user["email:confirmed"],
 	};
 
 	const filterFieldMap = {
-		online: ['status', 'lastonline'],
-		flagged: ['flags'],
-		verified: ['email:confirmed'],
-		unverified: ['email:confirmed'],
+		online: ["status", "lastonline"],
+		flagged: ["flags"],
+		verified: ["email:confirmed"],
+		unverified: ["email:confirmed"],
 	};
 
-
 	User.search = async function (data) {
-		const query = data.query || '';
-		const searchBy = data.searchBy || 'username';
+		const query = data.query || "";
+		const searchBy = data.searchBy || "username";
 		const page = data.page || 1;
 		const uid = data.uid || 0;
-		const paginate = data.hasOwnProperty('paginate') ? data.paginate : true;
+		const paginate = data.hasOwnProperty("paginate") ? data.paginate : true;
 
 		const startTime = process.hrtime();
 
 		let uids = [];
-		if (searchBy === 'ip') {
+		if (searchBy === "ip") {
 			uids = await searchByIP(query);
-		} else if (searchBy === 'uid') {
+		} else if (searchBy === "uid") {
 			uids = [query];
 		} else {
 			if (!data.findUids && data.uid) {
 				const handle = activitypub.helpers.isWebfinger(data.query);
 				if (handle || activitypub.helpers.isUri(data.query)) {
 					const local = await activitypub.helpers.resolveLocalId(data.query);
-					if (local.type === 'user' && utils.isNumber(local.id)) {
+					if (local.type === "user" && utils.isNumber(local.id)) {
 						uids = [local.id];
 					} else {
-						const assertion = await activitypub.actors.assert([handle || data.query]);
+						const assertion = await activitypub.actors.assert([
+							handle || data.query,
+						]);
 						if (assertion === true) {
 							uids = [handle ? await User.getUidByUserslug(handle) : query];
 						} else if (Array.isArray(assertion) && assertion.length) {
-							uids = assertion.map(u => u.id);
+							uids = assertion.map((u) => u.id);
 						}
 					}
 				}
@@ -63,11 +64,16 @@ module.exports = function (User) {
 				uids = await searchMethod(query, searchBy, data.hardCap);
 
 				const mapping = {
-					username: 'ap.preferredUsername',
-					fullname: 'ap.name',
+					username: "ap.preferredUsername",
+					fullname: "ap.name",
 				};
-				if (meta.config.activitypubEnabled && mapping.hasOwnProperty(searchBy)) {
-					uids = uids.concat(await searchMethod(query, mapping[searchBy], data.hardCap));
+				if (
+					meta.config.activitypubEnabled &&
+					mapping.hasOwnProperty(searchBy)
+				) {
+					uids = uids.concat(
+						await searchMethod(query, mapping[searchBy], data.hardCap),
+					);
 				}
 			}
 		}
@@ -77,7 +83,10 @@ module.exports = function (User) {
 			uids.length = data.hardCap;
 		}
 
-		const result = await plugins.hooks.fire('filter:users.search', { uids: uids, uid: uid });
+		const result = await plugins.hooks.fire("filter:users.search", {
+			uids: uids,
+			uid: uid,
+		});
 		uids = result.uids;
 
 		const searchResult = {
@@ -85,7 +94,8 @@ module.exports = function (User) {
 		};
 
 		if (paginate) {
-			const resultsPerPage = data.resultsPerPage || meta.config.userSearchResultsPerPage;
+			const resultsPerPage =
+				data.resultsPerPage || meta.config.userSearchResultsPerPage;
 			const start = Math.max(0, page - 1) * resultsPerPage;
 			const stop = start + resultsPerPage;
 			searchResult.pageCount = Math.ceil(uids.length / resultsPerPage);
@@ -105,9 +115,14 @@ module.exports = function (User) {
 			});
 		}
 
-		searchResult.timing = (process.elapsedTimeSince(startTime) / 1000).toFixed(2);
-		searchResult.users = userData.filter(user => (user &&
-			utils.isNumber(user.uid) ? user.uid > 0 : activitypub.helpers.isUri(user.uid)));
+		searchResult.timing = (process.elapsedTimeSince(startTime) / 1000).toFixed(
+			2,
+		);
+		searchResult.users = userData.filter((user) =>
+			user && utils.isNumber(user.uid)
+				? user.uid > 0
+				: activitypub.helpers.isUri(user.uid),
+		);
 		return searchResult;
 	};
 
@@ -117,24 +132,34 @@ module.exports = function (User) {
 		}
 		query = String(query).toLowerCase();
 		const min = query;
-		const max = query.substr(0, query.length - 1) + String.fromCharCode(query.charCodeAt(query.length - 1) + 1);
+		const max =
+			query.substr(0, query.length - 1) +
+			String.fromCharCode(query.charCodeAt(query.length - 1) + 1);
 
 		hardCap = hardCap || 500;
 
-		const data = await db.getSortedSetRangeByLex(`${searchBy}:sorted`, min, max, 0, hardCap);
+		const data = await db.getSortedSetRangeByLex(
+			`${searchBy}:sorted`,
+			min,
+			max,
+			0,
+			hardCap,
+		);
 		// const uids = data.map(data => data.split(':').pop());
 		const uids = data.map((data) => {
-			if (data.includes(':https:')) {
-				return data.substring(data.indexOf(':https:') + 1);
+			if (data.includes(":https:")) {
+				return data.substring(data.indexOf(":https:") + 1);
 			}
 
-			return data.split(':').pop();
+			return data.split(":").pop();
 		});
 		return uids;
 	}
 
 	async function filterAndSortUids(uids, data) {
-		uids = uids.filter(uid => parseInt(uid, 10) || activitypub.helpers.isUri(uid));
+		uids = uids.filter(
+			(uid) => parseInt(uid, 10) || activitypub.helpers.isUri(uid),
+		);
 		let filters = data.filters || [];
 		filters = Array.isArray(filters) ? filters : [data.filters];
 		const fields = [];
@@ -158,13 +183,18 @@ module.exports = function (User) {
 			return uids;
 		}
 
-		if (filters.includes('banned') || filters.includes('notbanned')) {
-			const isMembersOfBanned = await groups.isMembers(uids, groups.BANNED_USERS);
-			const checkBanned = filters.includes('banned');
-			uids = uids.filter((uid, index) => (checkBanned ? isMembersOfBanned[index] : !isMembersOfBanned[index]));
+		if (filters.includes("banned") || filters.includes("notbanned")) {
+			const isMembersOfBanned = await groups.isMembers(
+				uids,
+				groups.BANNED_USERS,
+			);
+			const checkBanned = filters.includes("banned");
+			uids = uids.filter((uid, index) =>
+				checkBanned ? isMembersOfBanned[index] : !isMembersOfBanned[index],
+			);
 		}
 
-		fields.push('uid');
+		fields.push("uid");
 		let userData = await User.getUsersFields(uids, fields);
 
 		filters.forEach((filter) => {
@@ -177,15 +207,15 @@ module.exports = function (User) {
 			sortUsers(userData, data.sortBy, data.sortDirection);
 		}
 
-		return userData.map(user => user.uid);
+		return userData.map((user) => user.uid);
 	}
 
 	function sortUsers(userData, sortBy, sortDirection) {
 		if (!userData || !userData.length) {
 			return;
 		}
-		sortDirection = sortDirection || 'desc';
-		const direction = sortDirection === 'desc' ? 1 : -1;
+		sortDirection = sortDirection || "desc";
+		const direction = sortDirection === "desc" ? 1 : -1;
 
 		const isNumeric = utils.isNumber(userData[0][sortBy]);
 		if (isNumeric) {

@@ -1,8 +1,7 @@
-
-'use strict';
+"use strict";
 
 module.exports = function (module) {
-	const helpers = require('../helpers');
+	const helpers = require("../helpers");
 	module.sortedSetUnionCard = async function (keys) {
 		if (!keys.length) {
 			return 0;
@@ -27,10 +26,12 @@ module.exports = function (module) {
 		}
 
 		const tempSetName = `temp_${Date.now()}`;
-		const rangeCmd = params.withScores ? 'zRangeWithScores' : 'zRange';
+		const rangeCmd = params.withScores ? "zRangeWithScores" : "zRange";
 		const multi = module.client.multi();
 		multi.zUnionStore(tempSetName, params.sets);
-		multi[rangeCmd](tempSetName, params.start, params.stop, { REV: params.reverse });
+		multi[rangeCmd](tempSetName, params.start, params.stop, {
+			REV: params.reverse,
+		});
 		multi.del(tempSetName);
 		let results = await helpers.execBatch(multi);
 		if (!params.withScores) {

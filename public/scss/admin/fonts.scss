@@ -2,7 +2,9 @@
 @use "pkg:@fontsource/inter/scss" as inter;
 @use "pkg:@fontsource/poppins/scss" as poppins;
 
-$weights: $font-weight-light, $font-weight-normal, $font-weight-semibold, $font-weight-bold;
+$weights:
+  $font-weight-light, $font-weight-normal, $font-weight-semibold,
+  $font-weight-bold;
 $subsets: (latin, latin-ext);
 
 @include fontsource.faces(
@@ -21,6 +23,12 @@ $subsets: (latin, latin-ext);
   $directory: "./plugins/core/poppins"
 );
 
-.ff-base { font-family: $font-family-base !important; }
-.ff-sans { font-family: $font-family-sans-serif !important; }
-.ff-secondary {	font-family: $font-family-secondary; }
+.ff-base {
+  font-family: $font-family-base !important;
+}
+.ff-sans {
+  font-family: $font-family-sans-serif !important;
+}
+.ff-secondary {
+  font-family: $font-family-secondary;
+}

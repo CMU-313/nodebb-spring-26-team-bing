@@ -1,26 +1,30 @@
-'use strict';
+"use strict";
 
-const nconf = require('nconf');
+const nconf = require("nconf");
 
-const user = require('../../user');
-const topics = require('../../topics');
-const categories = require('../../categories');
-const privileges = require('../../privileges');
-const translator = require('../../translator');
-const meta = require('../../meta');
-const pagination = require('../../pagination');
-const utils = require('../../utils');
-const helpers = require('../helpers');
+const user = require("../../user");
+const topics = require("../../topics");
+const categories = require("../../categories");
+const privileges = require("../../privileges");
+const translator = require("../../translator");
+const meta = require("../../meta");
+const pagination = require("../../pagination");
+const utils = require("../../utils");
+const helpers = require("../helpers");
 
 const controller = module.exports;
 
 const validSorts = [
-	'recently_replied', 'recently_created', 'most_posts', 'most_votes', 'most_views',
+	"recently_replied",
+	"recently_created",
+	"most_posts",
+	"most_votes",
+	"most_views",
 ];
 
 controller.list = async function (req, res) {
 	if (!req.uid) {
-		return helpers.redirect(res, '/recent?cid=-1', false);
+		return helpers.redirect(res, "/recent?cid=-1", false);
 	}
 
 	const { topicsPerPage } = await user.getSettings(req.uid);
@@ -29,16 +33,18 @@ controller.list = async function (req, res) {
 	const stop = start + topicsPerPage - 1;
 
 	const [userPrivileges, tagData, userSettings, rssToken] = await Promise.all([
-		privileges.categories.get('-1', req.uid),
+		privileges.categories.get("-1", req.uid),
 		helpers.getSelectedTag(req.query.tag),
 		user.getSettings(req.uid),
 		user.auth.getFeedToken(req.uid),
 	]);
-	const sort = validSorts.includes(req.query.sort) ? req.query.sort : userSettings.categoryTopicSort;
+	const sort = validSorts.includes(req.query.sort)
+		? req.query.sort
+		: userSettings.categoryTopicSort;
 	const targetUid = await user.getUidByUserslug(req.query.author);
 	const cidQuery = {
 		uid: req.uid,
-		cid: '-1',
+		cid: "-1",
 		start: start,
 		stop: stop,
 		sort: sort,
@@ -58,9 +64,10 @@ controller.list = async function (req, res) {
 
 	// Tracked/watched categories
 	let cids = await user.getCategoriesByStates(req.uid, [
-		categories.watchStates.tracking, categories.watchStates.watching,
+		categories.watchStates.tracking,
+		categories.watchStates.watching,
 	]);
-	cids = cids.filter(cid => !utils.isNumber(cid));
+	cids = cids.filter((cid) => !utils.isNumber(cid));
 	const categoryData = await categories.getCategories(cids);
 	data.categories = categories.getTree(categoryData, 0);
 	await Promise.all([
@@ -80,10 +87,10 @@ controller.list = async function (req, res) {
 	data.selectedTags = tagData.selectedTags;
 
 	data.breadcrumbs = helpers.buildBreadcrumbs([{ text: `[[pages:world]]` }]);
-	data['feeds:disableRSS'] = meta.config['feeds:disableRSS'] || 0;
-	data['reputation:disabled'] = meta.config['reputation:disabled'];
-	if (!meta.config['feeds:disableRSS']) {
-		data.rssFeedUrl = `${nconf.get('url')}/category/${data.cid}.rss`;
+	data["feeds:disableRSS"] = meta.config["feeds:disableRSS"] || 0;
+	data["reputation:disabled"] = meta.config["reputation:disabled"];
+	if (!meta.config["feeds:disableRSS"]) {
+		data.rssFeedUrl = `${nconf.get("url")}/category/${data.cid}.rss`;
 		if (req.loggedIn) {
 			data.rssFeedUrl += `?uid=${req.uid}&token=${rssToken}`;
 		}
@@ -92,11 +99,11 @@ controller.list = async function (req, res) {
 	const pageCount = Math.max(1, Math.ceil(data.topicCount / topicsPerPage));
 	data.pagination = pagination.create(page, pageCount, req.query);
 	helpers.addLinkTags({
-		url: 'world',
+		url: "world",
 		res: req.res,
 		tags: data.pagination.rel,
 		page: page,
 	});
 
-	res.render('world', data);
+	res.render("world", data);
 };

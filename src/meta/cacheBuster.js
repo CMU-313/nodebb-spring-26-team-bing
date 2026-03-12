@@ -1,20 +1,22 @@
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
-const { mkdirp } = require('mkdirp');
-const winston = require('winston');
+const fs = require("fs");
+const path = require("path");
+const { mkdirp } = require("mkdirp");
+const winston = require("winston");
 
-const filePath = path.join(__dirname, '../../build/cache-buster');
+const filePath = path.join(__dirname, "../../build/cache-buster");
 
 let cached;
 
 // cache buster is an 11-character, lowercase, alphanumeric string
 function generate() {
-	const crypto = require('crypto');
+	const crypto = require("crypto");
 	const length = 11;
-	const generated = crypto.randomBytes(Math.ceil(length / 2))
-		.toString('hex').slice(0, length);
+	const generated = crypto
+		.randomBytes(Math.ceil(length / 2))
+		.toString("hex")
+		.slice(0, length);
 	return generated;
 }
 
@@ -28,18 +30,20 @@ exports.read = async function read() {
 		return cached;
 	}
 	try {
-		const buster = await fs.promises.readFile(filePath, 'utf8');
+		const buster = await fs.promises.readFile(filePath, "utf8");
 		if (!buster || buster.length !== 11) {
-			winston.warn(`[cache-buster] cache buster string invalid: expected /[a-z0-9]{11}/, got \`${buster}\``);
+			winston.warn(
+				`[cache-buster] cache buster string invalid: expected /[a-z0-9]{11}/, got \`${buster}\``,
+			);
 			return generate();
 		}
 
 		cached = buster;
 		return cached;
 	} catch (err) {
-		winston.warn('[cache-buster] could not read cache buster', err);
+		winston.warn("[cache-buster] could not read cache buster", err);
 		return generate();
 	}
 };
 
-require('../promisify')(exports);
+require("../promisify")(exports);

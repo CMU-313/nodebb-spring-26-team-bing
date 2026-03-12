@@ -1,13 +1,13 @@
-'use strict';
+"use strict";
 
-const _ = require('lodash');
+const _ = require("lodash");
 
-const db = require('../database');
-const meta = require('../meta');
-const categories = require('../categories');
-const activitypub = require('../activitypub');
-const plugins = require('../plugins');
-const utils = require('../utils');
+const db = require("../database");
+const meta = require("../meta");
+const categories = require("../categories");
+const activitypub = require("../activitypub");
+const plugins = require("../plugins");
+const utils = require("../utils");
 
 module.exports = function (User) {
 	User.setCategoryWatchState = async function (uid, cids, state) {
@@ -15,26 +15,37 @@ module.exports = function (User) {
 			return;
 		}
 
-		const isStateValid = Object.values(categories.watchStates).includes(parseInt(state, 10));
+		const isStateValid = Object.values(categories.watchStates).includes(
+			parseInt(state, 10),
+		);
 		if (!isStateValid) {
-			throw new Error('[[error:invalid-watch-state]]');
+			throw new Error("[[error:invalid-watch-state]]");
 		}
 
 		cids = new Set(Array.isArray(cids) ? cids : [cids]);
 		cids.delete(-1); // cannot watch cid -1
-		cids.delete('-1');
+		cids.delete("-1");
 		cids = Array.from(cids);
 
 		const exists = await categories.exists(cids);
 		if (exists.includes(false)) {
-			throw new Error('[[error:no-category]]');
+			throw new Error("[[error:no-category]]");
 		}
 
-		const apiMethod = state >= categories.watchStates.tracking ? activitypub.out.follow : activitypub.out.undo.follow;
-		const follows = cids.filter(cid => !utils.isNumber(cid)).map(cid => apiMethod('uid', uid, cid)); // returns promises
+		const apiMethod =
+			state >= categories.watchStates.tracking
+				? activitypub.out.follow
+				: activitypub.out.undo.follow;
+		const follows = cids
+			.filter((cid) => !utils.isNumber(cid))
+			.map((cid) => apiMethod("uid", uid, cid)); // returns promises
 
 		await Promise.all([
-			db.sortedSetsAdd(cids.map(cid => `cid:${cid}:uid:watch:state`), state, uid),
+			db.sortedSetsAdd(
+				cids.map((cid) => `cid:${cid}:uid:watch:state`),
+				state,
+				uid,
+			),
 			...follows,
 		]);
 	};
@@ -44,7 +55,7 @@ module.exports = function (User) {
 			return {};
 		}
 
-		const cids = await categories.getAllCidsFromSet('categories:cid');
+		const cids = await categories.getAllCidsFromSet("categories:cid");
 		const states = await categories.getWatchState(cids, uid);
 		return _.zipObject(cids, states);
 	};
@@ -53,11 +64,16 @@ module.exports = function (User) {
 		if (!(parseInt(uid, 10) > 0)) {
 			return [];
 		}
-		const cids = await User.getCategoriesByStates(uid, [categories.watchStates.ignoring]);
-		const result = await plugins.hooks.fire('filter:user.getIgnoredCategories', {
-			uid: uid,
-			cids: cids,
-		});
+		const cids = await User.getCategoriesByStates(uid, [
+			categories.watchStates.ignoring,
+		]);
+		const result = await plugins.hooks.fire(
+			"filter:user.getIgnoredCategories",
+			{
+				uid: uid,
+				cids: cids,
+			},
+		);
 		return result.cids;
 	};
 
@@ -65,20 +81,29 @@ module.exports = function (User) {
 		if (!(parseInt(uid, 10) > 0)) {
 			return [];
 		}
-		let cids = await User.getCategoriesByStates(uid, [categories.watchStates.watching]);
-		const categoryData = await categories.getCategoriesFields(cids, ['disabled']);
-		cids = cids.filter((cid, index) => categoryData[index] && !categoryData[index].disabled);
-		const result = await plugins.hooks.fire('filter:user.getWatchedCategories', {
-			uid: uid,
-			cids: cids,
-		});
+		let cids = await User.getCategoriesByStates(uid, [
+			categories.watchStates.watching,
+		]);
+		const categoryData = await categories.getCategoriesFields(cids, [
+			"disabled",
+		]);
+		cids = cids.filter(
+			(cid, index) => categoryData[index] && !categoryData[index].disabled,
+		);
+		const result = await plugins.hooks.fire(
+			"filter:user.getWatchedCategories",
+			{
+				uid: uid,
+				cids: cids,
+			},
+		);
 		return result.cids;
 	};
 
 	User.getCategoriesByStates = async function (uid, states) {
 		const [localCids, remoteCids] = await Promise.all([
-			categories.getAllCidsFromSet('categories:cid'),
-			meta.config.activitypubEnabled ? db.getObjectValues('handle:cid') : [],
+			categories.getAllCidsFromSet("categories:cid"),
+			meta.config.activitypubEnabled ? db.getObjectValues("handle:cid") : [],
 		]);
 		const cids = localCids.concat(remoteCids);
 		if (!(parseInt(uid, 10) > 0)) {

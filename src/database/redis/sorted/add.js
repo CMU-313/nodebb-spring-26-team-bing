@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
 module.exports = function (module) {
-	const utils = require('../../../utils');
+	const utils = require("../../../utils");
 
 	module.sortedSetAdd = async function (key, score, value) {
 		if (!key) {
@@ -23,14 +23,17 @@ module.exports = function (module) {
 		}
 
 		if (scores.length !== values.length) {
-			throw new Error('[[error:invalid-data]]');
+			throw new Error("[[error:invalid-data]]");
 		}
 		for (let i = 0; i < scores.length; i += 1) {
 			if (!utils.isNumber(scores[i])) {
 				throw new Error(`[[error:invalid-score, ${scores[i]}]]`);
 			}
 		}
-		const members = scores.map((score, i) => ({ score, value: String(values[i])}));
+		const members = scores.map((score, i) => ({
+			score,
+			value: String(values[i]),
+		}));
 		await module.client.zAdd(key, members);
 	}
 
@@ -39,13 +42,15 @@ module.exports = function (module) {
 			return;
 		}
 		const isArrayOfScores = Array.isArray(scores);
-		if ((!isArrayOfScores && !utils.isNumber(scores)) ||
-			(isArrayOfScores && scores.map(s => utils.isNumber(s)).includes(false))) {
+		if (
+			(!isArrayOfScores && !utils.isNumber(scores)) ||
+			(isArrayOfScores && scores.map((s) => utils.isNumber(s)).includes(false))
+		) {
 			throw new Error(`[[error:invalid-score, ${scores}]]`);
 		}
 
 		if (isArrayOfScores && scores.length !== keys.length) {
-			throw new Error('[[error:invalid-data]]');
+			throw new Error("[[error:invalid-data]]");
 		}
 
 		const batch = module.client.multi();

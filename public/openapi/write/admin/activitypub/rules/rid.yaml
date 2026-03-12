@@ -12,7 +12,7 @@ delete:
       description: a valid rule ID
       example: 4eb506f8-a173-4693-a41b-e23604bc973a
   responses:
-    '200':
+    "200":
       description: rule successfully deleted
       content:
         application/json:

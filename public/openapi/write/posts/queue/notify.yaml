@@ -21,7 +21,7 @@ post:
               type: string
               example: body of the notification message
   responses:
-    '200':
+    "200":
       description: post successfully accepted
       content:
         application/json:
@@ -32,5 +32,5 @@ post:
                 $ref: ../../../components/schemas/Status.yaml#/Status
               response:
                 type: object
-    '400':
+    "400":
       description: Bad request, invalid post id

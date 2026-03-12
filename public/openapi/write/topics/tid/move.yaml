@@ -25,7 +25,7 @@ put:
               type: number
               example: -1
   responses:
-    '200':
+    "200":
       description: Topic successfully moved
       content:
         application/json:

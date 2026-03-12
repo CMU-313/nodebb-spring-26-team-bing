@@ -1,6 +1,6 @@
 get:
   tags:
-     - topics
+    - topics
   summary: get topic crossposts
   description: This operation retrieves a list of crossposts for the requested topic
   parameters:
@@ -12,7 +12,7 @@ get:
       description: a valid topic id
       example: 1
   responses:
-    '200':
+    "200":
       description: Topic crossposts retrieved
       content:
         application/json:
@@ -50,7 +50,7 @@ post:
               type: number
               example: 1
   responses:
-    '200':
+    "200":
       description: Topic successfully crossposted
       content:
         application/json:
@@ -88,7 +88,7 @@ delete:
               type: number
               example: 1
   responses:
-    '200':
+    "200":
       description: Topic successfully uncrossposted
       content:
         application/json:

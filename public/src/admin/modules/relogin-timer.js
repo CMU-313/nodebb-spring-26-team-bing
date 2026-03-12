@@ -1,5 +1,5 @@
-import { translate } from 'translator';
-import { alert as bootboxAlert } from 'bootbox';
+import { translate } from "translator";
+import { alert as bootboxAlert } from "bootbox";
 
 let logoutTimer = 0;
 let logoutMessage;
@@ -12,7 +12,7 @@ export function start(adminReloginDuration) {
 
 	// pre-translate language string gh#9046
 	if (!logoutMessage) {
-		translate('[[login:logged-out-due-to-inactivity]]', function (translated) {
+		translate("[[login:logged-out-due-to-inactivity]]", function (translated) {
 			logoutMessage = translated;
 		});
 	}

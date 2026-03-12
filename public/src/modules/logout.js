@@ -1,20 +1,20 @@
-'use strict';
+"use strict";
 
-define('logout', ['hooks', 'alerts'], function (hooks, alerts) {
+define("logout", ["hooks", "alerts"], function (hooks, alerts) {
 	return function logout(redirect) {
 		redirect = redirect === undefined ? true : redirect;
-		hooks.fire('action:app.logout');
+		hooks.fire("action:app.logout");
 
-		$.ajax(config.relative_path + '/logout', {
-			type: 'POST',
+		$.ajax(config.relative_path + "/logout", {
+			type: "POST",
 			headers: {
-				'x-csrf-token': config.csrf_token,
+				"x-csrf-token": config.csrf_token,
 			},
 			beforeSend: function () {
 				app.flags._logout = true;
 			},
 			success: function (data) {
-				hooks.fire('action:app.loggedOut', data);
+				hooks.fire("action:app.loggedOut", data);
 				if (redirect) {
 					if (data.next) {
 						window.location.href = data.next;
@@ -24,7 +24,7 @@ define('logout', ['hooks', 'alerts'], function (hooks, alerts) {
 				}
 			},
 			error: function (jqXHR) {
-				alerts.error(String(jqXHR.responseText || '[[error:logout-error]]'));
+				alerts.error(String(jqXHR.responseText || "[[error:logout-error]]"));
 			},
 		});
 	};

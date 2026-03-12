@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const user = require('../user');
-const notifications = require('../notifications');
+const user = require("../user");
+const notifications = require("../notifications");
 
 const SocketNotifs = module.exports;
 
@@ -18,7 +18,7 @@ SocketNotifs.getCount = async function (socket) {
 
 SocketNotifs.deleteAll = async function (socket) {
 	if (!socket.uid) {
-		throw new Error('[[error:no-privileges]]');
+		throw new Error("[[error:no-privileges]]");
 	}
 
 	await user.notifications.deleteAll(socket.uid);
@@ -35,9 +35,9 @@ SocketNotifs.markUnread = async function (socket, nid) {
 };
 
 SocketNotifs.markAllRead = async function (socket, data) {
-	const filter = data && data.filter ? data.filter : '';
+	const filter = data && data.filter ? data.filter : "";
 	await notifications.markAllRead(socket.uid, filter);
 	user.notifications.pushCount(socket.uid);
 };
 
-require('../promisify')(SocketNotifs);
+require("../promisify")(SocketNotifs);

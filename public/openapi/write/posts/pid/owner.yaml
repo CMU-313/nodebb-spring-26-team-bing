@@ -26,7 +26,7 @@ put:
               description: User id of the new owner
               example: 2
   responses:
-    '200':
+    "200":
       description: Owner changed successfully
       content:
         application/json:

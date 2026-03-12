@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const categories = require('../../categories');
-const meta = require('../../meta');
-const activitypub = require('../../activitypub');
-const api = require('../../api');
+const categories = require("../../categories");
+const meta = require("../../meta");
+const activitypub = require("../../activitypub");
+const api = require("../../api");
 
-const helpers = require('../helpers');
+const helpers = require("../helpers");
 
 const Categories = module.exports;
 
@@ -14,7 +14,11 @@ Categories.list = async (req, res) => {
 };
 
 Categories.get = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.categories.get(req, req.params));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.categories.get(req, req.params),
+	);
 };
 
 Categories.create = async (req, res) => {
@@ -38,7 +42,11 @@ Categories.delete = async (req, res) => {
 };
 
 Categories.getTopicCount = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.categories.getTopicCount(req, { ...req.params }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.categories.getTopicCount(req, { ...req.params }),
+	);
 };
 
 Categories.getPosts = async (req, res) => {
@@ -49,7 +57,11 @@ Categories.getPosts = async (req, res) => {
 Categories.getChildren = async (req, res) => {
 	const { cid } = req.params;
 	const { start } = req.query;
-	helpers.formatApiResponse(200, res, await api.categories.getChildren(req, { cid, start }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.categories.getChildren(req, { cid, start }),
+	);
 };
 
 Categories.getTopics = async (req, res) => {
@@ -63,22 +75,28 @@ Categories.setWatchState = async (req, res) => {
 	const { cid } = req.params;
 	let { uid, state } = req.body;
 
-	if (req.method === 'DELETE') {
+	if (req.method === "DELETE") {
 		// DELETE is always setting state to system default in acp
 		state = categories.watchStates[meta.config.categoryWatchState];
 	} else if (Object.keys(categories.watchStates).includes(state)) {
 		state = categories.watchStates[state]; // convert to integer for backend processing
 	} else {
-		throw new Error('[[error:invalid-data]]');
+		throw new Error("[[error:invalid-data]]");
 	}
 
-	const { cids: modified } = await api.categories.setWatchState(req, { cid, state, uid });
+	const { cids: modified } = await api.categories.setWatchState(req, {
+		cid,
+		state,
+		uid,
+	});
 
 	helpers.formatApiResponse(200, res, { modified });
 };
 
 Categories.getPrivileges = async (req, res) => {
-	const privilegeSet = await api.categories.getPrivileges(req, { cid: req.params.cid });
+	const privilegeSet = await api.categories.getPrivileges(req, {
+		cid: req.params.cid,
+	});
 	helpers.formatApiResponse(200, res, privilegeSet);
 };
 
@@ -89,10 +107,12 @@ Categories.setPrivilege = async (req, res) => {
 		cid,
 		privilege,
 		member: req.body.member,
-		set: req.method === 'PUT',
+		set: req.method === "PUT",
 	});
 
-	const privilegeSet = await api.categories.getPrivileges(req, { cid: req.params.cid });
+	const privilegeSet = await api.categories.getPrivileges(req, {
+		cid: req.params.cid,
+	});
 	helpers.formatApiResponse(200, res, privilegeSet);
 };
 
@@ -100,10 +120,12 @@ Categories.setModerator = async (req, res) => {
 	await api.categories.setModerator(req, {
 		cid: req.params.cid,
 		member: req.params.uid,
-		set: req.method === 'PUT',
+		set: req.method === "PUT",
 	});
 
-	const privilegeSet = await api.categories.getPrivileges(req, { cid: req.params.cid });
+	const privilegeSet = await api.categories.getPrivileges(req, {
+		cid: req.params.cid,
+	});
 	helpers.formatApiResponse(200, res, privilegeSet);
 };
 
@@ -112,11 +134,12 @@ Categories.follow = async (req, res, next) => {
 	const { actor } = req.body;
 	const id = parseInt(req.params.cid, 10);
 
-	if (!id) { // disallow cid 0
+	if (!id) {
+		// disallow cid 0
 		return next();
 	}
 
-	await activitypub.out.follow('cid', id, actor);
+	await activitypub.out.follow("cid", id, actor);
 
 	helpers.formatApiResponse(200, res, {});
 };
@@ -125,10 +148,11 @@ Categories.unfollow = async (req, res, next) => {
 	const { actor } = req.body;
 	const id = parseInt(req.params.cid, 10);
 
-	if (!id) { // disallow cid 0
+	if (!id) {
+		// disallow cid 0
 		return next();
 	}
 
-	await activitypub.out.undo.follow('cid', id, actor);
+	await activitypub.out.undo.follow("cid", id, actor);
 	helpers.formatApiResponse(200, res, {});
 };
