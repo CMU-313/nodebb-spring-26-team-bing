@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const meta = require("../meta");
-const privileges = require("../privileges");
-const plugins = require("../plugins");
-const groups = require("../groups");
-const activitypub = require("../activitypub");
+const db = require('../database');
+const meta = require('../meta');
+const privileges = require('../privileges');
+const plugins = require('../plugins');
+const groups = require('../groups');
+const activitypub = require('../activitypub');
 
 module.exports = function (User) {
 	User.isReadyToPost = async function (uid, cid) {
-		await isReady(uid, cid, "lastposttime");
+		await isReady(uid, cid, 'lastposttime');
 	};
 
 	User.isReadyToQueue = async function (uid, cid) {
-		await isReady(uid, cid, "lastqueuetime");
+		await isReady(uid, cid, 'lastqueuetime');
 	};
 
 	User.checkMuted = async function (uid) {
 		const now = Date.now();
-		const mutedUntil = await User.getUserField(uid, "mutedUntil");
+		const mutedUntil = await User.getUserField(uid, 'mutedUntil');
 		if (mutedUntil > now) {
 			let muteLeft = (mutedUntil - now) / (1000 * 60);
 			if (muteLeft > 60) {
@@ -39,7 +39,7 @@ module.exports = function (User) {
 		const [userData, isAdminOrMod, isMemberOfExempt] = await Promise.all([
 			User.getUserFields(
 				uid,
-				["uid", "mutedUntil", "joindate", "email", "reputation"].concat([
+				['uid', 'mutedUntil', 'joindate', 'email', 'reputation'].concat([
 					field,
 				]),
 			),
@@ -51,7 +51,7 @@ module.exports = function (User) {
 		]);
 
 		if (!userData.uid) {
-			throw new Error("[[error:no-user]]");
+			throw new Error('[[error:no-user]]');
 		}
 
 		if (isAdminOrMod) {
@@ -61,7 +61,7 @@ module.exports = function (User) {
 		await User.checkMuted(uid);
 
 		const { shouldIgnoreDelays } = await plugins.hooks.fire(
-			"filter:user.posts.isReady",
+			'filter:user.posts.isReady',
 			{
 				shouldIgnoreDelays: false,
 				user: userData,
@@ -111,7 +111,7 @@ module.exports = function (User) {
 
 		await Promise.all([
 			User.addPostIdToUser(postData),
-			User.setUserField(postData.uid, "lastposttime", lastposttime),
+			User.setUserField(postData.uid, 'lastposttime', lastposttime),
 			User.updateLastOnlineTime(postData.uid),
 		]);
 	};
@@ -139,11 +139,11 @@ module.exports = function (User) {
 			await Promise.all([
 				db.setObjectBulk(
 					uids.map((uid, index) => [
-						`user${activitypub.helpers.isUri(uid) ? "Remote" : ""}:${uid}`,
+						`user${activitypub.helpers.isUri(uid) ? 'Remote' : ''}:${uid}`,
 						{ postcount: counts[index] },
 					]),
 				),
-				db.sortedSetAdd("users:postcount", counts, uids),
+				db.sortedSetAdd('users:postcount', counts, uids),
 			]);
 		}
 	};
@@ -151,8 +151,8 @@ module.exports = function (User) {
 	User.incrementUserPostCountBy = async function (uid, value) {
 		return await incrementUserFieldAndSetBy(
 			uid,
-			"postcount",
-			"users:postcount",
+			'postcount',
+			'users:postcount',
 			value,
 		);
 	};
@@ -160,14 +160,14 @@ module.exports = function (User) {
 	User.incrementUserReputationBy = async function (uid, value) {
 		return await incrementUserFieldAndSetBy(
 			uid,
-			"reputation",
-			"users:reputation",
+			'reputation',
+			'users:reputation',
 			value,
 		);
 	};
 
 	User.incrementUserFlagsBy = async function (uid, value) {
-		return await incrementUserFieldAndSetBy(uid, "flags", "users:flags", value);
+		return await incrementUserFieldAndSetBy(uid, 'flags', 'users:flags', value);
 	};
 
 	async function incrementUserFieldAndSetBy(uid, field, set, value) {

@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Set user chat allow list to the users following if they turned on restrict chat",
+	name: 'Set user chat allow list to the users following if they turned on restrict chat',
 	timestamp: Date.UTC(2025, 3, 25),
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.sortedSetCard("users:joindate");
+		progress.total = await db.sortedSetCard('users:joindate');
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				const keys = uids.map((uid) => `user:${uid}:settings`);
 				const [userSettings, followingUids] = await Promise.all([

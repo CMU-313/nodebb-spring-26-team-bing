@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const path = require("path");
+const path = require('path');
 
-const fs = require("fs");
-const cproc = require("child_process");
+const fs = require('fs');
+const cproc = require('child_process');
 
-const { paths, pluginNamePattern } = require("../constants");
+const { paths, pluginNamePattern } = require('../constants');
 
 const pkgInstall = module.exports;
 
@@ -23,10 +23,10 @@ pkgInstall.updatePackageFile = () => {
 
 	try {
 		oldPackageContents = JSON.parse(
-			fs.readFileSync(paths.currentPackage, "utf8"),
+			fs.readFileSync(paths.currentPackage, 'utf8'),
 		);
 	} catch (e) {
-		if (e.code !== "ENOENT") {
+		if (e.code !== 'ENOENT') {
 			throw e;
 		} else {
 			// No local package.json, copy from install/package.json
@@ -35,9 +35,9 @@ pkgInstall.updatePackageFile = () => {
 		}
 	}
 
-	const _ = require("lodash");
+	const _ = require('lodash');
 	const defaultPackageContents = JSON.parse(
-		fs.readFileSync(paths.installPackage, "utf8"),
+		fs.readFileSync(paths.installPackage, 'utf8'),
 	);
 
 	let dependencies = {};
@@ -68,7 +68,7 @@ pkgInstall.updatePackageFile = () => {
 	);
 };
 
-pkgInstall.supportedPackageManager = ["npm", "cnpm", "pnpm", "yarn"];
+pkgInstall.supportedPackageManager = ['npm', 'cnpm', 'pnpm', 'yarn'];
 
 pkgInstall.getPackageManager = () => {
 	try {
@@ -76,7 +76,7 @@ pkgInstall.getPackageManager = () => {
 		// This regex technically allows invalid values:
 		// cnpm isn't supported by corepack and it doesn't enforce a version string being present
 		const pmRegex = new RegExp(
-			`^(?<packageManager>${pkgInstall.supportedPackageManager.join("|")})@?[\\d\\w\\.\\-]*$`,
+			`^(?<packageManager>${pkgInstall.supportedPackageManager.join('|')})@?[\\d\\w\\.\\-]*$`,
 		);
 		const packageManager = packageContents.packageManager
 			? packageContents.packageManager.match(pmRegex)
@@ -85,16 +85,16 @@ pkgInstall.getPackageManager = () => {
 			return packageManager.groups.packageManager;
 		}
 		fs.accessSync(
-			path.join(paths.nodeModules, "nconf/package.json"),
+			path.join(paths.nodeModules, 'nconf/package.json'),
 			fs.constants.R_OK,
 		);
-		const nconf = require("nconf");
+		const nconf = require('nconf');
 		if (!Object.keys(nconf.stores).length) {
 			// Quick & dirty nconf setup for when you cannot rely on nconf having been required already
 			const configFile = path.resolve(
 				__dirname,
-				"../../",
-				nconf.any(["config", "CONFIG"]) || "config.json",
+				'../../',
+				nconf.any(['config', 'CONFIG']) || 'config.json',
 			);
 			nconf.env().file({
 				// not sure why adding .argv() causes the process to terminate
@@ -102,28 +102,28 @@ pkgInstall.getPackageManager = () => {
 			});
 		}
 		if (
-			nconf.get("package_manager") &&
-			!pkgInstall.supportedPackageManager.includes(nconf.get("package_manager"))
+			nconf.get('package_manager') &&
+			!pkgInstall.supportedPackageManager.includes(nconf.get('package_manager'))
 		) {
-			nconf.clear("package_manager");
+			nconf.clear('package_manager');
 		}
 
-		if (!nconf.get("package_manager")) {
-			nconf.set("package_manager", getPackageManagerByLockfile());
+		if (!nconf.get('package_manager')) {
+			nconf.set('package_manager', getPackageManagerByLockfile());
 		}
 
-		return nconf.get("package_manager") || "npm";
+		return nconf.get('package_manager') || 'npm';
 	} catch (e) {
 		// nconf not installed or other unexpected error/exception
-		return getPackageManagerByLockfile() || "npm";
+		return getPackageManagerByLockfile() || 'npm';
 	}
 };
 
 function getPackageManagerByLockfile() {
 	for (const [packageManager, lockfile] of Object.entries({
-		npm: "package-lock.json",
-		yarn: "yarn.lock",
-		pnpm: "pnpm-lock.yaml",
+		npm: 'package-lock.json',
+		yarn: 'yarn.lock',
+		pnpm: 'pnpm-lock.yaml',
 	})) {
 		try {
 			fs.accessSync(
@@ -136,35 +136,35 @@ function getPackageManagerByLockfile() {
 }
 
 pkgInstall.installAll = () => {
-	const prod = process.env.NODE_ENV !== "development";
-	let command = "npm install";
+	const prod = process.env.NODE_ENV !== 'development';
+	let command = 'npm install';
 
 	const supportedPackageManagerList = exports.supportedPackageManager; // load config from src/cli/package-install.js
 	const packageManager = pkgInstall.getPackageManager();
 	if (supportedPackageManagerList.indexOf(packageManager) >= 0) {
 		switch (packageManager) {
-			case "yarn":
-				command = `yarn${prod ? " --production" : ""}`;
+			case 'yarn':
+				command = `yarn${prod ? ' --production' : ''}`;
 				break;
-			case "pnpm":
-				command = "pnpm install"; // pnpm checks NODE_ENV
+			case 'pnpm':
+				command = 'pnpm install'; // pnpm checks NODE_ENV
 				break;
-			case "cnpm":
-				command = `cnpm install ${prod ? " --production" : ""}`;
+			case 'cnpm':
+				command = `cnpm install ${prod ? ' --production' : ''}`;
 				break;
 			default:
-				command += prod ? " --omit=dev" : "";
+				command += prod ? ' --omit=dev' : '';
 				break;
 		}
 	}
 
 	try {
 		cproc.execSync(command, {
-			cwd: path.join(__dirname, "../../"),
+			cwd: path.join(__dirname, '../../'),
 			stdio: [0, 1, 2],
 		});
 	} catch (e) {
-		console.log("Error installing dependencies!");
+		console.log('Error installing dependencies!');
 		console.log(`message: ${e.message}`);
 		console.log(`stdout: ${e.stdout}`);
 		console.log(`stderr: ${e.stderr}`);
@@ -185,7 +185,7 @@ pkgInstall.preserveExtraneousPlugins = () => {
 		.filter((pkgName) => pluginNamePattern.test(pkgName));
 
 	const packageContents = JSON.parse(
-		fs.readFileSync(paths.currentPackage, "utf8"),
+		fs.readFileSync(paths.currentPackage, 'utf8'),
 	);
 
 	const extraneous = packages
@@ -202,8 +202,8 @@ pkgInstall.preserveExtraneousPlugins = () => {
 		.reduce((map, pkgName) => {
 			const pkgConfig = JSON.parse(
 				fs.readFileSync(
-					path.join(paths.nodeModules, pkgName, "package.json"),
-					"utf8",
+					path.join(paths.nodeModules, pkgName, 'package.json'),
+					'utf8',
 				),
 			);
 			map[pkgName] = pkgConfig.version;

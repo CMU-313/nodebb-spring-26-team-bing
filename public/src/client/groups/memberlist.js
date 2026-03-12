@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-define("forum/groups/memberlist", [
-	"api",
-	"bootbox",
-	"alerts",
-	"helpers",
+define('forum/groups/memberlist', [
+	'api',
+	'bootbox',
+	'alerts',
+	'helpers',
 ], function (api, bootbox, alerts, helpers) {
 	const MemberList = {};
 	let templateName;
 
 	MemberList.init = function (_templateName) {
-		templateName = _templateName || "groups/details";
+		templateName = _templateName || 'groups/details';
 
 		handleMemberAdd();
 		handleMemberSearch();
@@ -37,44 +37,44 @@ define("forum/groups/memberlist", [
 	};
 
 	function handleMemberAdd() {
-		$('[component="groups/members/add"]').on("click", function () {
+		$('[component="groups/members/add"]').on('click', function () {
 			app.parseAndTranslate(
-				"admin/partials/groups/add-members",
+				'admin/partials/groups/add-members',
 				{},
 				function (html) {
 					const foundUsers = [];
 					const modal = bootbox.dialog({
-						title: "[[groups:details.add-member]]",
+						title: '[[groups:details.add-member]]',
 						message: html,
 						buttons: {
 							OK: {
-								label: "[[groups:details.add-member]]",
+								label: '[[groups:details.add-member]]',
 								callback: function () {
 									const users = [];
 									modal
-										.find("[data-uid][data-selected]")
+										.find('[data-uid][data-selected]')
 										.each(function (index, el) {
-											users.push(foundUsers[$(el).attr("data-uid")]);
+											users.push(foundUsers[$(el).attr('data-uid')]);
 										});
 									addUsersToGroup(users).then(() => {
-										modal.modal("hide");
+										modal.modal('hide');
 									});
 								},
 							},
 						},
 					});
-					modal.on("click", "[data-username]", function () {
-						const isSelected = $(this).attr("data-selected") === "1";
+					modal.on('click', '[data-username]', function () {
+						const isSelected = $(this).attr('data-selected') === '1';
 						if (isSelected) {
-							$(this).removeAttr("data-selected");
+							$(this).removeAttr('data-selected');
 						} else {
-							$(this).attr("data-selected", 1);
+							$(this).attr('data-selected', 1);
 						}
-						$(this).find("i").toggleClass("invisible");
+						$(this).find('i').toggleClass('invisible');
 					});
-					modal.find("input").on("keyup", function () {
+					modal.find('input').on('keyup', function () {
 						api.get(
-							"/api/users",
+							'/api/users',
 							{
 								query: $(this).val(),
 								paginate: false,
@@ -87,11 +87,11 @@ define("forum/groups/memberlist", [
 									foundUsers[user.uid] = user;
 								});
 								app.parseAndTranslate(
-									"admin/partials/groups/add-members",
-									"users",
+									'admin/partials/groups/add-members',
+									'users',
 									{ users: result.users },
 									function (html) {
-										modal.find("#search-result").html(html);
+										modal.find('#search-result').html(html);
 									},
 								);
 							},
@@ -104,12 +104,12 @@ define("forum/groups/memberlist", [
 
 	async function addUsersToGroup(users) {
 		const uids = users.map((u) => u.uid);
-		if (ajaxify.data.group.name === "administrators") {
-			await socket.emit("admin.user.makeAdmins", uids).catch(alerts.error);
+		if (ajaxify.data.group.name === 'administrators') {
+			await socket.emit('admin.user.makeAdmins', uids).catch(alerts.error);
 		} else {
 			await Promise.all(
 				uids.map((uid) =>
-					api.put("/groups/" + ajaxify.data.group.slug + "/membership/" + uid),
+					api.put('/groups/' + ajaxify.data.group.slug + '/membership/' + uid),
 				),
 			).catch(alerts.error);
 		}
@@ -125,7 +125,7 @@ define("forum/groups/memberlist", [
 	function handleMemberSearch() {
 		const searchEl = $('[component="groups/members/search"]');
 		searchEl.on(
-			"keyup",
+			'keyup',
 			utils.debounce(async function () {
 				const query = searchEl.val();
 				const results = await api.get(
@@ -134,14 +134,14 @@ define("forum/groups/memberlist", [
 				);
 				const html = await parseAndTranslate(results.users);
 				$('[component="groups/members"] tbody').html(html);
-				$('[component="groups/members"]').attr("data-nextstart", 20);
+				$('[component="groups/members"]').attr('data-nextstart', 20);
 			}, 250),
 		);
 	}
 
 	function handleMemberInfiniteScroll() {
 		$('[component="groups/members"]').on(
-			"scroll",
+			'scroll',
 			utils.debounce(function () {
 				const $this = $(this);
 				const bottom = ($this[0].scrollHeight - $this.innerHeight()) * 0.9;
@@ -158,23 +158,23 @@ define("forum/groups/memberlist", [
 
 	async function loadMoreMembers() {
 		const members = $('[component="groups/members"]');
-		if (members.attr("loading")) {
+		if (members.attr('loading')) {
 			return;
 		}
 
-		members.attr("loading", 1);
+		members.attr('loading', 1);
 		const data = await api
 			.get(`/groups/${ajaxify.data.group.slug}/members`, {
-				after: members.attr("data-nextstart"),
+				after: members.attr('data-nextstart'),
 			})
 			.catch(alerts.error);
 
 		if (data && data.users.length) {
 			await onMembersLoaded(data.users);
-			members.removeAttr("loading");
-			members.attr("data-nextstart", data.nextStart);
+			members.removeAttr('loading');
+			members.attr('data-nextstart', data.nextStart);
 		} else {
-			members.removeAttr("loading");
+			members.removeAttr('loading');
 		}
 	}
 
@@ -189,7 +189,7 @@ define("forum/groups/memberlist", [
 	}
 
 	async function parseAndTranslate(users) {
-		return await app.parseAndTranslate(templateName, "group.members", {
+		return await app.parseAndTranslate(templateName, 'group.members', {
 			group: {
 				members: users,
 				isOwner: ajaxify.data.group.isOwner,

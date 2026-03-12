@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const helpers = require("../helpers");
+	const helpers = require('../helpers');
 	module.sortedSetIntersectCard = async function (keys) {
 		if (!Array.isArray(keys) || !keys.length) {
 			return 0;
@@ -27,8 +27,8 @@ module.exports = function (module) {
 
 	async function getSortedSetRevIntersect(params) {
 		let { sets } = params;
-		const start = params.hasOwnProperty("start") ? params.start : 0;
-		const stop = params.hasOwnProperty("stop") ? params.stop : -1;
+		const start = params.hasOwnProperty('start') ? params.start : 0;
+		const stop = params.hasOwnProperty('stop') ? params.stop : -1;
 		const weights = params.weights || [];
 
 		const tempSetName = `temp_${Date.now()}`;
@@ -39,10 +39,10 @@ module.exports = function (module) {
 		}
 
 		if (params.aggregate) {
-			interParams["AGGREGATE"] = params.aggregate.toUpperCase();
+			interParams['AGGREGATE'] = params.aggregate.toUpperCase();
 		}
 
-		const rangeCmd = params.withScores ? "zRangeWithScores" : "zRange";
+		const rangeCmd = params.withScores ? 'zRangeWithScores' : 'zRange';
 
 		const multi = module.client.multi();
 		multi.zInterStore(tempSetName, sets, interParams);

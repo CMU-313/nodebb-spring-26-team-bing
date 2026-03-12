@@ -52,39 +52,39 @@ $link-hover-decoration: underline;
 
 // Custom fonts
 $font-family-sans-serif:
-  "Inter",
+  'Inter',
   system-ui,
   -apple-system,
-  "Segoe UI",
+  'Segoe UI',
   Roboto,
-  "Helvetica Neue",
-  "Noto Sans",
-  "Liberation Sans",
+  'Helvetica Neue',
+  'Noto Sans',
+  'Liberation Sans',
   Arial,
   sans-serif,
-  "Apple Color Emoji",
-  "Segoe UI Emoji",
-  "Segoe UI Symbol",
-  "Noto Color Emoji";
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol',
+  'Noto Color Emoji';
 $font-family-secondary:
-  "Poppins",
+  'Poppins',
   system-ui,
   -apple-system,
-  "Segoe UI",
+  'Segoe UI',
   Roboto,
-  "Helvetica Neue",
-  "Noto Sans",
-  "Liberation Sans",
+  'Helvetica Neue',
+  'Noto Sans',
+  'Liberation Sans',
   Arial,
   sans-serif,
-  "Apple Color Emoji",
-  "Segoe UI Emoji",
-  "Segoe UI Symbol",
-  "Noto Color Emoji" !default;
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol',
+  'Noto Color Emoji' !default;
 $font-weight-semibold: 500 !default;
 $small-font-size: 0.875rem !default;
 
-$breadcrumb-divider: quote("→");
+$breadcrumb-divider: quote('→');
 $breadcrumb-divider-color: $gray-500 !default;
 $breadcrumb-active-color: $body-color !default;
 $breadcrumb-item-padding-x: 12px !default;

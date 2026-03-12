@@ -1,35 +1,35 @@
-"use strict";
+'use strict';
 
-define("taskbar", ["translator", "hooks"], function (translator, hooks) {
+define('taskbar', ['translator', 'hooks'], function (translator, hooks) {
 	const taskbar = {};
 	let noTaskbar = false;
 	taskbar.init = function () {
 		taskbar.taskbar = $('[component="taskbar"]');
-		taskbar.tasklist = taskbar.taskbar.find("ul");
+		taskbar.tasklist = taskbar.taskbar.find('ul');
 		if (!taskbar.taskbar.length || !taskbar.tasklist.length) {
 			noTaskbar = true;
 			return;
 		}
-		taskbar.taskbar.on("click", "li", async function () {
+		taskbar.taskbar.on('click', 'li', async function () {
 			const $btn = $(this);
-			const moduleName = $btn.attr("data-module");
-			const uuid = $btn.attr("data-uuid");
+			const moduleName = $btn.attr('data-module');
+			const uuid = $btn.attr('data-uuid');
 
 			const module = await app.require(moduleName);
-			if (!$btn.hasClass("active")) {
+			if (!$btn.hasClass('active')) {
 				minimizeAll();
 				module.load(uuid);
 				taskbar.toggleNew(uuid, false);
 
-				taskbar.tasklist.removeClass("active");
-				$btn.addClass("active");
+				taskbar.tasklist.removeClass('active');
+				$btn.addClass('active');
 			} else {
 				module.minimize(uuid);
 			}
 			return false;
 		});
 
-		$(window).on("action:app.loggedOut", function () {
+		$(window).on('action:app.loggedOut', function () {
 			taskbar.closeAll();
 		});
 	};
@@ -45,7 +45,7 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 
 		if (btnEl.length) {
 			const module = await app.require(moduleName);
-			if (module && typeof module.close === "function") {
+			if (module && typeof module.close === 'function') {
 				module.close(uuid);
 			}
 		}
@@ -56,7 +56,7 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			return;
 		}
 		// module is optional
-		let selector = "[data-uuid]";
+		let selector = '[data-uuid]';
 
 		if (module) {
 			selector = '[data-module="' + module + '"]' + selector;
@@ -64,8 +64,8 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 
 		taskbar.tasklist.find(selector).each(function (idx, el) {
 			taskbar.close(
-				module || el.getAttribute("data-module"),
-				el.getAttribute("data-uuid"),
+				module || el.getAttribute('data-module'),
+				el.getAttribute('data-uuid'),
 			);
 		});
 	};
@@ -96,7 +96,7 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			element: element,
 		};
 
-		hooks.fire("filter:taskbar.push", data);
+		hooks.fire('filter:taskbar.push', data);
 
 		if (!element.length && data.module) {
 			createTaskbarItem(data, callback);
@@ -123,7 +123,7 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 		const btnEl = taskbar.tasklist.find(
 			'[data-module="' + module + '"][data-uuid="' + uuid + '"]',
 		);
-		btnEl.toggleClass("active", false);
+		btnEl.toggleClass('active', false);
 	};
 
 	taskbar.toggleNew = function (uuid, state, silent) {
@@ -131,10 +131,10 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			return;
 		}
 		const btnEl = taskbar.tasklist.find('[data-uuid="' + uuid + '"]');
-		btnEl.toggleClass("new", state);
+		btnEl.toggleClass('new', state);
 
 		if (!silent) {
-			hooks.fire("action:taskbar.toggleNew", uuid);
+			hooks.fire('action:taskbar.toggleNew', uuid);
 		}
 	};
 
@@ -143,13 +143,13 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			return;
 		}
 
-		const tasks = taskbar.tasklist.find("li");
-		tasks.removeClass("active");
-		tasks.filter('[data-uuid="' + uuid + '"]').addClass("active");
+		const tasks = taskbar.tasklist.find('li');
+		tasks.removeClass('active');
+		tasks.filter('[data-uuid="' + uuid + '"]').addClass('active');
 
-		$("[data-uuid]:not([data-module])").toggleClass("modal-unfocused", true);
+		$('[data-uuid]:not([data-module])').toggleClass('modal-unfocused', true);
 		$('[data-uuid="' + uuid + '"]:not([data-module])').toggleClass(
-			"modal-unfocused",
+			'modal-unfocused',
 			false,
 		);
 	};
@@ -159,19 +159,19 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			return false;
 		}
 		const taskBtn = taskbar.tasklist.find('li[data-uuid="' + uuid + '"]');
-		return taskBtn.hasClass("active");
+		return taskBtn.hasClass('active');
 	};
 
 	function update() {
 		if (noTaskbar) {
 			return;
 		}
-		const tasks = taskbar.tasklist.find("li");
+		const tasks = taskbar.tasklist.find('li');
 
 		if (tasks.length > 0) {
-			taskbar.taskbar.attr("data-active", "1");
+			taskbar.taskbar.attr('data-active', '1');
 		} else {
-			taskbar.taskbar.removeAttr("data-active");
+			taskbar.taskbar.removeAttr('data-active');
 		}
 	}
 
@@ -179,7 +179,7 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 		if (noTaskbar) {
 			return;
 		}
-		taskbar.tasklist.find(".active").removeClass("active");
+		taskbar.tasklist.find('.active').removeClass('active');
 	}
 
 	function createTaskbarItem(data, callback) {
@@ -187,40 +187,40 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			return callback();
 		}
 		translator.translate(data.options.title, function (taskTitle) {
-			const title = $("<div></div>")
-				.text(taskTitle || "NodeBB Task")
+			const title = $('<div></div>')
+				.text(taskTitle || 'NodeBB Task')
 				.html();
 
-			const taskbarEl = $("<li></li>")
+			const taskbarEl = $('<li></li>')
 				.addClass(data.options.className)
 				.html(
 					'<a href="#"' +
 						(data.options.image
-							? " style=\"background-image: url('" +
-								data.options.image.replace(/&#x2F;/g, "/") +
-								"'); background-size: cover;\""
-							: "") +
-						">" +
+							? ' style="background-image: url(\'' +
+								data.options.image.replace(/&#x2F;/g, '/') +
+								'\'); background-size: cover;"'
+							: '') +
+						'>' +
 						(data.options.icon
 							? '<i class="fa ' + data.options.icon + '"></i> '
-							: "") +
+							: '') +
 						'<span aria-label="' +
 						title +
 						'" component="taskbar/title">' +
 						title +
-						"</span>" +
-						"</a>",
+						'</span>' +
+						'</a>',
 				)
 				.attr({
 					title: title,
-					"data-module": data.module,
-					"data-uuid": data.uuid,
+					'data-module': data.module,
+					'data-uuid': data.uuid,
 				})
 				.addClass(
-					data.options.state !== undefined ? data.options.state : "active",
+					data.options.state !== undefined ? data.options.state : 'active',
 				);
 
-			if (!data.options.state || data.options.state === "active") {
+			if (!data.options.state || data.options.state === 'active') {
 				minimizeAll();
 			}
 
@@ -230,32 +230,32 @@ define("taskbar", ["translator", "hooks"], function (translator, hooks) {
 			data.element = taskbarEl;
 
 			taskbarEl.data(data);
-			hooks.fire("action:taskbar.pushed", data);
+			hooks.fire('action:taskbar.pushed', data);
 			callback(taskbarEl);
 		});
 	}
 
 	const processUpdate = function (element, key, value) {
 		switch (key) {
-			case "title":
+			case 'title':
 				element.find('[component="taskbar/title"]').text(value);
 				break;
-			case "icon":
-				element.find("i").attr("class", "fa fa-" + value);
+			case 'icon':
+				element.find('i').attr('class', 'fa fa-' + value);
 				break;
-			case "image":
+			case 'image':
 				element
-					.find("a")
+					.find('a')
 					.css(
-						"background-image",
-						value ? 'url("' + value.replace(/&#x2F;/g, "/") + '")' : "",
+						'background-image',
+						value ? 'url("' + value.replace(/&#x2F;/g, '/') + '")' : '',
 					);
 				break;
-			case "background-color":
-				element.find("a").css("background-color", value);
+			case 'background-color':
+				element.find('a').css('background-color', value);
 				break;
-			case "color":
-				element.find("a").css("color", value);
+			case 'color':
+				element.find('a').css('color', value);
 				break;
 		}
 	};

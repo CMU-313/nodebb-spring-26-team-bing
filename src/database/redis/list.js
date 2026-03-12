@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
 	module.listPrepend = async function (key, value) {

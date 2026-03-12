@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const user = require("../../user");
-const batch = require("../../batch");
+const db = require('../../database');
+const user = require('../../user');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Delete username email history for deleted users",
+	name: 'Delete username email history for deleted users',
 	timestamp: Date.UTC(2019, 2, 25),
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.getObjectField("global", "nextUid");
+		progress.total = await db.getObjectField('global', 'nextUid');
 		const allUids = [];
 		for (let i = 1; i < progress.total; i += 1) {
 			allUids.push(i);

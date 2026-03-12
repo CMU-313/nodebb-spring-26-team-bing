@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const utils = require("../../utils");
-	const helpers = require("./helpers");
-	const dbHelpers = require("../helpers");
+	const utils = require('../../utils');
+	const helpers = require('./helpers');
+	const dbHelpers = require('../helpers');
 
-	require("./sorted/add")(module);
-	require("./sorted/remove")(module);
-	require("./sorted/union")(module);
-	require("./sorted/intersect")(module);
+	require('./sorted/add')(module);
+	require('./sorted/remove')(module);
+	require('./sorted/union')(module);
+	require('./sorted/intersect')(module);
 
 	module.getSortedSetRange = async function (key, start, stop) {
 		return await sortedSetRange(
 			key,
 			start,
 			stop,
-			"-inf",
-			"+inf",
+			'-inf',
+			'+inf',
 			false,
 			false,
 			false,
@@ -28,8 +28,8 @@ module.exports = function (module) {
 			key,
 			start,
 			stop,
-			"-inf",
-			"+inf",
+			'-inf',
+			'+inf',
 			false,
 			true,
 			false,
@@ -41,8 +41,8 @@ module.exports = function (module) {
 			key,
 			start,
 			stop,
-			"-inf",
-			"+inf",
+			'-inf',
+			'+inf',
 			true,
 			false,
 			false,
@@ -54,8 +54,8 @@ module.exports = function (module) {
 			key,
 			start,
 			stop,
-			"-inf",
-			"+inf",
+			'-inf',
+			'+inf',
 			true,
 			true,
 			false,
@@ -162,9 +162,9 @@ module.exports = function (module) {
 		byScore,
 	) {
 		const opts = {};
-		const cmd = withScores ? "zRangeWithScores" : "zRange";
+		const cmd = withScores ? 'zRangeWithScores' : 'zRange';
 		if (byScore) {
-			opts.BY = "SCORE";
+			opts.BY = 'SCORE';
 			opts.LIMIT = { offset: start, count: stop !== -1 ? stop + 1 : stop };
 		}
 		if (rev) {
@@ -230,7 +230,7 @@ module.exports = function (module) {
 		return await helpers.execBatch(batch);
 	};
 
-	module.sortedSetsCardSum = async function (keys, min = "-inf", max = "+inf") {
+	module.sortedSetsCardSum = async function (keys, min = '-inf', max = '+inf') {
 		if (!keys || (Array.isArray(keys) && !keys.length)) {
 			return 0;
 		}
@@ -238,7 +238,7 @@ module.exports = function (module) {
 			keys = [keys];
 		}
 		const batch = module.client.batch();
-		if (min !== "-inf" || max !== "+inf") {
+		if (min !== '-inf' || max !== '+inf') {
 			keys.forEach((k) => batch.zCount(String(k), min, max));
 		} else {
 			keys.forEach((k) => batch.zCard(String(k)));
@@ -390,7 +390,7 @@ module.exports = function (module) {
 	) {
 		const { lmin, lmax } = helpers.normalizeLexRange(min, max, false);
 		return await module.client.zRange(key, lmin, lmax, {
-			BY: "LEX",
+			BY: 'LEX',
 			LIMIT: { offset: start, count: count },
 		});
 	};
@@ -405,7 +405,7 @@ module.exports = function (module) {
 		const { lmin, lmax } = helpers.normalizeLexRange(max, min, true);
 		return await module.client.zRange(key, lmin, lmax, {
 			REV: true,
-			BY: "LEX",
+			BY: 'LEX',
 			LIMIT: { offset: start, count: count },
 		});
 	};
@@ -421,7 +421,7 @@ module.exports = function (module) {
 	};
 
 	module.getSortedSetScan = async function (params) {
-		let cursor = "0";
+		let cursor = '0';
 
 		const returnData = [];
 		let done = false;
@@ -433,7 +433,7 @@ module.exports = function (module) {
 				COUNT: 5000,
 			});
 			cursor = res.cursor;
-			done = cursor === "0";
+			done = cursor === '0';
 
 			for (let i = 0; i < res.members.length; i++) {
 				const item = res.members[i];

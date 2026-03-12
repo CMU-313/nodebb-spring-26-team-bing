@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const winston = require("winston");
-const db = require("../../database");
+const async = require('async');
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Users post count per tid",
+	name: 'Users post count per tid',
 	timestamp: Date.UTC(2016, 3, 19),
 	method: function (callback) {
-		const batch = require("../../batch");
-		const topics = require("../../topics");
+		const batch = require('../../batch');
+		const topics = require('../../topics');
 		let count = 0;
 		batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			(tids, next) => {
 				winston.verbose(`upgraded ${count} topics`);
 				count += tids.length;
@@ -35,7 +35,7 @@ module.exports = {
 								async.eachSeries(
 									pids,
 									(pid, next) => {
-										db.getObjectField(`post:${pid}`, "uid", (err, uid) => {
+										db.getObjectField(`post:${pid}`, 'uid', (err, uid) => {
 											if (err) {
 												return next(err);
 											}

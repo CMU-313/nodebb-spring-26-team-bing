@@ -3,8 +3,8 @@ get:
     - groups
   summary: Get user groups
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:
@@ -99,7 +99,7 @@ get:
                                   value is used in conjunction with
                                   `icon:text` for the user's auto-generated
                                   icon
-                                example: "#f44336"
+                                example: '#f44336'
                         truncated:
                           type: boolean
                   allowGroupCreation:

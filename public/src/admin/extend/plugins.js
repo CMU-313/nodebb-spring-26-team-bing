@@ -1,28 +1,28 @@
-"use strict";
+'use strict';
 
-define("admin/extend/plugins", [
-	"translator",
-	"benchpress",
-	"bootbox",
-	"alerts",
-	"jquery-ui/widgets/sortable",
+define('admin/extend/plugins', [
+	'translator',
+	'benchpress',
+	'bootbox',
+	'alerts',
+	'jquery-ui/widgets/sortable',
 ], function (translator, Benchpress, bootbox, alerts) {
 	const Plugins = {};
 	Plugins.init = function () {
-		const pluginsList = $(".plugins");
+		const pluginsList = $('.plugins');
 		let pluginID;
 
 		if (window.location.hash) {
 			$(`.nav-pills button[data-bs-target="${window.location.hash}"]`).trigger(
-				"click",
+				'click',
 			);
 		}
 
-		const searchInputEl = $("#plugin-search");
+		const searchInputEl = $('#plugin-search');
 
-		pluginsList.on("click", 'button[data-action="toggleActive"]', function () {
-			const pluginEl = $(this).parents("li");
-			pluginID = pluginEl.attr("data-plugin-id");
+		pluginsList.on('click', 'button[data-action="toggleActive"]', function () {
+			const pluginEl = $(this).parents('li');
+			pluginID = pluginEl.attr('data-plugin-id');
 			const btn = $(this);
 
 			const pluginData = ajaxify.data.installed.find(
@@ -34,37 +34,37 @@ define("admin/extend/plugins", [
 
 			function toggleActivate() {
 				socket.emit(
-					"admin.plugins.toggleActive",
+					'admin.plugins.toggleActive',
 					pluginID,
 					function (err, status) {
 						if (err) {
 							return alerts.error(err);
 						}
-						btn.siblings('[data-action="toggleActive"]').removeClass("hidden");
-						btn.addClass("hidden");
+						btn.siblings('[data-action="toggleActive"]').removeClass('hidden');
+						btn.addClass('hidden');
 
 						// clone it to active plugins tab
 						if (status.active && !$('#active [id="' + pluginID + '"]').length) {
-							$("#active ul").prepend(pluginEl.clone(true));
+							$('#active ul').prepend(pluginEl.clone(true));
 						}
 
 						// Toggle active state in template data
 						pluginData.active = !pluginData.active;
 
 						alerts.alert({
-							alert_id: "plugin_toggled",
+							alert_id: 'plugin_toggled',
 							title:
-								"[[admin/extend/plugins:alert." +
-								(status.active ? "enabled" : "disabled") +
-								"]]",
+								'[[admin/extend/plugins:alert.' +
+								(status.active ? 'enabled' : 'disabled') +
+								']]',
 							message:
-								"[[admin/extend/plugins:alert." +
-								(status.active ? "activate-success" : "deactivate-success") +
-								"]]",
-							type: status.active ? "warning" : "success",
+								'[[admin/extend/plugins:alert.' +
+								(status.active ? 'activate-success' : 'deactivate-success') +
+								']]',
+							type: status.active ? 'warning' : 'success',
 							timeout: 5000,
 							clickfn: function () {
-								require(["admin/modules/instance"], function (instance) {
+								require(['admin/modules/instance'], function (instance) {
 									instance.rebuildAndRestart();
 								});
 							},
@@ -74,25 +74,25 @@ define("admin/extend/plugins", [
 			}
 
 			if (pluginData.license && pluginData.active !== true) {
-				Benchpress.render("admin/partials/plugins/license", pluginData).then(
+				Benchpress.render('admin/partials/plugins/license', pluginData).then(
 					function (html) {
 						bootbox.dialog({
-							title: "[[admin/extend/plugins:license.title]]",
+							title: '[[admin/extend/plugins:license.title]]',
 							message: html,
-							size: "large",
+							size: 'large',
 							buttons: {
 								cancel: {
-									label: "[[modules:bootbox.cancel]]",
-									className: "btn-link",
+									label: '[[modules:bootbox.cancel]]',
+									className: 'btn-link',
 								},
 								save: {
-									label: "[[modules:bootbox.confirm]]",
-									className: "btn-primary",
+									label: '[[modules:bootbox.confirm]]',
+									className: 'btn-primary',
 									callback: toggleActivate,
 								},
 							},
 							onShown: function () {
-								const saveEl = this.querySelector("button.btn-primary");
+								const saveEl = this.querySelector('button.btn-primary');
 								if (saveEl) {
 									saveEl.focus();
 								}
@@ -105,15 +105,15 @@ define("admin/extend/plugins", [
 			}
 		});
 
-		pluginsList.on("click", 'button[data-action="toggleInstall"]', function () {
+		pluginsList.on('click', 'button[data-action="toggleInstall"]', function () {
 			const btn = $(this);
-			btn.attr("disabled", true);
-			pluginID = $(this).parents("li").attr("data-plugin-id");
+			btn.attr('disabled', true);
+			pluginID = $(this).parents('li').attr('data-plugin-id');
 
-			if ($(this).attr("data-installed") === "1") {
+			if ($(this).attr('data-installed') === '1') {
 				return Plugins.toggleInstall(
 					pluginID,
-					$(this).parents("li").attr("data-version"),
+					$(this).parents('li').attr('data-version'),
 				);
 			}
 
@@ -121,58 +121,58 @@ define("admin/extend/plugins", [
 				if (err) {
 					bootbox.confirm(
 						translator.compile(
-							"admin/extend/plugins:alert.suggest-error",
+							'admin/extend/plugins:alert.suggest-error',
 							err.status,
 							err.responseText,
 						),
 						function (confirm) {
 							if (confirm) {
-								Plugins.toggleInstall(pluginID, "latest");
+								Plugins.toggleInstall(pluginID, 'latest');
 							} else {
-								btn.removeAttr("disabled");
+								btn.removeAttr('disabled');
 							}
 						},
 					);
 					return;
 				}
 
-				if (payload.version !== "latest") {
+				if (payload.version !== 'latest') {
 					Plugins.toggleInstall(pluginID, payload.version);
-				} else if (payload.version === "latest") {
+				} else if (payload.version === 'latest') {
 					confirmInstall(pluginID, function (confirm) {
 						if (confirm) {
-							Plugins.toggleInstall(pluginID, "latest");
+							Plugins.toggleInstall(pluginID, 'latest');
 						} else {
-							btn.removeAttr("disabled");
+							btn.removeAttr('disabled');
 						}
 					});
 				} else {
-					btn.removeAttr("disabled");
+					btn.removeAttr('disabled');
 				}
 			});
 		});
 
-		pluginsList.on("click", 'button[data-action="upgrade"]', function () {
+		pluginsList.on('click', 'button[data-action="upgrade"]', function () {
 			const btn = $(this);
-			const parent = btn.parents("li");
-			pluginID = parent.attr("data-plugin-id");
+			const parent = btn.parents('li');
+			pluginID = parent.attr('data-plugin-id');
 
 			Plugins.suggest(pluginID, function (err, payload) {
 				if (err) {
 					return bootbox.alert(
-						"[[admin/extend/plugins:alert.package-manager-unreachable]]",
+						'[[admin/extend/plugins:alert.package-manager-unreachable]]',
 					);
 				}
 
-				require(["compare-versions"], function (compareVersions) {
-					const currentVersion = parent.find(".currentVersion").text();
+				require(['compare-versions'], function (compareVersions) {
+					const currentVersion = parent.find('.currentVersion').text();
 					if (
 						payload.version &&
-						payload.version !== "latest" &&
-						compareVersions.compare(payload.version, currentVersion, ">")
+						payload.version !== 'latest' &&
+						compareVersions.compare(payload.version, currentVersion, '>')
 					) {
 						upgrade(pluginID, btn, payload.version);
-					} else if (payload.version === "latest" || payload.version === null) {
+					} else if (payload.version === 'latest' || payload.version === null) {
 						confirmInstall(pluginID, function (confirm) {
 							if (confirm) {
 								upgrade(pluginID, btn, payload.version);
@@ -181,7 +181,7 @@ define("admin/extend/plugins", [
 					} else {
 						bootbox.alert(
 							translator.compile(
-								"admin/extend/plugins:alert.incompatible",
+								'admin/extend/plugins:alert.incompatible',
 								app.config.version,
 								payload.version,
 							),
@@ -192,37 +192,37 @@ define("admin/extend/plugins", [
 		});
 
 		$(searchInputEl).on(
-			"input propertychange",
+			'input propertychange',
 			utils.debounce(function () {
 				const term = $(this).val();
-				$(".plugins li").each(function () {
-					const pluginId = $(this).attr("data-plugin-id");
-					$(this).toggleClass("hide", pluginId && !pluginId.includes(term));
+				$('.plugins li').each(function () {
+					const pluginId = $(this).attr('data-plugin-id');
+					$(this).toggleClass('hide', pluginId && !pluginId.includes(term));
 				});
 
-				const activeTab = $("#plugin-tabs [data-bs-target].active").attr(
-					"data-bs-target",
+				const activeTab = $('#plugin-tabs [data-bs-target].active').attr(
+					'data-bs-target',
 				);
-				if (activeTab === "#download") {
+				if (activeTab === '#download') {
 					searchAllPlugins(term);
 				}
 
-				const tabEls = document.querySelectorAll(".plugins .tab-pane");
+				const tabEls = document.querySelectorAll('.plugins .tab-pane');
 				tabEls.forEach((tabEl) => {
-					const remaining = tabEl.querySelectorAll("li:not(.hide)").length;
-					const noticeEl = tabEl.querySelector(".no-plugins");
+					const remaining = tabEl.querySelectorAll('li:not(.hide)').length;
+					const noticeEl = tabEl.querySelector('.no-plugins');
 					if (noticeEl) {
-						noticeEl.classList.toggle("hide", remaining !== 0);
+						noticeEl.classList.toggle('hide', remaining !== 0);
 					}
 				});
 			}, 250),
 		);
 
-		$("#plugin-submit-usage").on("click", function () {
+		$('#plugin-submit-usage').on('click', function () {
 			socket.emit(
-				"admin.config.setMultiple",
+				'admin.config.setMultiple',
 				{
-					submitPluginUsage: $(this).prop("checked") ? "1" : "0",
+					submitPluginUsage: $(this).prop('checked') ? '1' : '0',
 				},
 				function (err) {
 					if (err) {
@@ -232,13 +232,13 @@ define("admin/extend/plugins", [
 			);
 		});
 
-		$("#plugin-order").on("click", function () {
-			$("#order-active-plugins-modal").modal("show");
-			socket.emit("admin.plugins.getActive", function (err, activePlugins) {
+		$('#plugin-order').on('click', function () {
+			$('#order-active-plugins-modal').modal('show');
+			socket.emit('admin.plugins.getActive', function (err, activePlugins) {
 				if (err) {
 					return alerts.error(err);
 				}
-				let html = "";
+				let html = '';
 				activePlugins.forEach(function (plugin) {
 					html += `
 						<li class="d-flex justify-content-between gap-1 pointer border-bottom pb-2" data-plugin="${plugin}">
@@ -256,51 +256,51 @@ define("admin/extend/plugins", [
 				});
 				if (!activePlugins.length) {
 					translator.translate(
-						"[[admin/extend/plugins:none-active]]",
+						'[[admin/extend/plugins:none-active]]',
 						function (text) {
-							$("#order-active-plugins-modal .plugin-list")
+							$('#order-active-plugins-modal .plugin-list')
 								.html(text)
 								.sortable();
 						},
 					);
 					return;
 				}
-				const list = $("#order-active-plugins-modal .plugin-list");
+				const list = $('#order-active-plugins-modal .plugin-list');
 				list.html(html).sortable();
 
-				list.find(".move-up").on("click", function () {
-					const item = $(this).parents("li");
+				list.find('.move-up').on('click', function () {
+					const item = $(this).parents('li');
 					item.prev().before(item);
 				});
 
-				list.find(".move-down").on("click", function () {
-					const item = $(this).parents("li");
+				list.find('.move-down').on('click', function () {
+					const item = $(this).parents('li');
 					item.next().after(item);
 				});
 			});
 		});
 
-		$("#save-plugin-order").on("click", function () {
-			const plugins = $("#order-active-plugins-modal .plugin-list").children();
+		$('#save-plugin-order').on('click', function () {
+			const plugins = $('#order-active-plugins-modal .plugin-list').children();
 			const data = [];
 			plugins.each(function (index, el) {
-				data.push({ name: $(el).attr("data-plugin"), order: index });
+				data.push({ name: $(el).attr('data-plugin'), order: index });
 			});
 
-			socket.emit("admin.plugins.orderActivePlugins", data, function (err) {
+			socket.emit('admin.plugins.orderActivePlugins', data, function (err) {
 				if (err) {
 					return alerts.error(err);
 				}
-				$("#order-active-plugins-modal").modal("hide");
+				$('#order-active-plugins-modal').modal('hide');
 
 				alerts.alert({
-					alert_id: "plugin_reordered",
-					title: "[[admin/extend/plugins:alert.reorder]]",
-					message: "[[admin/extend/plugins:alert.reorder-success]]",
-					type: "success",
+					alert_id: 'plugin_reordered',
+					title: '[[admin/extend/plugins:alert.reorder]]',
+					message: '[[admin/extend/plugins:alert.reorder-success]]',
+					type: 'success',
 					timeout: 5000,
 					clickfn: function () {
-						require(["admin/modules/instance"], function (instance) {
+						require(['admin/modules/instance'], function (instance) {
 							instance.rebuildAndRestart();
 						});
 					},
@@ -314,17 +314,17 @@ define("admin/extend/plugins", [
 		const all = term ? download.concat(incompatible) : download;
 		const found = all.filter((p) => p && p.name.includes(term)).slice(0, 100);
 		const html = await app.parseAndTranslate(
-			"admin/extend/plugins",
-			"download",
+			'admin/extend/plugins',
+			'download',
 			{ download: found },
 		);
-		$("#download ul").html(html);
+		$('#download ul').html(html);
 	}
 
 	function confirmInstall(pluginID, callback) {
 		bootbox.confirm(
 			translator.compile(
-				"admin/extend/plugins:alert.possibly-incompatible",
+				'admin/extend/plugins:alert.possibly-incompatible',
 				pluginID,
 			),
 			function (confirm) {
@@ -334,9 +334,9 @@ define("admin/extend/plugins", [
 	}
 
 	function upgrade(pluginID, btn, version) {
-		btn.attr("disabled", true).find("i").attr("class", "fa fa-refresh fa-spin");
+		btn.attr('disabled', true).find('i').attr('class', 'fa fa-refresh fa-spin');
 		socket.emit(
-			"admin.plugins.upgrade",
+			'admin.plugins.upgrade',
 			{
 				id: pluginID,
 				version: version,
@@ -345,19 +345,19 @@ define("admin/extend/plugins", [
 				if (err) {
 					return alerts.error(err);
 				}
-				const parent = btn.parents("li");
-				parent.find(".fa-exclamation-triangle").remove();
-				parent.find(".currentVersion").text(version);
+				const parent = btn.parents('li');
+				parent.find('.fa-exclamation-triangle').remove();
+				parent.find('.currentVersion').text(version);
 				btn.remove();
 				if (isActive) {
 					alerts.alert({
-						alert_id: "plugin_upgraded",
-						title: "[[admin/extend/plugins:alert.upgraded]]",
-						message: "[[admin/extend/plugins:alert.upgrade-success]]",
-						type: "warning",
+						alert_id: 'plugin_upgraded',
+						title: '[[admin/extend/plugins:alert.upgraded]]',
+						message: '[[admin/extend/plugins:alert.upgrade-success]]',
+						type: 'warning',
 						timeout: 5000,
 						clickfn: function () {
-							require(["admin/modules/instance"], function (instance) {
+							require(['admin/modules/instance'], function (instance) {
 								instance.rebuildAndRestart();
 							});
 						},
@@ -373,17 +373,17 @@ define("admin/extend/plugins", [
 				pluginID +
 				'"] button[data-action="toggleInstall"]',
 		);
-		btn.find("i").attr("class", "fa fa-refresh fa-spin");
+		btn.find('i').attr('class', 'fa fa-refresh fa-spin');
 
 		socket.emit(
-			"admin.plugins.toggleInstall",
+			'admin.plugins.toggleInstall',
 			{
 				id: pluginID,
 				version: version,
 			},
 			function (err, pluginData) {
 				if (err) {
-					btn.removeAttr("disabled");
+					btn.removeAttr('disabled');
 					return alerts.error(err);
 				}
 				function removeAndUpdateBadge(section) {
@@ -392,7 +392,7 @@ define("admin/extend/plugins", [
 					$(`[data-bs-target="${section}"] .badge`).text(count);
 				}
 				if (!pluginData.installed) {
-					["#installed", "#active", "#deactive", "#upgrade"].forEach(
+					['#installed', '#active', '#deactive', '#upgrade'].forEach(
 						removeAndUpdateBadge,
 					);
 				} else {
@@ -400,20 +400,20 @@ define("admin/extend/plugins", [
 				}
 
 				alerts.alert({
-					alert_id: "plugin_toggled",
+					alert_id: 'plugin_toggled',
 					title:
-						"[[admin/extend/plugins:alert." +
-						(pluginData.installed ? "installed" : "uninstalled") +
-						"]]",
+						'[[admin/extend/plugins:alert.' +
+						(pluginData.installed ? 'installed' : 'uninstalled') +
+						']]',
 					message:
-						"[[admin/extend/plugins:alert." +
-						(pluginData.installed ? "install-success" : "uninstall-success") +
-						"]]",
-					type: "info",
+						'[[admin/extend/plugins:alert.' +
+						(pluginData.installed ? 'install-success' : 'uninstall-success') +
+						']]',
+					type: 'info',
 					timeout: 5000,
 				});
 
-				if (typeof callback === "function") {
+				if (typeof callback === 'function') {
 					callback.apply(this, arguments);
 				}
 			},
@@ -423,15 +423,15 @@ define("admin/extend/plugins", [
 	Plugins.suggest = function (pluginId, callback) {
 		const nbbVersion = app.config.version.match(/^\d+\.\d+\.\d+/);
 		$.ajax(
-			(app.config.registry || "https://packages.nodebb.org") +
-				"/api/v1/suggest",
+			(app.config.registry || 'https://packages.nodebb.org') +
+				'/api/v1/suggest',
 			{
-				type: "GET",
+				type: 'GET',
 				data: {
 					package: pluginId,
 					version: nbbVersion[0],
 				},
-				dataType: "json",
+				dataType: 'json',
 			},
 		)
 			.done(function (payload) {

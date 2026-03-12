@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const user = require("../user");
-const cache = require("../cache");
+const db = require('../database');
+const user = require('../user');
+const cache = require('../cache');
 
 module.exports = function (Groups) {
 	Groups.getMembers = async function (groupName, start, stop) {
@@ -19,10 +19,10 @@ module.exports = function (Groups) {
 		async function get(groupName) {
 			const uids = await Groups.getMembers(groupName, start, stop);
 			return await user.getUsersFields(uids, [
-				"uid",
-				"username",
-				"picture",
-				"userslug",
+				'uid',
+				'username',
+				'picture',
+				'userslug',
 			]);
 		}
 		return await Promise.all(groupNames.map((name) => get(name)));
@@ -54,7 +54,7 @@ module.exports = function (Groups) {
 			return uids.map(() => false);
 		}
 
-		if (groupName === "guests" || groupName === "spiders") {
+		if (groupName === 'guests' || groupName === 'spiders') {
 			return uids.map((uid) => isMemberOfEphemeralGroup(uid, groupName));
 		}
 
@@ -109,8 +109,8 @@ module.exports = function (Groups) {
 
 	function isMemberOfEphemeralGroup(uid, groupName) {
 		return (
-			(groupName === "guests" && parseInt(uid, 10) === 0) ||
-			(groupName === "spiders" && parseInt(uid, 10) === -1)
+			(groupName === 'guests' && parseInt(uid, 10) === 0) ||
+			(groupName === 'spiders' && parseInt(uid, 10) === -1)
 		);
 	}
 
@@ -132,7 +132,7 @@ module.exports = function (Groups) {
 	};
 
 	Groups.getMemberCount = async function (groupName) {
-		const count = await db.getObjectField(`group:${groupName}`, "memberCount");
+		const count = await db.getObjectField(`group:${groupName}`, 'memberCount');
 		return parseInt(count, 10);
 	};
 

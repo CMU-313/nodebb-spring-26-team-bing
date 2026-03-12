@@ -1,25 +1,25 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const winston = require("winston");
-const db = require("../../database");
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Granting edit/delete/delete topic on existing categories",
+	name: 'Granting edit/delete/delete topic on existing categories',
 	timestamp: Date.UTC(2016, 7, 7),
 	method: async function () {
-		const groupsAPI = require("../../groups");
-		const privilegesAPI = require("../../privileges");
+		const groupsAPI = require('../../groups');
+		const privilegesAPI = require('../../privileges');
 
-		const cids = await db.getSortedSetRange("categories:cid", 0, -1);
+		const cids = await db.getSortedSetRange('categories:cid', 0, -1);
 
 		for (const cid of cids) {
 			const data = await privilegesAPI.categories.list(cid);
 			const { groups, users } = data;
 
 			for (const group of groups) {
-				if (group.privileges["groups:topics:reply"]) {
+				if (group.privileges['groups:topics:reply']) {
 					await Promise.all([
 						groupsAPI.join(
 							`cid:${cid}:privileges:groups:posts:edit`,
@@ -35,7 +35,7 @@ module.exports = {
 					);
 				}
 
-				if (group.privileges["groups:topics:create"]) {
+				if (group.privileges['groups:topics:create']) {
 					await groupsAPI.join(
 						`cid:${cid}:privileges:groups:topics:delete`,
 						group.name,
@@ -47,7 +47,7 @@ module.exports = {
 			}
 
 			for (const user of users) {
-				if (user.privileges["topics:reply"]) {
+				if (user.privileges['topics:reply']) {
 					await Promise.all([
 						groupsAPI.join(`cid:${cid}:privileges:posts:edit`, user.uid),
 						groupsAPI.join(`cid:${cid}:privileges:posts:delete`, user.uid),
@@ -56,7 +56,7 @@ module.exports = {
 						`cid:${cid}:privileges:posts:edit, cid:${cid}:privileges:posts:delete granted to uid: ${user.uid}`,
 					);
 				}
-				if (user.privileges["topics:create"]) {
+				if (user.privileges['topics:create']) {
 					await groupsAPI.join(`cid:${cid}:privileges:topics:delete`, user.uid);
 					winston.verbose(
 						`cid:${cid}:privileges:topics:delete granted to uid: ${user.uid}`,

@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const privileges = require("../privileges");
-const posts = require("../posts");
+const db = require('../database');
+const privileges = require('../privileges');
+const posts = require('../posts');
 
 module.exports = function (Groups) {
 	Groups.onNewPostMade = async function (postData) {
@@ -11,14 +11,14 @@ module.exports = function (Groups) {
 		}
 
 		let groupNames = await Groups.getUserGroupMembership(
-			"groups:visible:createtime",
+			'groups:visible:createtime',
 			[postData.uid],
 		);
 		groupNames = groupNames[0];
 
 		// Only process those groups that have the cid in its memberPostCids setting (or no setting at all)
 		const groupData = await Groups.getGroupsFields(groupNames, [
-			"memberPostCids",
+			'memberPostCids',
 		]);
 		groupNames = groupNames.filter(
 			(groupName, idx) =>
@@ -39,7 +39,7 @@ module.exports = function (Groups) {
 			10,
 			1,
 			Date.now(),
-			"-inf",
+			'-inf',
 		);
 		lastPid = lastPid[0];
 		if (!parseInt(lastPid, 10)) {
@@ -51,7 +51,7 @@ module.exports = function (Groups) {
 		);
 		await db.sortedSetsRemoveRangeByScore(
 			[`group:${groupName}:member:pids`],
-			"-inf",
+			'-inf',
 			score,
 		);
 	}
@@ -63,12 +63,12 @@ module.exports = function (Groups) {
 				0,
 				max,
 				Date.now(),
-				"-inf",
+				'-inf',
 			),
-			Groups.getGroupFields(groupName, ["memberPostCids"]),
+			Groups.getGroupFields(groupName, ['memberPostCids']),
 		]);
 		const cids = groupData.memberPostCidsArray;
-		const pids = await privileges.posts.filter("topics:read", allPids, uid);
+		const pids = await privileges.posts.filter('topics:read', allPids, uid);
 		const postData = await posts.getPostSummaryByPids(pids, uid, {
 			stripTags: false,
 		});

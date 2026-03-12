@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const user = require("../../user");
-const meta = require("../../meta");
-const helpers = require("../helpers");
-const groups = require("../../groups");
-const privileges = require("../../privileges");
-const plugins = require("../../plugins");
-const file = require("../../file");
-const accountHelpers = require("./helpers");
+const user = require('../../user');
+const meta = require('../../meta');
+const helpers = require('../helpers');
+const groups = require('../../groups');
+const privileges = require('../../privileges');
+const plugins = require('../../plugins');
+const file = require('../../file');
+const accountHelpers = require('./helpers');
 
 const editController = module.exports;
 
@@ -28,8 +28,8 @@ editController.get = async function (req, res, next) {
 
 	const [canUseSignature, canManageUsers, customUserFields] = await Promise.all(
 		[
-			privileges.global.can("signature", req.uid),
-			privileges.admin.can("admin:users", req.uid),
+			privileges.global.can('signature', req.uid),
+			privileges.admin.can('admin:users', req.uid),
 			accountHelpers.getCustomUserFields(req.uid, userData),
 		],
 	);
@@ -42,13 +42,13 @@ editController.get = async function (req, res, next) {
 	userData.allowAccountDelete = meta.config.allowAccountDelete === 1;
 	userData.allowAboutMe =
 		!isSelf ||
-		!!meta.config["reputation:disabled"] ||
-		reputation >= meta.config["min:rep:aboutme"];
+		!!meta.config['reputation:disabled'] ||
+		reputation >= meta.config['min:rep:aboutme'];
 	userData.allowSignature =
 		canUseSignature &&
 		(!isSelf ||
-			!!meta.config["reputation:disabled"] ||
-			reputation >= meta.config["min:rep:signature"]);
+			!!meta.config['reputation:disabled'] ||
+			reputation >= meta.config['min:rep:signature']);
 	userData.profileImageDimension = meta.config.profileImageDimension;
 	userData.defaultAvatar = user.getDefaultAvatar();
 
@@ -57,11 +57,11 @@ editController.get = async function (req, res, next) {
 			g &&
 			g.userTitleEnabled &&
 			!groups.isPrivilegeGroup(g.name) &&
-			g.name !== "registered-users",
+			g.name !== 'registered-users',
 	);
 
 	if (req.uid === res.locals.uid || canManageUsers) {
-		const { associations } = await plugins.hooks.fire("filter:auth.list", {
+		const { associations } = await plugins.hooks.fire('filter:auth.list', {
 			uid: res.locals.uid,
 			associations: [],
 		});
@@ -98,20 +98,20 @@ editController.get = async function (req, res, next) {
 			url: `/user/${userslug}`,
 		},
 		{
-			text: "[[user:edit]]",
+			text: '[[user:edit]]',
 		},
 	]);
 	userData.editButtons = [];
 
-	res.render("account/edit", userData);
+	res.render('account/edit', userData);
 };
 
 editController.password = async function (req, res, next) {
-	await renderRoute("password", req, res, next);
+	await renderRoute('password', req, res, next);
 };
 
 editController.username = async function (req, res, next) {
-	await renderRoute("username", req, res, next);
+	await renderRoute('username', req, res, next);
 };
 
 editController.email = async function (req, res, next) {
@@ -124,14 +124,14 @@ editController.email = async function (req, res, next) {
 	req.session.registration = req.session.registration || {};
 	req.session.registration.updateEmail = true;
 	req.session.registration.uid = targetUid;
-	helpers.redirect(res, "/register/complete");
+	helpers.redirect(res, '/register/complete');
 };
 
 async function renderRoute(name, req, res) {
 	const { userData } = res.locals;
 	const [isAdmin, { username, userslug }, hasPassword] = await Promise.all([
-		privileges.admin.can("admin:users", req.uid),
-		user.getUserFields(res.locals.uid, ["username", "userslug"]),
+		privileges.admin.can('admin:users', req.uid),
+		user.getUserFields(res.locals.uid, ['username', 'userslug']),
 		user.hasPassword(res.locals.uid),
 	]);
 
@@ -140,7 +140,7 @@ async function renderRoute(name, req, res) {
 	}
 
 	userData.hasPassword = hasPassword;
-	if (name === "password") {
+	if (name === 'password') {
 		userData.minimumPasswordLength = meta.config.minimumPasswordLength;
 		userData.minimumPasswordStrength = meta.config.minimumPasswordStrength;
 	}
@@ -152,7 +152,7 @@ async function renderRoute(name, req, res) {
 			url: `/user/${userslug}`,
 		},
 		{
-			text: "[[user:edit]]",
+			text: '[[user:edit]]',
 			url: `/user/${userslug}/edit`,
 		},
 		{
@@ -174,7 +174,7 @@ editController.uploadPicture = async function (req, res, next) {
 		await user.checkMinReputation(
 			req.uid,
 			updateUid,
-			"min:rep:profile-picture",
+			'min:rep:profile-picture',
 		);
 
 		const image = await user.uploadCroppedPictureFile({

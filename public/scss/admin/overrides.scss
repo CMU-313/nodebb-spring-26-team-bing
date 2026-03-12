@@ -29,36 +29,36 @@ $btn-ghost-hover-color-dark: mix($dark, $light, 90%);
 
 // Custom fonts
 $font-family-sans-serif:
-  "Inter",
+  'Inter',
   system-ui,
   -apple-system,
-  "Segoe UI",
+  'Segoe UI',
   Roboto,
-  "Helvetica Neue",
-  "Noto Sans",
-  "Liberation Sans",
+  'Helvetica Neue',
+  'Noto Sans',
+  'Liberation Sans',
   Arial,
   sans-serif,
-  "Apple Color Emoji",
-  "Segoe UI Emoji",
-  "Segoe UI Symbol",
-  "Noto Color Emoji";
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol',
+  'Noto Color Emoji';
 
 $font-family-secondary:
-  "Poppins",
+  'Poppins',
   system-ui,
   -apple-system,
-  "Segoe UI",
+  'Segoe UI',
   Roboto,
-  "Helvetica Neue",
-  "Noto Sans",
-  "Liberation Sans",
+  'Helvetica Neue',
+  'Noto Sans',
+  'Liberation Sans',
   Arial,
   sans-serif,
-  "Apple Color Emoji",
-  "Segoe UI Emoji",
-  "Segoe UI Symbol",
-  "Noto Color Emoji" !default;
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol',
+  'Noto Color Emoji' !default;
 $font-weight-semibold: 500 !default;
 $font-size-base: 1rem !default;
 

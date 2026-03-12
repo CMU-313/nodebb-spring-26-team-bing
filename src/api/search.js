@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const user = require("../user");
-const categories = require("../categories");
-const messaging = require("../messaging");
-const privileges = require("../privileges");
-const meta = require("../meta");
-const plugins = require("../plugins");
-const utils = require("../utils");
+const db = require('../database');
+const user = require('../user');
+const categories = require('../categories');
+const messaging = require('../messaging');
+const privileges = require('../privileges');
+const meta = require('../meta');
+const plugins = require('../plugins');
+const utils = require('../utils');
 
-const controllersHelpers = require("../controllers/helpers");
+const controllersHelpers = require('../controllers/helpers');
 
 const searchApi = module.exports;
 
@@ -20,9 +20,9 @@ searchApi.categories = async (caller, data) => {
 
 	let cids = [];
 	let matchedCids = [];
-	const privilege = data.privilege || "topics:read";
+	const privilege = data.privilege || 'topics:read';
 	data.states = (
-		data.states || ["watching", "tracking", "notwatching", "ignoring"]
+		data.states || ['watching', 'tracking', 'notwatching', 'ignoring']
 	).map((state) => categories.watchStates[state]);
 	data.parentCid = parseInt(data.parentCid || 0, 10);
 
@@ -53,7 +53,7 @@ searchApi.categories = async (caller, data) => {
 
 	let categoriesData = categories.buildForSelectCategories(
 		visibleCategories,
-		["disabledClass"],
+		['disabledClass'],
 		data.parentCid,
 	);
 	categoriesData = categoriesData.slice(0, 200);
@@ -66,7 +66,7 @@ searchApi.categories = async (caller, data) => {
 			category.match = true;
 		}
 	});
-	const result = await plugins.hooks.fire("filter:categories.categorySearch", {
+	const result = await plugins.hooks.fire('filter:categories.categorySearch', {
 		categories: categoriesData,
 		...data,
 		uid: caller.uid,
@@ -114,7 +114,7 @@ async function loadCids(uid, parentCid) {
 	let resultCids = [];
 	async function getCidsRecursive(cids) {
 		const categoryData = await categories.getCategoriesFields(cids, [
-			"subCategoriesPerPage",
+			'subCategoriesPerPage',
 		]);
 		const cidToData = _.zipObject(cids, categoryData);
 		await Promise.all(
@@ -124,7 +124,7 @@ async function loadCids(uid, parentCid) {
 				);
 				if (allChildCids.length) {
 					const childCids = await privileges.categories.filterCids(
-						"find",
+						'find',
 						allChildCids,
 						uid,
 					);
@@ -141,7 +141,7 @@ async function loadCids(uid, parentCid) {
 		`cid:${parentCid}:children`,
 	);
 	const rootCids = await privileges.categories.filterCids(
-		"find",
+		'find',
 		allRootCids,
 		uid,
 	);
@@ -159,7 +159,7 @@ searchApi.roomUsers = async (caller, { query, roomId }) => {
 	]);
 
 	if (!isAdmin && !inRoom) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const results = await user.search({
@@ -209,16 +209,16 @@ searchApi.roomMessages = async (caller, { query, roomId, uid }) => {
 	]);
 
 	if (!roomData) {
-		throw new Error("[[error:no-room]]");
+		throw new Error('[[error:no-room]]');
 	}
 	if (!inRoom) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
-	const { ids } = await plugins.hooks.fire("filter:messaging.searchMessages", {
+	const { ids } = await plugins.hooks.fire('filter:messaging.searchMessages', {
 		content: query,
 		roomId: [roomId],
 		uid: [uid],
-		matchWords: "any",
+		matchWords: 'any',
 		ids: [],
 	});
 

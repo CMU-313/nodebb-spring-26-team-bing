@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const utils = require("../utils");
-const io = require("../socket.io");
+const db = require('../database');
+const utils = require('../utils');
+const io = require('../socket.io');
 
 module.exports = function (Messaging) {
 	Messaging.getUnreadCount = async (uid) => {
@@ -19,7 +19,7 @@ module.exports = function (Messaging) {
 		}
 		uids = uids.filter((uid) => parseInt(uid, 10) > 0);
 		uids.forEach((uid) => {
-			io.in(`uid_${uid}`).emit("event:unread.updateChatCount", data);
+			io.in(`uid_${uid}`).emit('event:unread.updateChatCount', data);
 		});
 	};
 

@@ -1,6 +1,6 @@
-@use "pkg:@fontsource-utils/scss" as fontsource;
-@use "pkg:@fontsource/inter/scss" as inter;
-@use "pkg:@fontsource/poppins/scss" as poppins;
+@use 'pkg:@fontsource-utils/scss' as fontsource;
+@use 'pkg:@fontsource/inter/scss' as inter;
+@use 'pkg:@fontsource/poppins/scss' as poppins;
 
 $weights:
   $font-weight-light, $font-weight-normal, $font-weight-semibold,
@@ -12,7 +12,7 @@ $subsets: (latin, latin-ext);
   $subsets: $subsets,
   $weights: $weights,
   $styles: all,
-  $directory: "./plugins/core/inter"
+  $directory: './plugins/core/inter'
 );
 
 @include fontsource.faces(
@@ -20,7 +20,7 @@ $subsets: (latin, latin-ext);
   $subsets: $subsets,
   $weights: $weights,
   $styles: all,
-  $directory: "./plugins/core/poppins"
+  $directory: './plugins/core/poppins'
 );
 
 .ff-base {

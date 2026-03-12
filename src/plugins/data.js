@@ -1,32 +1,32 @@
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const winston = require("winston");
-const _ = require("lodash");
-const nconf = require("nconf");
+const fs = require('fs');
+const path = require('path');
+const winston = require('winston');
+const _ = require('lodash');
+const nconf = require('nconf');
 
-const db = require("../database");
-const file = require("../file");
-const { paths } = require("../constants");
+const db = require('../database');
+const file = require('../file');
+const { paths } = require('../constants');
 
 const Data = module.exports;
 
-const basePath = path.join(__dirname, "../../");
+const basePath = path.join(__dirname, '../../');
 
 // to get this functionality use `plugins.getActive()` from `src/plugins/install.js` instead
 // this method duplicates that one, because requiring that file here would have side effects
 async function getActiveIds() {
-	if (nconf.get("plugins:active")) {
-		return nconf.get("plugins:active");
+	if (nconf.get('plugins:active')) {
+		return nconf.get('plugins:active');
 	}
-	return await db.getSortedSetRange("plugins:active", 0, -1);
+	return await db.getSortedSetRange('plugins:active', 0, -1);
 }
 
 Data.getPluginPaths = async function () {
 	const plugins = await getActiveIds();
 	const pluginPaths = plugins
-		.filter((plugin) => plugin && typeof plugin === "string")
+		.filter((plugin) => plugin && typeof plugin === 'string')
 		.map((plugin) => path.join(paths.nodeModules, plugin));
 	const exists = await Promise.all(pluginPaths.map(file.exists));
 	exists.forEach((exists, i) => {
@@ -39,8 +39,8 @@ Data.getPluginPaths = async function () {
 
 Data.loadPluginInfo = async function (pluginPath) {
 	const [packageJson, pluginJson] = await Promise.all([
-		fs.promises.readFile(path.join(pluginPath, "package.json"), "utf8"),
-		fs.promises.readFile(path.join(pluginPath, "plugin.json"), "utf8"),
+		fs.promises.readFile(path.join(pluginPath, 'package.json'), 'utf8'),
+		fs.promises.readFile(path.join(pluginPath, 'plugin.json'), 'utf8'),
 	]);
 
 	let pluginData;
@@ -64,7 +64,7 @@ Data.loadPluginInfo = async function (pluginPath) {
 		winston.error(
 			`[plugins/${pluginDir}] Error in plugin.json or package.json!${err.stack}`,
 		);
-		throw new Error("[[error:parse-error]]");
+		throw new Error('[[error:parse-error]]');
 	}
 	return pluginData;
 };
@@ -137,7 +137,7 @@ Data.getStaticDirectories = async function (pluginData) {
 
 			staticDirs[`${pluginData.id}/${route}`] = dirPath;
 		} catch (err) {
-			if (err.code === "ENOENT") {
+			if (err.code === 'ENOENT') {
 				winston.warn(
 					`[plugins/${pluginData.id}] Mapped path '${
 						route
@@ -195,7 +195,7 @@ async function resolveModulePath(basePath, modulePath) {
 }
 
 Data.getScripts = async function getScripts(pluginData, target) {
-	target = target === "client" ? "scripts" : "acpScripts";
+	target = target === 'client' ? 'scripts' : 'acpScripts';
 
 	const input = pluginData[target];
 	if (!Array.isArray(input) || !input.length) {
@@ -220,7 +220,7 @@ Data.getScripts = async function getScripts(pluginData, target) {
 };
 
 Data.getModules = async function getModules(pluginData) {
-	if (!pluginData.modules || !pluginData.hasOwnProperty("modules")) {
+	if (!pluginData.modules || !pluginData.hasOwnProperty('modules')) {
 		return;
 	}
 
@@ -232,7 +232,7 @@ Data.getModules = async function getModules(pluginData) {
 		pluginModules = pluginModules.reduce((prev, modulePath) => {
 			let key;
 			if (strip) {
-				key = modulePath.replace(new RegExp(`.?(/[^/]+){${strip}}/`), "");
+				key = modulePath.replace(new RegExp(`.?(/[^/]+){${strip}}/`), '');
 			} else {
 				key = path.basename(modulePath);
 			}
@@ -265,7 +265,7 @@ Data.getModules = async function getModules(pluginData) {
 };
 
 Data.getLanguageData = async function getLanguageData(pluginData) {
-	if (typeof pluginData.languages !== "string") {
+	if (typeof pluginData.languages !== 'string') {
 		return;
 	}
 
@@ -281,8 +281,8 @@ Data.getLanguageData = async function getLanguageData(pluginData) {
 
 	filepaths.forEach((p) => {
 		const rel = path.relative(pathToFolder, p).split(/[/\\]/);
-		const language = rel.shift().replace("_", "-").replace("@", "-x-");
-		const namespace = rel.join("/").replace(/\.json$/, "");
+		const language = rel.shift().replace('_', '-').replace('@', '-x-');
+		const namespace = rel.join('/').replace(/\.json$/, '');
 
 		if (!language || !namespace) {
 			return;

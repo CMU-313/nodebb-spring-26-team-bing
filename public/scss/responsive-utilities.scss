@@ -6,32 +6,32 @@
 $utilities: map-merge(
   $utilities,
   (
-    "border": map-merge(
-        map-get($utilities, "border"),
+    'border': map-merge(
+        map-get($utilities, 'border'),
         (
           responsive: true,
         )
       ),
-    "border-start": map-merge(
-        map-get($utilities, "border-start"),
+    'border-start': map-merge(
+        map-get($utilities, 'border-start'),
         (
           responsive: true,
         )
       ),
-    "border-end": map-merge(
-        map-get($utilities, "border-end"),
+    'border-end': map-merge(
+        map-get($utilities, 'border-end'),
         (
           responsive: true,
         )
       ),
-    "border-top": map-merge(
-        map-get($utilities, "border-top"),
+    'border-top': map-merge(
+        map-get($utilities, 'border-top'),
         (
           responsive: true,
         )
       ),
-    "border-bottom": map-merge(
-        map-get($utilities, "border-bottom"),
+    'border-bottom': map-merge(
+        map-get($utilities, 'border-bottom'),
         (
           responsive: true,
         )

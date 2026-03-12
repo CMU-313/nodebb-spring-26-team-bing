@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const _ = require("lodash");
-	const helpers = require("./helpers");
-	const { secureRandom } = require("../../utils");
+	const _ = require('lodash');
+	const helpers = require('./helpers');
+	const { secureRandom } = require('../../utils');
 
 	module.setAdd = async function (key, value) {
 		if (!Array.isArray(value)) {
@@ -15,7 +15,7 @@ module.exports = function (module) {
 		value = value.map((v) => helpers.valueToString(v));
 
 		try {
-			await module.client.collection("objects").updateOne(
+			await module.client.collection('objects').updateOne(
 				{
 					_key: key,
 				},
@@ -31,8 +31,8 @@ module.exports = function (module) {
 				},
 			);
 		} catch (err) {
-			if (err && err.message.includes("E11000 duplicate key error")) {
-				console.log(new Error("e11000").stack, key, value);
+			if (err && err.message.includes('E11000 duplicate key error')) {
+				console.log(new Error('e11000').stack, key, value);
 				return await module.setAdd(key, value);
 			}
 			throw err;
@@ -51,7 +51,7 @@ module.exports = function (module) {
 		value = value.map((v) => helpers.valueToString(v));
 
 		const bulk = module.client
-			.collection("objects")
+			.collection('objects')
 			.initializeUnorderedBulkOp();
 
 		for (let i = 0; i < keys.length; i += 1) {
@@ -69,8 +69,8 @@ module.exports = function (module) {
 		try {
 			await bulk.execute();
 		} catch (err) {
-			if (err && err.message.includes("E11000 duplicate key error")) {
-				console.log(new Error("e11000").stack, keys, value);
+			if (err && err.message.includes('E11000 duplicate key error')) {
+				console.log(new Error('e11000').stack, keys, value);
 				return await module.setsAdd(keys, value);
 			}
 			throw err;
@@ -83,7 +83,7 @@ module.exports = function (module) {
 		}
 
 		const bulk = module.client
-			.collection("objects")
+			.collection('objects')
 			.initializeUnorderedBulkOp();
 
 		data.forEach(([key, member]) => {
@@ -99,8 +99,8 @@ module.exports = function (module) {
 		try {
 			await bulk.execute();
 		} catch (err) {
-			if (err && err.message.includes("E11000 duplicate key error")) {
-				console.log(new Error("e11000").stack, data);
+			if (err && err.message.includes('E11000 duplicate key error')) {
+				console.log(new Error('e11000').stack, data);
 				return await module.setAddBulk(data);
 			}
 			throw err;
@@ -114,7 +114,7 @@ module.exports = function (module) {
 
 		value = value.map((v) => helpers.valueToString(v));
 
-		const coll = module.client.collection("objects");
+		const coll = module.client.collection('objects');
 		await coll.updateMany(
 			{
 				_key: Array.isArray(key) ? { $in: key } : key,
@@ -136,7 +136,7 @@ module.exports = function (module) {
 		}
 		value = helpers.valueToString(value);
 
-		const coll = module.client.collection("objects");
+		const coll = module.client.collection('objects');
 		await coll.updateMany(
 			{
 				_key: { $in: keys },
@@ -158,7 +158,7 @@ module.exports = function (module) {
 		}
 		value = helpers.valueToString(value);
 
-		const item = await module.client.collection("objects").findOne(
+		const item = await module.client.collection('objects').findOne(
 			{
 				_key: key,
 				members: value,
@@ -176,7 +176,7 @@ module.exports = function (module) {
 		}
 		values = values.map((v) => helpers.valueToString(v));
 
-		const result = await module.client.collection("objects").findOne(
+		const result = await module.client.collection('objects').findOne(
 			{
 				_key: key,
 			},
@@ -197,7 +197,7 @@ module.exports = function (module) {
 		value = helpers.valueToString(value);
 
 		const result = await module.client
-			.collection("objects")
+			.collection('objects')
 			.find(
 				{
 					_key: { $in: sets },
@@ -222,7 +222,7 @@ module.exports = function (module) {
 			return [];
 		}
 
-		const data = await module.client.collection("objects").findOne(
+		const data = await module.client.collection('objects').findOne(
 			{
 				_key: key,
 			},
@@ -238,7 +238,7 @@ module.exports = function (module) {
 			return [];
 		}
 		const data = await module.client
-			.collection("objects")
+			.collection('objects')
 			.find(
 				{
 					_key: { $in: keys },
@@ -262,10 +262,10 @@ module.exports = function (module) {
 			return 0;
 		}
 		const data = await module.client
-			.collection("objects")
+			.collection('objects')
 			.aggregate([
 				{ $match: { _key: key } },
-				{ $project: { _id: 0, count: { $size: "$members" } } },
+				{ $project: { _id: 0, count: { $size: '$members' } } },
 			])
 			.toArray();
 		return Array.isArray(data) && data.length ? data[0].count : 0;
@@ -273,19 +273,19 @@ module.exports = function (module) {
 
 	module.setsCount = async function (keys) {
 		const data = await module.client
-			.collection("objects")
+			.collection('objects')
 			.aggregate([
 				{ $match: { _key: { $in: keys } } },
-				{ $project: { _id: 0, _key: 1, count: { $size: "$members" } } },
+				{ $project: { _id: 0, _key: 1, count: { $size: '$members' } } },
 			])
 			.toArray();
-		const map = _.keyBy(data, "_key");
+		const map = _.keyBy(data, '_key');
 		return keys.map((key) => (map.hasOwnProperty(key) ? map[key].count : 0));
 	};
 
 	module.setRemoveRandom = async function (key) {
 		const data = await module.client
-			.collection("objects")
+			.collection('objects')
 			.findOne({ _key: key });
 		if (!data) {
 			return;

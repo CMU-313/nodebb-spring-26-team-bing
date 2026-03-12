@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const util = require("util");
-const winston = require("winston");
-const { EventEmitter } = require("events");
-const connection = require("./connection");
+const nconf = require('nconf');
+const util = require('util');
+const winston = require('winston');
+const { EventEmitter } = require('events');
+const connection = require('./connection');
 
 let channelName;
 const PubSub = function () {
 	const self = this;
-	channelName = `db:${nconf.get("redis:database")}:pubsub_channel`;
+	channelName = `db:${nconf.get('redis:database')}:pubsub_channel`;
 	self.queue = [];
 	connection.connect().then((client) => {
 		self.subClient = client;

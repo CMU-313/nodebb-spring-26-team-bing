@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 $(document).ready(function () {
 	setupSkinSwitcher();
@@ -12,43 +12,43 @@ $(document).ready(function () {
 	fixSidebarOverflow();
 
 	function setupSkinSwitcher() {
-		$('[component="skinSwitcher"]').on("click", ".dropdown-item", function () {
-			const skin = $(this).attr("data-value");
+		$('[component="skinSwitcher"]').on('click', '.dropdown-item', function () {
+			const skin = $(this).attr('data-value');
 			$('[component="skinSwitcher"] .dropdown-item .fa-check').addClass(
-				"invisible",
+				'invisible',
 			);
-			$(this).find(".fa-check").removeClass("invisible");
-			require(["forum/account/settings", "hooks"], function (
+			$(this).find('.fa-check').removeClass('invisible');
+			require(['forum/account/settings', 'hooks'], function (
 				accountSettings,
 				hooks,
 			) {
-				hooks.one("action:skin.change", function () {
+				hooks.one('action:skin.change', function () {
 					$(
 						'[component="skinSwitcher"] [component="skinSwitcher/icon"]',
-					).removeClass("fa-fade");
+					).removeClass('fa-fade');
 				});
 				$(
 					'[component="skinSwitcher"] [component="skinSwitcher/icon"]',
-				).addClass("fa-fade");
+				).addClass('fa-fade');
 				accountSettings.changeSkin(skin);
 			});
 		});
 	}
 
-	require(["hooks"], function (hooks) {
-		$(window).on("action:composer.resize action:sidebar.toggle", function () {
-			const isRtl = $("html").attr("data-dir") === "rtl";
+	require(['hooks'], function (hooks) {
+		$(window).on('action:composer.resize action:sidebar.toggle', function () {
+			const isRtl = $('html').attr('data-dir') === 'rtl';
 			const css = {
-				width: $("#panel").width(),
+				width: $('#panel').width(),
 			};
-			const sidebarEl = $(".sidebar-left");
-			css[isRtl ? "right" : "left"] = sidebarEl.is(":visible")
+			const sidebarEl = $('.sidebar-left');
+			css[isRtl ? 'right' : 'left'] = sidebarEl.is(':visible')
 				? sidebarEl.outerWidth(true)
 				: 0;
 			$('[component="composer"]').css(css);
 		});
 
-		hooks.on("filter:chat.openChat", function (hookData) {
+		hooks.on('filter:chat.openChat', function (hookData) {
 			// disables chat modals & goes straight to chat page based on user setting
 			hookData.modal = config.theme.chatModals && !utils.isMobile();
 			return hookData;
@@ -56,20 +56,20 @@ $(document).ready(function () {
 	});
 
 	function setupMobileMenu() {
-		require(["hooks", "api", "navigator"], function (hooks, api, navigator) {
-			$('[component="sidebar/toggle"]').on("click", async function () {
-				const sidebarEl = $(".sidebar");
-				sidebarEl.toggleClass("open");
+		require(['hooks', 'api', 'navigator'], function (hooks, api, navigator) {
+			$('[component="sidebar/toggle"]').on('click', async function () {
+				const sidebarEl = $('.sidebar');
+				sidebarEl.toggleClass('open');
 				if (app.user.uid) {
 					await api.put(`/users/${app.user.uid}/settings`, {
 						settings: {
-							openSidebars: sidebarEl.hasClass("open") ? "on" : "off",
+							openSidebars: sidebarEl.hasClass('open') ? 'on' : 'off',
 						},
 					});
 				}
-				$(window).trigger("action:sidebar.toggle");
+				$(window).trigger('action:sidebar.toggle');
 				if (ajaxify.data.template.topic) {
-					hooks.fire("action:navigator.update", {
+					hooks.fire('action:navigator.update', {
 						newIndex: navigator.getIndex(),
 					});
 				}
@@ -77,16 +77,16 @@ $(document).ready(function () {
 
 			const bottomBar = $('[component="bottombar"]');
 			let stickyTools = null;
-			const location = config.theme.topMobilebar ? "top" : "bottom";
-			const $body = $("body");
+			const location = config.theme.topMobilebar ? 'top' : 'bottom';
+			const $body = $('body');
 			const $window = $(window);
 			$body.on(
-				"shown.bs.dropdown hidden.bs.dropdown",
-				".sticky-tools",
+				'shown.bs.dropdown hidden.bs.dropdown',
+				'.sticky-tools',
 				function () {
 					bottomBar.toggleClass(
-						"hidden",
-						$(this).find(".dropdown-menu.show").length,
+						'hidden',
+						$(this).find('.dropdown-menu.show').length,
 					);
 				},
 			);
@@ -118,7 +118,7 @@ $(document).ready(function () {
 					if (diff > 10) {
 						bottomBar.css({
 							[location]: isHiding
-								? -bottomBar.find(".bottombar-nav").outerHeight(true)
+								? -bottomBar.find('.bottombar-nav').outerHeight(true)
 								: 0,
 						});
 						if (
@@ -127,7 +127,7 @@ $(document).ready(function () {
 							config.theme.autohideBottombar
 						) {
 							stickyTools.css({
-								top: isHiding ? 0 : "var(--panel-offset)",
+								top: isHiding ? 0 : 'var(--panel-offset)',
 							});
 						}
 					}
@@ -137,26 +137,26 @@ $(document).ready(function () {
 
 			const delayedScroll = utils.throttle(onWindowScroll, 250);
 			function enableAutohide() {
-				$window.off("scroll", delayedScroll);
+				$window.off('scroll', delayedScroll);
 				if (config.theme.autohideBottombar) {
 					lastScrollTop = $window.scrollTop();
-					$window.on("scroll", delayedScroll);
+					$window.on('scroll', delayedScroll);
 				}
 			}
 
-			hooks.on("action:posts.loading", function () {
-				$window.off("scroll", delayedScroll);
+			hooks.on('action:posts.loading', function () {
+				$window.off('scroll', delayedScroll);
 			});
-			hooks.on("action:posts.loaded", function () {
+			hooks.on('action:posts.loaded', function () {
 				newPostsLoaded = true;
 				setTimeout(enableAutohide, 250);
 			});
-			hooks.on("action:ajaxify.end", function () {
-				bottomBar.removeClass("hidden");
+			hooks.on('action:ajaxify.end', function () {
+				bottomBar.removeClass('hidden');
 				const { template } = ajaxify.data;
 				stickyTools =
-					template.category || template.topic ? $(".sticky-tools") : null;
-				$window.off("scroll", delayedScroll);
+					template.category || template.topic ? $('.sticky-tools') : null;
+				$window.off('scroll', delayedScroll);
 				if (config.theme.autohideBottombar) {
 					bottomBar.css({ [location]: 0 });
 					setTimeout(enableAutohide, 250);
@@ -166,24 +166,24 @@ $(document).ready(function () {
 	}
 
 	function setupSearch() {
-		$('[component="sidebar/search"]').on("shown.bs.dropdown", function () {
+		$('[component="sidebar/search"]').on('shown.bs.dropdown', function () {
 			$(this)
 				.find('[component="search/fields"] input[name="query"]')
-				.trigger("focus");
+				.trigger('focus');
 		});
 	}
 
 	function setupDrafts() {
-		require(["composer/drafts", "bootbox"], function (drafts, bootbox) {
+		require(['composer/drafts', 'bootbox'], function (drafts, bootbox) {
 			const draftsEl = $('[component="sidebar/drafts"]');
 
 			function updateBadgeCount() {
 				const count = drafts.getAvailableCount();
 				if (count > 0) {
-					draftsEl.removeClass("hidden");
+					draftsEl.removeClass('hidden');
 				}
 				$('[component="drafts/count"]')
-					.toggleClass("hidden", count <= 0)
+					.toggleClass('hidden', count <= 0)
 					.text(count);
 			}
 
@@ -191,9 +191,9 @@ $(document).ready(function () {
 				const draftListEl = $('[component="drafts/list"]');
 				const draftItems = drafts.listAvailable();
 				if (!draftItems.length) {
-					draftListEl.find(".no-drafts").removeClass("hidden");
-					draftListEl.find(".placeholder-wave").addClass("hidden");
-					draftListEl.find(".draft-item-container").html("");
+					draftListEl.find('.no-drafts').removeClass('hidden');
+					draftListEl.find('.placeholder-wave').addClass('hidden');
+					draftListEl.find('.draft-item-container').html('');
 					return;
 				}
 				draftItems.reverse().forEach((draft) => {
@@ -203,34 +203,34 @@ $(document).ready(function () {
 						}
 						draft.text = utils
 							.escapeHTML(draft.text)
-							.replace(/(?:\r\n|\r|\n)/g, "<br>");
+							.replace(/(?:\r\n|\r|\n)/g, '<br>');
 					}
 				});
 
 				const html = await app.parseAndTranslate(
-					"partials/sidebar/drafts",
-					"drafts",
+					'partials/sidebar/drafts',
+					'drafts',
 					{ drafts: draftItems },
 				);
-				draftListEl.find(".no-drafts").addClass("hidden");
-				draftListEl.find(".placeholder-wave").addClass("hidden");
+				draftListEl.find('.no-drafts').addClass('hidden');
+				draftListEl.find('.placeholder-wave').addClass('hidden');
 				draftListEl
-					.find(".draft-item-container")
+					.find('.draft-item-container')
 					.html(html)
-					.find(".timeago")
+					.find('.timeago')
 					.timeago();
 			}
 
-			draftsEl.on("shown.bs.dropdown", renderDraftList);
+			draftsEl.on('shown.bs.dropdown', renderDraftList);
 
-			draftsEl.on("click", '[component="drafts/open"]', function () {
-				drafts.open($(this).attr("data-save-id"));
+			draftsEl.on('click', '[component="drafts/open"]', function () {
+				drafts.open($(this).attr('data-save-id'));
 			});
 
-			draftsEl.on("click", '[component="drafts/delete"]', function () {
-				const save_id = $(this).attr("data-save-id");
+			draftsEl.on('click', '[component="drafts/delete"]', function () {
+				const save_id = $(this).attr('data-save-id');
 				bootbox.confirm(
-					"[[modules:composer.discard-draft-confirm]]",
+					'[[modules:composer.discard-draft-confirm]]',
 					function (ok) {
 						if (ok) {
 							drafts.removeDraft(save_id);
@@ -241,21 +241,21 @@ $(document).ready(function () {
 				return false;
 			});
 
-			$(window).on("action:composer.drafts.save", updateBadgeCount);
-			$(window).on("action:composer.drafts.remove", updateBadgeCount);
+			$(window).on('action:composer.drafts.save', updateBadgeCount);
+			$(window).on('action:composer.drafts.remove', updateBadgeCount);
 			updateBadgeCount();
 		});
 	}
 
 	function setupNProgress() {
-		require(["nprogress"], function (NProgress) {
+		require(['nprogress'], function (NProgress) {
 			window.nprogress = NProgress;
 			if (NProgress) {
-				$(window).on("action:ajaxify.start", function () {
+				$(window).on('action:ajaxify.start', function () {
 					NProgress.set(0.7);
 				});
 
-				$(window).on("action:ajaxify.end", function () {
+				$(window).on('action:ajaxify.end', function () {
 					NProgress.done(true);
 				});
 			}
@@ -263,13 +263,13 @@ $(document).ready(function () {
 	}
 
 	function handleMobileNavigator() {
-		const paginationBlockEl = $(".pagination-block");
-		require(["hooks"], function (hooks) {
-			hooks.on("action:ajaxify.end", function () {
-				paginationBlockEl.find(".dropdown-menu.show").removeClass("show");
+		const paginationBlockEl = $('.pagination-block');
+		require(['hooks'], function (hooks) {
+			hooks.on('action:ajaxify.end', function () {
+				paginationBlockEl.find('.dropdown-menu.show').removeClass('show');
 			});
-			hooks.on("filter:navigator.scroll", function (hookData) {
-				paginationBlockEl.find(".dropdown-menu.show").removeClass("show");
+			hooks.on('filter:navigator.scroll', function (hookData) {
+				paginationBlockEl.find('.dropdown-menu.show').removeClass('show');
 				return hookData;
 			});
 		});
@@ -277,33 +277,33 @@ $(document).ready(function () {
 
 	function setupNavTooltips() {
 		// remove title from user icon in sidebar to prevent double tooltip
-		$('.sidebar [component="header/avatar"] .avatar').removeAttr("title");
-		const tooltipEls = $(".sidebar [title]");
-		const lefttooltipEls = $(".sidebar-left [title]");
-		const rightooltipEls = $(".sidebar-right [title]");
-		const isRtl = $("html").attr("data-dir") === "rtl";
+		$('.sidebar [component="header/avatar"] .avatar').removeAttr('title');
+		const tooltipEls = $('.sidebar [title]');
+		const lefttooltipEls = $('.sidebar-left [title]');
+		const rightooltipEls = $('.sidebar-right [title]');
+		const isRtl = $('html').attr('data-dir') === 'rtl';
 		lefttooltipEls.tooltip({
-			trigger: "manual",
+			trigger: 'manual',
 			animation: false,
-			placement: isRtl ? "left" : "right",
+			placement: isRtl ? 'left' : 'right',
 		});
 		rightooltipEls.tooltip({
-			trigger: "manual",
+			trigger: 'manual',
 			animation: false,
-			placement: isRtl ? "right" : "left",
+			placement: isRtl ? 'right' : 'left',
 		});
 
-		tooltipEls.on("mouseenter", function (ev) {
+		tooltipEls.on('mouseenter', function (ev) {
 			const target = $(ev.target);
 			const isDropdown =
-				target.hasClass("dropdown-menu") ||
-				!!target.parents(".dropdown-menu").length;
-			if (!$(".sidebar").hasClass("open") && !isDropdown) {
-				$(this).tooltip("show");
+				target.hasClass('dropdown-menu') ||
+				!!target.parents('.dropdown-menu').length;
+			if (!$('.sidebar').hasClass('open') && !isDropdown) {
+				$(this).tooltip('show');
 			}
 		});
-		tooltipEls.on("click mouseleave", function () {
-			$(this).tooltip("hide");
+		tooltipEls.on('click mouseleave', function () {
+			$(this).tooltip('hide');
 		});
 	}
 
@@ -311,7 +311,7 @@ $(document).ready(function () {
 		if (!config.loggedIn) {
 			return;
 		}
-		["notifications", "chat"].forEach((type) => {
+		['notifications', 'chat'].forEach((type) => {
 			const countEl = $(`nav.sidebar [component="${type}/count"]`).first();
 			if (!countEl.length) {
 				return;
@@ -332,15 +332,15 @@ $(document).ready(function () {
 
 	function fixSidebarOverflow() {
 		// overflow-y-auto needs to be removed on main-nav when dropdowns are opened
-		const mainNavEl = $("#main-nav");
+		const mainNavEl = $('#main-nav');
 		function toggleOverflow() {
 			mainNavEl.toggleClass(
-				"overflow-y-auto",
-				!mainNavEl.find(".dropdown-menu.show").length,
+				'overflow-y-auto',
+				!mainNavEl.find('.dropdown-menu.show').length,
 			);
 		}
 		mainNavEl
-			.on("shown.bs.dropdown", toggleOverflow)
-			.on("hidden.bs.dropdown", toggleOverflow);
+			.on('shown.bs.dropdown', toggleOverflow)
+			.on('hidden.bs.dropdown', toggleOverflow);
 	}
 });

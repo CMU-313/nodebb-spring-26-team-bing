@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const winston = require("winston");
-const db = require("../../database");
+const async = require('async');
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Group title from settings to user profile",
+	name: 'Group title from settings to user profile',
 	timestamp: Date.UTC(2016, 3, 14),
 	method: function (callback) {
-		const user = require("../../user");
-		const batch = require("../../batch");
+		const user = require('../../user');
+		const batch = require('../../batch');
 		let count = 0;
 		batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			(uids, next) => {
 				winston.verbose(`upgraded ${count} users`);
 				user.getMultipleUserSettings(uids, (err, settings) => {
@@ -29,7 +29,7 @@ module.exports = {
 						(setting, next) => {
 							db.setObjectField(
 								`user:${setting.uid}`,
-								"groupTitle",
+								'groupTitle',
 								setting.groupTitle,
 								next,
 							);

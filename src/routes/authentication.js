@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const passport = require("passport");
-const passportLocal = require("passport-local").Strategy;
-const BearerStrategy = require("passport-http-bearer").Strategy;
-const winston = require("winston");
+const async = require('async');
+const passport = require('passport');
+const passportLocal = require('passport-local').Strategy;
+const BearerStrategy = require('passport-http-bearer').Strategy;
+const winston = require('winston');
 
-const controllers = require("../controllers");
-const helpers = require("../controllers/helpers");
-const plugins = require("../plugins");
-const api = require("../api");
-const { generateToken } = require("../middleware/csrf");
+const controllers = require('../controllers');
+const helpers = require('../controllers/helpers');
+const plugins = require('../plugins');
+const api = require('../api');
+const { generateToken } = require('../middleware/csrf');
 
 let loginStrategies = [];
 
@@ -68,11 +68,11 @@ Auth.reloadRoutes = async function (params) {
 	const { router } = params;
 
 	// Local Logins
-	if (plugins.hooks.hasListeners("action:auth.overrideLogin")) {
+	if (plugins.hooks.hasListeners('action:auth.overrideLogin')) {
 		winston.warn(
-			"[authentication] Login override detected, skipping local login strategy.",
+			'[authentication] Login override detected, skipping local login strategy.',
 		);
-		plugins.hooks.fire("action:auth.overrideLogin");
+		plugins.hooks.fire('action:auth.overrideLogin');
 	} else {
 		passport.use(
 			new passportLocal(
@@ -83,12 +83,12 @@ Auth.reloadRoutes = async function (params) {
 	}
 
 	// HTTP bearer authentication
-	passport.use("core.api", new BearerStrategy({}, Auth.verifyToken));
+	passport.use('core.api', new BearerStrategy({}, Auth.verifyToken));
 
 	// Additional logins via SSO plugins
 	try {
 		loginStrategies = await plugins.hooks.fire(
-			"filter:auth.init",
+			'filter:auth.init',
 			loginStrategies,
 		);
 	} catch (err) {
@@ -97,7 +97,7 @@ Auth.reloadRoutes = async function (params) {
 	loginStrategies = loginStrategies || [];
 	loginStrategies.forEach((strategy) => {
 		if (strategy.url) {
-			router[strategy.urlMethod || "get"](
+			router[strategy.urlMethod || 'get'](
 				strategy.url,
 				Auth.middleware.applyCSRF,
 				async (req, res, next) => {
@@ -115,7 +115,7 @@ Auth.reloadRoutes = async function (params) {
 					}
 
 					// Allow SSO plugins to override/append options (for use in passport prototype authorizationParams)
-					({ opts } = await plugins.hooks.fire("filter:auth.options", {
+					({ opts } = await plugins.hooks.fire('filter:auth.options', {
 						req,
 						res,
 						opts,
@@ -125,7 +125,7 @@ Auth.reloadRoutes = async function (params) {
 			);
 		}
 
-		router[strategy.callbackMethod || "get"](
+		router[strategy.callbackMethod || 'get'](
 			strategy.callbackURL,
 			(req, res, next) => {
 				// Ensure the passed-back state value is identical to the saved ssoState (unless explicitly skipped)
@@ -135,7 +135,7 @@ Auth.reloadRoutes = async function (params) {
 
 				next(
 					req.query.state !== req.session.ssoState
-						? new Error("[[error:csrf-invalid]]")
+						? new Error('[[error:csrf-invalid]]')
 						: null,
 				);
 			},
@@ -163,7 +163,7 @@ Auth.reloadRoutes = async function (params) {
 							res,
 							strategy.failureUrl !== undefined
 								? strategy.failureUrl
-								: "/login",
+								: '/login',
 						);
 					}
 
@@ -192,7 +192,7 @@ Auth.reloadRoutes = async function (params) {
 
 						helpers.redirect(
 							res,
-							strategy.successUrl !== undefined ? strategy.successUrl : "/",
+							strategy.successUrl !== undefined ? strategy.successUrl : '/',
 						);
 					},
 				);
@@ -200,32 +200,32 @@ Auth.reloadRoutes = async function (params) {
 		);
 	});
 
-	const upload = require("../middleware/multer");
+	const upload = require('../middleware/multer');
 	const middlewares = [
 		upload.any(),
 		Auth.middleware.applyCSRF,
 		Auth.middleware.applyBlacklist,
 	];
 
-	router.post("/register", middlewares, controllers.authentication.register);
+	router.post('/register', middlewares, controllers.authentication.register);
 	router.post(
-		"/register/complete",
+		'/register/complete',
 		middlewares,
 		controllers.authentication.registerComplete,
 	);
 	router.post(
-		"/register/abort",
+		'/register/abort',
 		middlewares,
 		controllers.authentication.registerAbort,
 	);
 	router.post(
-		"/login",
+		'/login',
 		Auth.middleware.applyCSRF,
 		Auth.middleware.applyBlacklist,
 		controllers.authentication.login,
 	);
 	router.post(
-		"/logout",
+		'/logout',
 		Auth.middleware.applyCSRF,
 		controllers.authentication.logout,
 	);

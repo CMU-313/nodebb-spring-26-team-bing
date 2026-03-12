@@ -29,7 +29,7 @@ When a user views a topic/post in NodeBB, multiple files work together to fetch,
 - Prepares metadata tags (SEO, OpenGraph) (lines 193-272)
 - **Finally renders the template with all data** (line 157):
   ```javascript
-  res.render("topic", topicData);
+  res.render('topic', topicData);
   ```
 
 **All Available Variables in `topicData`:**

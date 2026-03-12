@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("admin/appearance/customise", ["admin/settings", "ace/ace"], function (
+define('admin/appearance/customise', ['admin/settings', 'ace/ace'], function (
 	Settings,
 	ace,
 ) {
@@ -8,19 +8,19 @@ define("admin/appearance/customise", ["admin/settings", "ace/ace"], function (
 
 	Customise.init = function () {
 		Settings.prepare(function () {
-			$("#customCSS").text($("#customCSS-holder").val());
-			$("#customJS").text($("#customJS-holder").val());
-			$("#customHTML").text($("#customHTML-holder").val());
-			$("#customVariables").text($("#customVariables-holder").val());
+			$('#customCSS').text($('#customCSS-holder').val());
+			$('#customJS').text($('#customJS-holder').val());
+			$('#customHTML').text($('#customHTML-holder').val());
+			$('#customVariables').text($('#customVariables-holder').val());
 
-			initACE("customCSS", "scss", "#customCSS-holder");
-			initACE("customJS", "javascript", "#customJS-holder");
-			initACE("customHTML", "html", "#customHTML-holder");
-			initACE("customVariables", "scss", "#customVariables-holder");
+			initACE('customCSS', 'scss', '#customCSS-holder');
+			initACE('customJS', 'javascript', '#customJS-holder');
+			initACE('customHTML', 'html', '#customHTML-holder');
+			initACE('customVariables', 'scss', '#customVariables-holder');
 
-			$("#save").on("click", function () {
-				if ($("#enableLiveReload").is(":checked")) {
-					socket.emit("admin.reloadAllSessions");
+			$('#save').on('click', function () {
+				if ($('#enableLiveReload').is(':checked')) {
+					socket.emit('admin.reloadAllSessions');
 				}
 			});
 		});
@@ -28,13 +28,13 @@ define("admin/appearance/customise", ["admin/settings", "ace/ace"], function (
 
 	function initACE(aceElementId, mode, holder) {
 		const editorEl = ace.edit(aceElementId, {
-			mode: "ace/mode/" + mode,
-			theme: "ace/theme/twilight",
+			mode: 'ace/mode/' + mode,
+			theme: 'ace/theme/twilight',
 			maxLines: 30,
 			minLines: 30,
 			fontSize: 14,
 		});
-		editorEl.on("change", function () {
+		editorEl.on('change', function () {
 			app.flags = app.flags || {};
 			app.flags._unsaved = true;
 			$(holder).val(editorEl.getValue());

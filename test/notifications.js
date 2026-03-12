@@ -1,25 +1,25 @@
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const nconf = require("nconf");
-const util = require("util");
+const assert = require('assert');
+const nconf = require('nconf');
+const util = require('util');
 
-const db = require("./mocks/databasemock");
-const meta = require("../src/meta");
-const user = require("../src/user");
-const topics = require("../src/topics");
-const categories = require("../src/categories");
-const notifications = require("../src/notifications");
-const socketNotifications = require("../src/socket.io/notifications");
+const db = require('./mocks/databasemock');
+const meta = require('../src/meta');
+const user = require('../src/user');
+const topics = require('../src/topics');
+const categories = require('../src/categories');
+const notifications = require('../src/notifications');
+const socketNotifications = require('../src/socket.io/notifications');
 
 const sleep = util.promisify(setTimeout);
 
-describe("Notifications", () => {
+describe('Notifications', () => {
 	let uid;
 	let notification;
 
 	before((done) => {
-		user.create({ username: "poster" }, (err, _uid) => {
+		user.create({ username: 'poster' }, (err, _uid) => {
 			if (err) {
 				return done(err);
 			}
@@ -29,19 +29,19 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should fail to create notification without a nid", (done) => {
+	it('should fail to create notification without a nid', (done) => {
 		notifications.create({}, (err) => {
-			assert.equal(err.message, "[[error:no-notification-id]]");
+			assert.equal(err.message, '[[error:no-notification-id]]');
 			done();
 		});
 	});
 
-	it("should create a notification", (done) => {
+	it('should create a notification', (done) => {
 		notifications.create(
 			{
-				bodyShort: "bodyShort",
-				nid: "notification_id",
-				path: "/notification/path",
+				bodyShort: 'bodyShort',
+				nid: 'notification_id',
+				path: '/notification/path',
 				pid: 1,
 			},
 			(err, _notification) => {
@@ -52,7 +52,7 @@ describe("Notifications", () => {
 					assert.ifError(err);
 					assert(exists);
 					db.isSortedSetMember(
-						"notifications",
+						'notifications',
 						notification.nid,
 						(err, isMember) => {
 							assert.ifError(err);
@@ -65,12 +65,12 @@ describe("Notifications", () => {
 		);
 	});
 
-	it("should return null if pid is same and importance is lower", (done) => {
+	it('should return null if pid is same and importance is lower', (done) => {
 		notifications.create(
 			{
-				bodyShort: "bodyShort",
-				nid: "notification_id",
-				path: "/notification/path",
+				bodyShort: 'bodyShort',
+				nid: 'notification_id',
+				path: '/notification/path',
 				pid: 1,
 				importance: 1,
 			},
@@ -82,7 +82,7 @@ describe("Notifications", () => {
 		);
 	});
 
-	it("should get empty array", (done) => {
+	it('should get empty array', (done) => {
 		notifications.getMultiple(null, (err, data) => {
 			assert.ifError(err);
 			assert(Array.isArray(data));
@@ -91,7 +91,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should get notifications", (done) => {
+	it('should get notifications', (done) => {
 		notifications.getMultiple([notification.nid], (err, notificationsData) => {
 			assert.ifError(err);
 			assert(Array.isArray(notificationsData));
@@ -101,7 +101,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should do nothing", (done) => {
+	it('should do nothing', (done) => {
 		notifications.push(null, [], (err) => {
 			assert.ifError(err);
 			notifications.push({ nid: null }, [], (err) => {
@@ -114,7 +114,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should push a notification to uid", (done) => {
+	it('should push a notification to uid', (done) => {
 		notifications.push(notification, [uid], (err) => {
 			assert.ifError(err);
 			setTimeout(() => {
@@ -131,8 +131,8 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should push a notification to a group", (done) => {
-		notifications.pushGroup(notification, "registered-users", (err) => {
+	it('should push a notification to a group', (done) => {
+		notifications.pushGroup(notification, 'registered-users', (err) => {
 			assert.ifError(err);
 			setTimeout(() => {
 				db.isSortedSetMember(
@@ -148,10 +148,10 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should push a notification to groups", (done) => {
+	it('should push a notification to groups', (done) => {
 		notifications.pushGroups(
 			notification,
-			["registered-users", "administrators"],
+			['registered-users', 'administrators'],
 			(err) => {
 				assert.ifError(err);
 				setTimeout(() => {
@@ -169,7 +169,7 @@ describe("Notifications", () => {
 		);
 	});
 
-	it("should not mark anything with invalid uid or nid", (done) => {
+	it('should not mark anything with invalid uid or nid', (done) => {
 		socketNotifications.markRead({ uid: null }, null, (err) => {
 			assert.ifError(err);
 			socketNotifications.markRead({ uid: uid }, null, (err) => {
@@ -179,7 +179,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should mark a notification read", (done) => {
+	it('should mark a notification read', (done) => {
 		socketNotifications.markRead({ uid: uid }, notification.nid, (err) => {
 			assert.ifError(err);
 			db.isSortedSetMember(
@@ -202,7 +202,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should not mark anything with invalid uid or nid", (done) => {
+	it('should not mark anything with invalid uid or nid', (done) => {
 		socketNotifications.markUnread({ uid: null }, null, (err) => {
 			assert.ifError(err);
 			socketNotifications.markUnread({ uid: uid }, null, (err) => {
@@ -212,14 +212,14 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should error if notification does not exist", (done) => {
+	it('should error if notification does not exist', (done) => {
 		socketNotifications.markUnread({ uid: uid }, 123123, (err) => {
-			assert.equal(err.message, "[[error:no-notification]]");
+			assert.equal(err.message, '[[error:no-notification]]');
 			done();
 		});
 	});
 
-	it("should mark a notification unread", (done) => {
+	it('should mark a notification unread', (done) => {
 		socketNotifications.markUnread({ uid: uid }, notification.nid, (err) => {
 			assert.ifError(err);
 			db.isSortedSetMember(
@@ -246,7 +246,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should mark all notifications read", (done) => {
+	it('should mark all notifications read', (done) => {
 		socketNotifications.markAllRead({ uid: uid }, null, (err) => {
 			assert.ifError(err);
 			db.isSortedSetMember(
@@ -269,25 +269,25 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should not do anything", (done) => {
+	it('should not do anything', (done) => {
 		socketNotifications.markAllRead({ uid: 1000 }, null, (err) => {
 			assert.ifError(err);
 			done();
 		});
 	});
 
-	it("should link to the first unread post in a watched topic", async () => {
-		const watcherUid = await user.create({ username: "watcher" });
+	it('should link to the first unread post in a watched topic', async () => {
+		const watcherUid = await user.create({ username: 'watcher' });
 		const { cid } = await categories.create({
-			name: "Test Category",
-			description: "Test category created by testing script",
+			name: 'Test Category',
+			description: 'Test category created by testing script',
 		});
 
 		const { topicData } = await topics.post({
 			uid: watcherUid,
 			cid: cid,
-			title: "Test Topic Title",
-			content: "The content of test topic",
+			title: 'Test Topic Title',
+			content: 'The content of test topic',
 		});
 		const { tid } = topicData;
 
@@ -295,13 +295,13 @@ describe("Notifications", () => {
 
 		const { pid } = await topics.reply({
 			uid: uid,
-			content: "This is the first reply.",
+			content: 'This is the first reply.',
 			tid: tid,
 		});
 
 		await topics.reply({
 			uid: uid,
-			content: "This is the second reply.",
+			content: 'This is the second reply.',
 			tid: tid,
 		});
 		// notifications are sent asynchronously with a 1 second delay.
@@ -310,26 +310,26 @@ describe("Notifications", () => {
 		assert.equal(
 			notifications.unread.length,
 			1,
-			"there should be 1 unread notification",
+			'there should be 1 unread notification',
 		);
 		assert.equal(
-			`${nconf.get("relative_path")}/post/${pid}`,
+			`${nconf.get('relative_path')}/post/${pid}`,
 			notifications.unread[0].path,
-			"the notification should link to the first unread post",
+			'the notification should link to the first unread post',
 		);
 	});
 
-	it("should get notification by nid", (done) => {
+	it('should get notification by nid', (done) => {
 		socketNotifications.get(
 			{ uid: uid },
 			{ nids: [notification.nid] },
 			(err, data) => {
 				assert.ifError(err);
-				assert.equal(data[0].bodyShort, "bodyShort");
-				assert.equal(data[0].nid, "notification_id");
+				assert.equal(data[0].bodyShort, 'bodyShort');
+				assert.equal(data[0].nid, 'notification_id');
 				assert.equal(
 					data[0].path,
-					`${nconf.get("relative_path")}/notification/path`,
+					`${nconf.get('relative_path')}/notification/path`,
 				);
 				done();
 			},
@@ -340,19 +340,19 @@ describe("Notifications", () => {
 		socketNotifications.get({ uid: uid }, {}, (err, data) => {
 			assert.ifError(err);
 			assert.equal(data.unread.length, 0);
-			assert.equal(data.read[0].nid, "notification_id");
+			assert.equal(data.read[0].nid, 'notification_id');
 			done();
 		});
 	});
 
-	it("should error if not logged in", (done) => {
+	it('should error if not logged in', (done) => {
 		socketNotifications.deleteAll({ uid: 0 }, null, (err) => {
-			assert.equal(err.message, "[[error:no-privileges]]");
+			assert.equal(err.message, '[[error:no-privileges]]');
 			done();
 		});
 	});
 
-	it("should delete all user notifications", (done) => {
+	it('should delete all user notifications', (done) => {
 		socketNotifications.deleteAll({ uid: uid }, null, (err) => {
 			assert.ifError(err);
 			socketNotifications.get({ uid: uid }, {}, (err, data) => {
@@ -364,7 +364,7 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should return empty with falsy uid", (done) => {
+	it('should return empty with falsy uid', (done) => {
 		user.notifications.get(0, (err, data) => {
 			assert.ifError(err);
 			assert.equal(data.read.length, 0);
@@ -373,21 +373,21 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should get all notifications and filter", (done) => {
-		const nid = "willbefiltered";
+	it('should get all notifications and filter', (done) => {
+		const nid = 'willbefiltered';
 		notifications.create(
 			{
-				bodyShort: "bodyShort",
+				bodyShort: 'bodyShort',
 				nid: nid,
-				path: "/notification/path",
-				type: "post",
+				path: '/notification/path',
+				type: 'post',
 			},
 			(err, notification) => {
 				assert.ifError(err);
 				notifications.push(notification, [uid], (err) => {
 					assert.ifError(err);
 					setTimeout(() => {
-						user.notifications.getAll(uid, "post", (err, nids) => {
+						user.notifications.getAll(uid, 'post', (err, nids) => {
 							assert.ifError(err);
 							assert(nids.includes(nid));
 							done();
@@ -398,9 +398,9 @@ describe("Notifications", () => {
 		);
 	});
 
-	it("should not get anything if notifications does not exist", (done) => {
+	it('should not get anything if notifications does not exist', (done) => {
 		user.notifications.getNotifications(
-			["doesnotexistnid1", "doesnotexistnid2"],
+			['doesnotexistnid1', 'doesnotexistnid2'],
 			uid,
 			(err, data) => {
 				assert.ifError(err);
@@ -410,23 +410,23 @@ describe("Notifications", () => {
 		);
 	});
 
-	it("should get daily notifications", (done) => {
+	it('should get daily notifications', (done) => {
 		user.notifications.getDailyUnread(uid, (err, data) => {
 			assert.ifError(err);
-			assert.equal(data[0].nid, "willbefiltered");
+			assert.equal(data[0].nid, 'willbefiltered');
 			done();
 		});
 	});
 
-	it("should return empty array for invalid interval", (done) => {
-		user.notifications.getUnreadInterval(uid, "2 aeons", (err, data) => {
+	it('should return empty array for invalid interval', (done) => {
+		user.notifications.getUnreadInterval(uid, '2 aeons', (err, data) => {
 			assert.ifError(err);
 			assert.deepEqual(data, []);
 			done();
 		});
 	});
 
-	it("should return 0 for falsy uid", (done) => {
+	it('should return 0 for falsy uid', (done) => {
 		user.notifications.getUnreadCount(0, (err, count) => {
 			assert.ifError(err);
 			assert.equal(count, 0);
@@ -434,40 +434,40 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should not do anything if uid is falsy", (done) => {
+	it('should not do anything if uid is falsy', (done) => {
 		user.notifications.deleteAll(0, (err) => {
 			assert.ifError(err);
 			done();
 		});
 	});
 
-	it("should send notification to followers of user when he posts", async () => {
-		const followerUid = await user.create({ username: "follower" });
+	it('should send notification to followers of user when he posts', async () => {
+		const followerUid = await user.create({ username: 'follower' });
 		await user.follow(followerUid, uid);
 		const { cid } = await categories.create({
-			name: "Test Category",
-			description: "Test category created by testing script",
+			name: 'Test Category',
+			description: 'Test category created by testing script',
 		});
 		await topics.post({
 			uid: uid,
 			cid: cid,
-			title: "Test Topic Title",
-			content: "The content of test topic",
+			title: 'Test Topic Title',
+			content: 'The content of test topic',
 		});
 		await sleep(1100);
-		const data = await user.notifications.getAll(followerUid, "");
+		const data = await user.notifications.getAll(followerUid, '');
 		assert(data);
 	});
 
-	it("should send welcome notification", (done) => {
-		meta.config.welcomeNotification = "welcome to the forums";
+	it('should send welcome notification', (done) => {
+		meta.config.welcomeNotification = 'welcome to the forums';
 		user.notifications.sendWelcomeNotification(uid, (err) => {
 			assert.ifError(err);
 			user.notifications.sendWelcomeNotification(uid, (err) => {
 				assert.ifError(err);
 				setTimeout(() => {
-					user.notifications.getAll(uid, "", (err, data) => {
-						meta.config.welcomeNotification = "";
+					user.notifications.getAll(uid, '', (err, data) => {
+						meta.config.welcomeNotification = '';
 						assert.ifError(err);
 						assert(data.includes(`welcome_${uid}`), data);
 						done();
@@ -477,12 +477,12 @@ describe("Notifications", () => {
 		});
 	});
 
-	it("should prune notifications", (done) => {
+	it('should prune notifications', (done) => {
 		notifications.create(
 			{
-				bodyShort: "bodyShort",
-				nid: "tobedeleted",
-				path: "/notification/path",
+				bodyShort: 'bodyShort',
+				nid: 'tobedeleted',
+				path: '/notification/path',
 			},
 			(err, notification) => {
 				assert.ifError(err);
@@ -490,7 +490,7 @@ describe("Notifications", () => {
 					assert.ifError(err);
 					const month = 2592000000;
 					db.sortedSetAdd(
-						"notifications",
+						'notifications',
 						Date.now() - 2 * month,
 						notification.nid,
 						(err) => {

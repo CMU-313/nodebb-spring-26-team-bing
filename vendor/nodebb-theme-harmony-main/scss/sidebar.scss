@@ -120,13 +120,13 @@
     }
   }
 
-  [data-widget-area="sidebar-footer"] {
+  [data-widget-area='sidebar-footer'] {
     font-size: $font-size-base * 0.75;
   }
 }
 
 /*rtl:begin:ignore*/
-html[data-dir="rtl"] {
+html[data-dir='rtl'] {
   .sidebar {
     &.open {
       .sidebar-toggle {

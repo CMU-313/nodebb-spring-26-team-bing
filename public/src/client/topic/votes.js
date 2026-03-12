@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-define("forum/topic/votes", [
-	"components",
-	"translator",
-	"api",
-	"hooks",
-	"bootbox",
-	"alerts",
-	"bootstrap",
+define('forum/topic/votes', [
+	'components',
+	'translator',
+	'api',
+	'hooks',
+	'bootbox',
+	'alerts',
+	'bootstrap',
 ], function (components, translator, api, hooks, bootbox, alerts, bootstrap) {
 	const Votes = {};
 	let _showTooltip = {};
@@ -16,32 +16,32 @@ define("forum/topic/votes", [
 		_showTooltip = {};
 		if (canSeeUpVotes()) {
 			components
-				.get("topic")
+				.get('topic')
 				.on(
-					"mouseenter",
+					'mouseenter',
 					'[data-pid] [component="post/vote-count"]',
 					loadDataAndCreateTooltip,
 				);
 			components
-				.get("topic")
+				.get('topic')
 				.on(
-					"mouseleave",
+					'mouseleave',
 					'[data-pid] [component="post/vote-count"]',
 					destroyTooltip,
 				);
 		}
 
 		components
-			.get("topic")
+			.get('topic')
 			.on(
-				"mouseenter",
+				'mouseenter',
 				'[data-pid] [component="post/announce-count"]',
 				loadDataAndCreateTooltip,
 			);
 		components
-			.get("topic")
+			.get('topic')
 			.on(
-				"mouseleave",
+				'mouseleave',
 				'[data-pid] [component="post/announce-count"]',
 				destroyTooltip,
 			);
@@ -51,8 +51,8 @@ define("forum/topic/votes", [
 		const { upvoteVisibility, privileges } = ajaxify.data;
 		return (
 			privileges.isAdminOrMod ||
-			upvoteVisibility === "all" ||
-			(upvoteVisibility === "loggedin" && config.loggedIn)
+			upvoteVisibility === 'all' ||
+			(upvoteVisibility === 'loggedin' && config.loggedIn)
 		);
 	}
 
@@ -60,20 +60,20 @@ define("forum/topic/votes", [
 		const { upvoteVisibility, downvoteVisibility, privileges } = ajaxify.data;
 		return (
 			privileges.isAdminOrMod ||
-			upvoteVisibility === "all" ||
-			downvoteVisibility === "all" ||
-			((upvoteVisibility === "loggedin" || downvoteVisibility === "loggedin") &&
+			upvoteVisibility === 'all' ||
+			downvoteVisibility === 'all' ||
+			((upvoteVisibility === 'loggedin' || downvoteVisibility === 'loggedin') &&
 				config.loggedIn)
 		);
 	}
 
 	function destroyTooltip() {
 		const $this = $(this);
-		const pid = $this.parents("[data-pid]").attr("data-pid");
+		const pid = $this.parents('[data-pid]').attr('data-pid');
 		const tooltip = bootstrap.Tooltip.getInstance(this);
 		if (tooltip) {
 			tooltip.dispose();
-			$this.attr("title", "");
+			$this.attr('title', '');
 		}
 		_showTooltip[pid] = false;
 	}
@@ -81,15 +81,15 @@ define("forum/topic/votes", [
 	function loadDataAndCreateTooltip() {
 		const $this = $(this);
 		const el = $this.parent();
-		const pid = el.parents("[data-pid]").attr("data-pid");
+		const pid = el.parents('[data-pid]').attr('data-pid');
 		_showTooltip[pid] = true;
 		const tooltip = bootstrap.Tooltip.getInstance(this);
 		if (tooltip) {
 			tooltip.dispose();
-			$this.attr("title", "");
+			$this.attr('title', '');
 		}
 		const path =
-			$this.attr("component") === "post/vote-count"
+			$this.attr('component') === 'post/vote-count'
 				? `/posts/${encodeURIComponent(pid)}/upvoters`
 				: `/posts/${encodeURIComponent(pid)}/announcers/tooltip`;
 
@@ -105,43 +105,43 @@ define("forum/topic/votes", [
 
 	function createTooltip(el, data) {
 		function doCreateTooltip(title) {
-			el.attr("title", title);
+			el.attr('title', title);
 			new bootstrap.Tooltip(el, {
-				container: "#content",
+				container: '#content',
 				html: true,
 			}).show();
 		}
 		let usernames = data.usernames.filter(
-			(name) => name !== "[[global:former-user]]",
+			(name) => name !== '[[global:former-user]]',
 		);
 		if (!usernames.length) {
 			return;
 		}
 		if (usernames.length + data.otherCount > data.cutoff) {
-			usernames = usernames.join(", ").replace(/,/g, "|");
+			usernames = usernames.join(', ').replace(/,/g, '|');
 			translator.translate(
-				"[[topic:users-and-others, " +
+				'[[topic:users-and-others, ' +
 					usernames +
-					", " +
+					', ' +
 					data.otherCount +
-					"]]",
+					']]',
 				function (translated) {
-					translated = translated.replace(/\|/g, ",");
+					translated = translated.replace(/\|/g, ',');
 					doCreateTooltip(translated);
 				},
 			);
 		} else {
-			usernames = usernames.join(", ");
+			usernames = usernames.join(', ');
 			doCreateTooltip(usernames);
 		}
 	}
 
 	Votes.toggleVote = function (button, className, delta) {
-		const post = button.closest("[data-pid]");
+		const post = button.closest('[data-pid]');
 		const currentState = post.find(className).length;
 
-		const method = currentState ? "del" : "put";
-		const pid = post.attr("data-pid");
+		const method = currentState ? 'del' : 'put';
+		const pid = post.attr('data-pid');
 		api[method](
 			`/posts/${encodeURIComponent(pid)}/vote`,
 			{
@@ -150,15 +150,15 @@ define("forum/topic/votes", [
 			function (err) {
 				if (err) {
 					if (!app.user.uid) {
-						ajaxify.go("login");
+						ajaxify.go('login');
 						return;
 					}
 					return alerts.error(err);
 				}
-				hooks.fire("action:post.toggleVote", {
+				hooks.fire('action:post.toggleVote', {
 					pid: pid,
 					delta: delta,
-					unvote: method === "del",
+					unvote: method === 'del',
 				});
 			},
 		);
@@ -178,18 +178,18 @@ define("forum/topic/votes", [
 					return alerts.error(err);
 				}
 
-				app.parseAndTranslate("modals/votes", data, function (html) {
+				app.parseAndTranslate('modals/votes', data, function (html) {
 					const dialog = bootbox.dialog({
-						title: "[[global:voters]]",
+						title: '[[global:voters]]',
 						message: html,
-						className: "vote-modal",
+						className: 'vote-modal',
 						show: true,
 						onEscape: true,
 						backdrop: true,
 					});
 
-					dialog.on("click", function () {
-						dialog.modal("hide");
+					dialog.on('click', function () {
+						dialog.modal('hide');
 					});
 				});
 			},
@@ -201,18 +201,18 @@ define("forum/topic/votes", [
 			.get(`/posts/${encodeURIComponent(pid)}/announcers`, {})
 			.catch((err) => alerts.error(err));
 
-		const html = await app.parseAndTranslate("modals/announcers", data);
+		const html = await app.parseAndTranslate('modals/announcers', data);
 		const dialog = bootbox.dialog({
 			title: `[[topic:announcers-x, ${data.announceCount}]]`,
 			message: html,
-			className: "announce-modal",
+			className: 'announce-modal',
 			show: true,
 			onEscape: true,
 			backdrop: true,
 		});
 
-		dialog.on("click", function () {
-			dialog.modal("hide");
+		dialog.on('click', function () {
+			dialog.modal('hide');
 		});
 	};
 

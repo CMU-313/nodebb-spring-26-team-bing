@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const categories = require("../../categories");
-const meta = require("../../meta");
-const activitypub = require("../../activitypub");
-const api = require("../../api");
+const categories = require('../../categories');
+const meta = require('../../meta');
+const activitypub = require('../../activitypub');
+const api = require('../../api');
 
-const helpers = require("../helpers");
+const helpers = require('../helpers');
 
 const Categories = module.exports;
 
@@ -75,13 +75,13 @@ Categories.setWatchState = async (req, res) => {
 	const { cid } = req.params;
 	let { uid, state } = req.body;
 
-	if (req.method === "DELETE") {
+	if (req.method === 'DELETE') {
 		// DELETE is always setting state to system default in acp
 		state = categories.watchStates[meta.config.categoryWatchState];
 	} else if (Object.keys(categories.watchStates).includes(state)) {
 		state = categories.watchStates[state]; // convert to integer for backend processing
 	} else {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	const { cids: modified } = await api.categories.setWatchState(req, {
@@ -107,7 +107,7 @@ Categories.setPrivilege = async (req, res) => {
 		cid,
 		privilege,
 		member: req.body.member,
-		set: req.method === "PUT",
+		set: req.method === 'PUT',
 	});
 
 	const privilegeSet = await api.categories.getPrivileges(req, {
@@ -120,7 +120,7 @@ Categories.setModerator = async (req, res) => {
 	await api.categories.setModerator(req, {
 		cid: req.params.cid,
 		member: req.params.uid,
-		set: req.method === "PUT",
+		set: req.method === 'PUT',
 	});
 
 	const privilegeSet = await api.categories.getPrivileges(req, {
@@ -139,7 +139,7 @@ Categories.follow = async (req, res, next) => {
 		return next();
 	}
 
-	await activitypub.out.follow("cid", id, actor);
+	await activitypub.out.follow('cid', id, actor);
 
 	helpers.formatApiResponse(200, res, {});
 };
@@ -153,6 +153,6 @@ Categories.unfollow = async (req, res, next) => {
 		return next();
 	}
 
-	await activitypub.out.undo.follow("cid", id, actor);
+	await activitypub.out.undo.follow('cid', id, actor);
 	helpers.formatApiResponse(200, res, {});
 };

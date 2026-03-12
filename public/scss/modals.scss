@@ -3,7 +3,7 @@
   bottom: 10%;
   right: 2rem;
   z-index: $zindex-modal;
-  [component="category-selector-selected"] span {
+  [component='category-selector-selected'] span {
     display: inline-flex !important;
   }
   .bootstrap-tagsinput {

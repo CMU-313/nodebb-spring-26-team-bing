@@ -17,13 +17,13 @@ post:
             value:
               type: string
               description: The value that incoming content will be matched against (used alongside `type`)
-              example: "example"
+              example: 'example'
             cid:
               type: number
               description: The category ID of a local category
               example: 1
   responses:
-    "200":
+    '200':
       description: rule successfully created
       content:
         application/json:

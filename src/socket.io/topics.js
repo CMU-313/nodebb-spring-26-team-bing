@@ -1,38 +1,38 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const posts = require("../posts");
-const topics = require("../topics");
-const user = require("../user");
-const meta = require("../meta");
-const privileges = require("../privileges");
-const cache = require("../cache");
-const events = require("../events");
+const db = require('../database');
+const posts = require('../posts');
+const topics = require('../topics');
+const user = require('../user');
+const meta = require('../meta');
+const privileges = require('../privileges');
+const cache = require('../cache');
+const events = require('../events');
 
 const SocketTopics = module.exports;
 
-require("./topics/unread")(SocketTopics);
-require("./topics/move")(SocketTopics);
-require("./topics/tools")(SocketTopics);
-require("./topics/infinitescroll")(SocketTopics);
-require("./topics/tags")(SocketTopics);
-require("./topics/merge")(SocketTopics);
+require('./topics/unread')(SocketTopics);
+require('./topics/move')(SocketTopics);
+require('./topics/tools')(SocketTopics);
+require('./topics/infinitescroll')(SocketTopics);
+require('./topics/tags')(SocketTopics);
+require('./topics/merge')(SocketTopics);
 
 SocketTopics.postcount = async function (socket, tid) {
-	const canRead = await privileges.topics.can("topics:read", tid, socket.uid);
+	const canRead = await privileges.topics.can('topics:read', tid, socket.uid);
 	if (!canRead) {
-		throw new Error("[[no-privileges]]");
+		throw new Error('[[no-privileges]]');
 	}
-	return await topics.getTopicField(tid, "postcount");
+	return await topics.getTopicField(tid, 'postcount');
 };
 
 SocketTopics.bookmark = async function (socket, data) {
 	if (!socket.uid || !data) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
-	const postcount = await topics.getTopicField(data.tid, "postcount");
+	const postcount = await topics.getTopicField(data.tid, 'postcount');
 	if (
 		data.index > meta.config.bookmarkThreshold &&
 		postcount > meta.config.bookmarkThreshold
@@ -53,11 +53,11 @@ SocketTopics.bookmark = async function (socket, data) {
 
 SocketTopics.createTopicFromPosts = async function (socket, data) {
 	if (!socket.uid) {
-		throw new Error("[[error:not-logged-in]]");
+		throw new Error('[[error:not-logged-in]]');
 	}
 
 	if (!data || !data.title || !data.pids || !Array.isArray(data.pids)) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	const result = await topics.createTopicFromPosts(
@@ -84,36 +84,36 @@ SocketTopics.isFollowed = async function (socket, tid) {
 };
 
 SocketTopics.isModerator = async function (socket, tid) {
-	const cid = await topics.getTopicField(tid, "cid");
+	const cid = await topics.getTopicField(tid, 'cid');
 	return await user.isModerator(socket.uid, cid);
 };
 
 SocketTopics.getMyNextPostIndex = async function (socket, data) {
 	if (!data || !data.tid || !data.index || !data.sort) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	async function getTopicPids(index) {
 		const topicSet =
-			data.sort === "most_votes"
+			data.sort === 'most_votes'
 				? `tid:${data.tid}:posts:votes`
 				: `tid:${data.tid}:posts`;
 		const reverse =
-			data.sort === "newest_to_oldest" || data.sort === "most_votes";
+			data.sort === 'newest_to_oldest' || data.sort === 'most_votes';
 		const cacheKey = `np:s:${topicSet}:r:${String(reverse)}:tid:${data.tid}:pids`;
 		const topicPids = cache.get(cacheKey);
 		if (topicPids) {
 			return topicPids.slice(index - 1);
 		}
 		const pids = await db[
-			reverse ? "getSortedSetRevRange" : "getSortedSetRange"
+			reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'
 		](topicSet, 0, -1);
 		cache.set(cacheKey, pids, 30000);
 		return pids.slice(index - 1);
 	}
 
 	async function getUserPids() {
-		const cid = await topics.getTopicField(data.tid, "cid");
+		const cid = await topics.getTopicField(data.tid, 'cid');
 		const cacheKey = `np:cid:${cid}:uid:${socket.uid}:pids`;
 		const userPids = cache.get(cacheKey);
 		if (userPids) {
@@ -160,4 +160,4 @@ SocketTopics.getPostCountInTopic = async function (socket, tid) {
 	return await db.sortedSetScore(`tid:${tid}:posters`, socket.uid);
 };
 
-require("../promisify")(SocketTopics);
+require('../promisify')(SocketTopics);

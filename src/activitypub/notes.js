@@ -1,29 +1,29 @@
-"use strict";
+'use strict';
 
-const winston = require("winston");
-const nconf = require("nconf");
-const tokenizer = require("sbd");
-const pretty = require("pretty");
+const winston = require('winston');
+const nconf = require('nconf');
+const tokenizer = require('sbd');
+const pretty = require('pretty');
 
-const db = require("../database");
-const batch = require("../batch");
-const meta = require("../meta");
-const privileges = require("../privileges");
-const categories = require("../categories");
-const messaging = require("../messaging");
-const notifications = require("../notifications");
-const user = require("../user");
-const topics = require("../topics");
-const posts = require("../posts");
-const api = require("../api");
-const utils = require("../utils");
+const db = require('../database');
+const batch = require('../batch');
+const meta = require('../meta');
+const privileges = require('../privileges');
+const categories = require('../categories');
+const messaging = require('../messaging');
+const notifications = require('../notifications');
+const user = require('../user');
+const topics = require('../topics');
+const posts = require('../posts');
+const api = require('../api');
+const utils = require('../utils');
 
 const activitypub = module.parent.exports;
 const Notes = module.exports;
 
 Notes._normalizeTags = async (tag, cid) => {
-	const systemTags = (meta.config.systemTags || "").split(",");
-	const maxTags = await categories.getCategoryField(cid, "maxTags");
+	const systemTags = (meta.config.systemTags || '').split(',');
+	const maxTags = await categories.getCategoryField(cid, 'maxTags');
 	let tags = tag || [];
 
 	if (!Array.isArray(tags)) {
@@ -32,9 +32,9 @@ Notes._normalizeTags = async (tag, cid) => {
 	}
 
 	tags = tags
-		.filter(({ type }) => type === "Hashtag")
+		.filter(({ type }) => type === 'Hashtag')
 		.map((tag) => {
-			tag.name = tag.name.startsWith("#") ? tag.name.slice(1) : tag.name;
+			tag.name = tag.name.startsWith('#') ? tag.name.slice(1) : tag.name;
 			return tag;
 		})
 		.filter(({ name }) => !systemTags.includes(name))
@@ -59,7 +59,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 
 	let id = !activitypub.helpers.isUri(input) ? input.id : input;
 
-	let lockStatus = await db.incrObjectField("locks", id);
+	let lockStatus = await db.incrObjectField('locks', id);
 	lockStatus = lockStatus <= 1;
 	if (!lockStatus) {
 		// unable to achieve lock, stop processing.
@@ -70,7 +70,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 	}
 
 	try {
-		if (!(options.skipChecks || process.env.hasOwnProperty("CI"))) {
+		if (!(options.skipChecks || process.env.hasOwnProperty('CI'))) {
 			id = (await activitypub.checkHeader(id)) || id;
 		}
 
@@ -119,30 +119,30 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 		const hasTid = !!tid;
 
 		const cid = hasTid
-			? await topics.getTopicField(tid, "cid")
+			? await topics.getTopicField(tid, 'cid')
 			: options.cid || -1;
 		let crosspostCid = false;
 
 		if (options.cid && cid === -1) {
 			// Move topic if currently uncategorized
-			await api.topics.move({ uid: "system" }, { tid, cid: options.cid });
+			await api.topics.move({ uid: 'system' }, { tid, cid: options.cid });
 		}
 
 		const exists = await posts.exists(chain.map((p) => p.pid));
 		if (tid && exists.every(Boolean)) {
 			// All cached, return early.
-			activitypub.helpers.log("[notes/assert] No new notes to process.");
+			activitypub.helpers.log('[notes/assert] No new notes to process.');
 			return { tid, count: 0 };
 		}
 
 		if (hasTid) {
-			mainPid = await topics.getTopicField(tid, "mainPid");
+			mainPid = await topics.getTopicField(tid, 'mainPid');
 		} else {
 			// Check recipients/audience for category (local or remote)
 			const set = activitypub.helpers.makeSet(_activitypub, [
-				"to",
-				"cc",
-				"audience",
+				'to',
+				'cc',
+				'audience',
 			]);
 			await activitypub.actors.assert(Array.from(set));
 
@@ -154,7 +154,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 			);
 			const recipientCids = resolved
 				.filter(Boolean)
-				.filter(({ type }) => type === "category")
+				.filter(({ type }) => type === 'category')
 				.map((obj) => obj.id);
 
 			// Remote
@@ -178,7 +178,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 			} catch (e) {
 				// noop
 				winston.error(
-					"[activitypub/notes.assert] Could not parse URL of mainPid",
+					'[activitypub/notes.assert] Could not parse URL of mainPid',
 					e.stack,
 				);
 			}
@@ -201,9 +201,9 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 
 				// Remove any lines that contain quote-post fallbacks
 				prettified = prettified
-					.split("\n")
+					.split('\n')
 					.filter((line) => !line.startsWith('<p class="quote-inline"'))
-					.join("\n");
+					.join('\n');
 				const sentences = tokenizer.sentences(prettified, {
 					sanitize: true,
 					newline_boundaries: true,
@@ -214,9 +214,9 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 			// Remove any custom emoji from title
 			if (_activitypub && _activitypub.tag && Array.isArray(_activitypub.tag)) {
 				_activitypub.tag
-					.filter((tag) => tag.type === "Emoji")
+					.filter((tag) => tag.type === 'Emoji')
 					.forEach((tag) => {
-						title = title.replace(new RegExp(tag.name, "g"), "");
+						title = title.replace(new RegExp(tag.name, 'g'), '');
 					});
 			}
 		}
@@ -231,7 +231,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 			options.cid ||
 			(await assertRelation(chain[inputIndex !== -1 ? inputIndex : 0]));
 
-		const privilege = `topics:${tid ? "reply" : "create"}`;
+		const privilege = `topics:${tid ? 'reply' : 'create'}`;
 		const allowed = await privileges.categories.can(
 			privilege,
 			options.cid || cid,
@@ -309,7 +309,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 				activitypub.helpers.log(
 					`[activitypub/notes.assert] Associating tid ${tid} with context ${context}`,
 				);
-				await topics.setTopicField(tid, "context", context);
+				await topics.setTopicField(tid, 'context', context);
 			}
 		}
 
@@ -347,7 +347,7 @@ Notes.assert = async (uid, input, options = { skipChecks: false }) => {
 		return null;
 	} finally {
 		winston.verbose(`[activitypub/notes.assert] Releasing lock (${id})`);
-		await db.deleteObjectField("locks", id);
+		await db.deleteObjectField('locks', id);
 	}
 };
 
@@ -364,7 +364,7 @@ Notes.assertPrivate = async (object) => {
 	await Promise.all(
 		Array.from(recipients).map(async (value) => {
 			const { type, id } = await activitypub.helpers.resolveLocalId(value);
-			if (type === "user") {
+			if (type === 'user') {
 				localUids.push(id);
 				recipients.delete(value);
 				recipients.add(parseInt(id, 10));
@@ -384,14 +384,14 @@ Notes.assertPrivate = async (object) => {
 	// Locate the roomId based on `inReplyTo`
 	let roomId;
 	const resolved = await activitypub.helpers.resolveLocalId(object.inReplyTo);
-	let toMid = resolved.type === "message" && resolved.id;
+	let toMid = resolved.type === 'message' && resolved.id;
 	if (
 		object.inReplyTo &&
 		(await messaging.messageExists(toMid || object.inReplyTo))
 	) {
 		roomId = await messaging.getMessageField(
 			toMid || object.inReplyTo,
-			"roomId",
+			'roomId',
 		);
 	}
 
@@ -423,7 +423,7 @@ Notes.assertPrivate = async (object) => {
 	if (attachments && Array.isArray(attachments)) {
 		const images = attachments
 			.filter((attachment) => {
-				return attachment.mediaType.startsWith("image/");
+				return attachment.mediaType.startsWith('image/');
 			})
 			.map(({ url, href }) => url || href);
 		images.forEach((url) => {
@@ -435,8 +435,8 @@ Notes.assertPrivate = async (object) => {
 		await messaging.checkContent(payload.content, false);
 	} catch (e) {
 		const { displayname, userslug } = await user.getUserFields(payload.uid, [
-			"displayname",
-			"userslug",
+			'displayname',
+			'userslug',
 		]);
 		const notification = await notifications.create({
 			bodyShort: `[[error:remote-chat-received-too-long, ${displayname}]]`,
@@ -474,7 +474,7 @@ Notes.assertPrivate = async (object) => {
 	messaging.notifyUsersInRoom(payload.uid, roomId, message);
 
 	// Set real timestamp back so that the message shows even though it predates room joining
-	await messaging.setMessageField(payload.mid, "timestamp", timestamp);
+	await messaging.setMessageField(payload.mid, 'timestamp', timestamp);
 
 	return { roomId };
 };
@@ -493,16 +493,16 @@ async function assertRelation(post) {
 	let uids = [];
 	if (tag && tag.length) {
 		const slugs = tag.reduce((slugs, tag) => {
-			if (tag.type === "Mention") {
-				const [slug, hostname] = tag.name.slice(1).split("@");
-				if (hostname === nconf.get("url_parsed").hostname) {
+			if (tag.type === 'Mention') {
+				const [slug, hostname] = tag.name.slice(1).split('@');
+				if (hostname === nconf.get('url_parsed').hostname) {
 					slugs.push(slug);
 				}
 			}
 			return slugs;
 		}, []);
 
-		uids = slugs.length ? await db.sortedSetScores("userslug:uid", slugs) : [];
+		uids = slugs.length ? await db.sortedSetScores('userslug:uid', slugs) : [];
 		uids = uids.filter(Boolean);
 	}
 
@@ -510,7 +510,7 @@ async function assertRelation(post) {
 }
 
 async function assignCategory(post) {
-	activitypub.helpers.log("[activitypub] Checking auto-categorization rules.");
+	activitypub.helpers.log('[activitypub] Checking auto-categorization rules.');
 	let cid = undefined;
 	const rules = await activitypub.rules.list();
 	let tags = await Notes._normalizeTags(post._activitypub.tag || []);
@@ -519,7 +519,7 @@ async function assignCategory(post) {
 	cid = rules.reduce((cid, { type, value, cid: target }) => {
 		if (!cid) {
 			switch (type) {
-				case "hashtag": {
+				case 'hashtag': {
 					if (tags.includes(value.toLowerCase())) {
 						activitypub.helpers.log(
 							`[activitypub]   - Rule match: #${value}; cid: ${target}`,
@@ -529,7 +529,7 @@ async function assignCategory(post) {
 					break;
 				}
 
-				case "user": {
+				case 'user': {
 					if (post.uid === value) {
 						activitypub.helpers.log(
 							`[activitypub]   - Rule match: user ${value}; cid: ${target}`,
@@ -552,13 +552,13 @@ Notes.updateLocalRecipients = async (id, { to, cc }) => {
 	await Promise.all(
 		Array.from(recipients).map(async (recipient) => {
 			const { type, id } = await activitypub.helpers.resolveLocalId(recipient);
-			if (type === "user" && (await user.exists(id))) {
+			if (type === 'user' && (await user.exists(id))) {
 				uids.add(parseInt(id, 10));
 				return;
 			}
 
 			const followedUid = await db.getObjectField(
-				"followersUrl:uid",
+				'followersUrl:uid',
 				recipient,
 			);
 			if (followedUid) {
@@ -586,7 +586,7 @@ Notes.getParentChain = async (uid, input) => {
 	const traverse = async (uid, id) => {
 		// Handle remote reference to local post
 		const { type, id: localId } = await activitypub.helpers.resolveLocalId(id);
-		if (type === "post" && localId) {
+		if (type === 'post' && localId) {
 			return await traverse(uid, localId);
 		}
 
@@ -597,7 +597,7 @@ Notes.getParentChain = async (uid, input) => {
 				await traverse(uid, postData.toPid);
 			} else if (utils.isNumber(id)) {
 				// local pid without toPid, could be OP or reply to OP
-				const mainPid = await topics.getTopicField(postData.tid, "mainPid");
+				const mainPid = await topics.getTopicField(postData.tid, 'mainPid');
 				if (mainPid !== parseInt(id, 10)) {
 					await traverse(uid, mainPid);
 				}
@@ -608,7 +608,7 @@ Notes.getParentChain = async (uid, input) => {
 					? input
 					: undefined;
 			try {
-				object = object || (await activitypub.get("uid", uid, id));
+				object = object || (await activitypub.get('uid', uid, id));
 
 				// Handle incorrect id passed in
 				if (id !== object.id) {
@@ -637,7 +637,7 @@ Notes.getParentChain = async (uid, input) => {
 Notes.syncUserInboxes = async function (tid, uid) {
 	const [pids, { cid, mainPid, tags }] = await Promise.all([
 		db.getSortedSetMembers(`tid:${tid}:posts`),
-		topics.getTopicFields(tid, ["tid", "cid", "mainPid", "tags"]),
+		topics.getTopicFields(tid, ['tid', 'cid', 'mainPid', 'tags']),
 	]);
 	pids.unshift(mainPid);
 
@@ -711,7 +711,7 @@ Notes.announce.list = async ({ pid, tid }) => {
 		let mainPid;
 		[pids, mainPid] = await Promise.all([
 			db.getSortedSetMembers(`tid:${tid}:posts`),
-			topics.getTopicField(tid, "mainPid"),
+			topics.getTopicField(tid, 'mainPid'),
 		]);
 		pids.unshift(mainPid);
 	}
@@ -737,13 +737,13 @@ Notes.announce.list = async ({ pid, tid }) => {
 
 Notes.announce.add = async (pid, actor, timestamp = Date.now()) => {
 	const [tid] = await Promise.all([
-		posts.getPostField(pid, "tid"),
+		posts.getPostField(pid, 'tid'),
 		db.sortedSetAdd(`pid:${pid}:announces`, timestamp, actor),
 	]);
 	await Promise.all([
 		posts.setPostField(
 			pid,
-			"announces",
+			'announces',
 			await db.sortedSetCard(`pid:${pid}:announces`),
 		),
 		topics.tools.share(tid, actor, timestamp),
@@ -754,16 +754,16 @@ Notes.announce.remove = async (pid, actor) => {
 	await db.sortedSetRemove(`pid:${pid}:announces`, actor);
 	const count = await db.sortedSetCard(`pid:${pid}:announces`);
 	if (count > 0) {
-		await posts.setPostField(pid, "announces", count);
+		await posts.setPostField(pid, 'announces', count);
 	} else {
-		await db.deleteObjectField(`post:${pid}`, "announces");
+		await db.deleteObjectField(`post:${pid}`, 'announces');
 	}
 };
 
 Notes.announce.removeAll = async (pid) => {
 	await Promise.all([
 		db.delete(`pid:${pid}:announces`),
-		db.deleteObjectField(`post:${pid}`, "announces"),
+		db.deleteObjectField(`post:${pid}`, 'announces'),
 	]);
 };
 
@@ -775,7 +775,7 @@ Notes.delete = async (pids) => {
 	const exists = await posts.exists(pids);
 	pids = pids.filter((_, idx) => exists[idx]);
 
-	let tids = await posts.getPostsFields(pids, ["tid"]);
+	let tids = await posts.getPostsFields(pids, ['tid']);
 	tids = new Set(tids.map((obj) => obj.tid));
 
 	const recipientSets = pids.map((id) => `post:${id}:recipients`);
@@ -794,12 +794,12 @@ Notes.prune = async () => {
 	 *   - Replied to (contains a local reply)
 	 *   - Post within is liked
 	 */
-	winston.info("[notes/prune] Starting scheduled pruning of topics");
-	const start = "-inf";
+	winston.info('[notes/prune] Starting scheduled pruning of topics');
+	const start = '-inf';
 	const stop =
 		Date.now() - 1000 * 60 * 60 * 24 * meta.config.activitypubContentPruneDays;
 	let tids = await db.getSortedSetRangeByScore(
-		"cid:-1:tids",
+		'cid:-1:tids',
 		0,
 		-1,
 		start,
@@ -815,7 +815,7 @@ Notes.prune = async () => {
 	);
 	const hasLocalVoter = await Promise.all(
 		tids.map(async (tid) => {
-			const mainPid = await db.getObjectField(`topic:${tid}`, "mainPid");
+			const mainPid = await db.getObjectField(`topic:${tid}`, 'mainPid');
 			const pids = await db.getSortedSetMembers(`tid:${tid}:posts`);
 			pids.unshift(mainPid);
 
@@ -855,5 +855,5 @@ Notes.prune = async () => {
 		{ batch: 100 },
 	);
 
-	winston.info("[notes/prune] Scheduled pruning of topics complete.");
+	winston.info('[notes/prune] Scheduled pruning of topics complete.');
 };

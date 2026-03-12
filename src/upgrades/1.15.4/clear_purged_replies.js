@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const db = require("../../database");
+const _ = require('lodash');
+const db = require('../../database');
 
-const batch = require("../../batch");
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Clear purged replies and toPid",
+	name: 'Clear purged replies and toPid',
 	timestamp: Date.UTC(2020, 10, 26),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			async (pids) => {
 				progress.incr(pids.length);
 				let postData = await db.getObjects(pids.map((pid) => `post:${pid}`));
@@ -27,7 +27,7 @@ module.exports = {
 					.map((p) => p.pid);
 				await db.deleteObjectFields(
 					pidsToDelete.map((pid) => `post:${pid}`),
-					["toPid"],
+					['toPid'],
 				);
 
 				const repliesToDelete = _.uniq(

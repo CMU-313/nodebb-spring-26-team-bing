@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const helpers = require("./helpers");
+const helpers = require('./helpers');
 
 module.exports = function (app, name, middleware, controllers) {
 	const middlewares = [middleware.pluginHooks];
@@ -375,10 +375,10 @@ function apiRoutes(router, name, middleware, controllers) {
 		helpers.tryRoute(controllers.admin.categories.removeRemote),
 	);
 
-	const upload = require("../middleware/multer");
+	const upload = require('../middleware/multer');
 
 	const middlewares = [
-		upload.array("files[]", 20),
+		upload.array('files[]', 20),
 		middleware.validateFiles,
 		middleware.applyCSRF,
 		middleware.ensureLoggedIn,

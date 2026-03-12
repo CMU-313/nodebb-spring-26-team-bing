@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const topics = require(".");
-const user = require("../user");
-const categories = require("../categories");
-const posts = require("../posts");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const db = require('../database');
+const topics = require('.');
+const user = require('../user');
+const categories = require('../categories');
+const posts = require('../posts');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 const Crossposts = module.exports;
 
@@ -20,12 +20,12 @@ Crossposts.get = async function (tid) {
 		return cids;
 	}, new Set());
 	let categoriesData = await categories.getCategoriesFields(Array.from(cids), [
-		"cid",
-		"name",
-		"icon",
-		"bgColor",
-		"color",
-		"slug",
+		'cid',
+		'name',
+		'icon',
+		'bgColor',
+		'color',
+		'slug',
 	]);
 	categoriesData = categoriesData.reduce((map, category) => {
 		map.set(parseInt(category.cid, 10), category);
@@ -59,10 +59,10 @@ Crossposts.add = async function (tid, cid, uid) {
 	}
 	const exists = await categories.exists(cid);
 	if (!exists) {
-		throw new Error("[[error:invalid-cid]]");
+		throw new Error('[[error:invalid-cid]]');
 	}
 	if (uid < 0) {
-		throw new Error("[[error:invalid-uid]]");
+		throw new Error('[[error:invalid-uid]]');
 	}
 
 	const crossposts = await Crossposts.get(tid);
@@ -71,14 +71,14 @@ Crossposts.add = async function (tid, cid, uid) {
 	const crosspostId = utils.generateUUID();
 	if (!crosspostedCids.includes(String(cid))) {
 		const [topicData, pids] = await Promise.all([
-			topics.getTopicFields(tid, ["uid", "cid", "timestamp"]),
+			topics.getTopicFields(tid, ['uid', 'cid', 'timestamp']),
 			topics.getPids(tid),
 		]);
-		let pidTimestamps = await posts.getPostsFields(pids, ["timestamp"]);
+		let pidTimestamps = await posts.getPostsFields(pids, ['timestamp']);
 		pidTimestamps = pidTimestamps.map(({ timestamp }) => timestamp);
 
 		if (cid === topicData.cid) {
-			throw new Error("[[error:invalid-cid]]");
+			throw new Error('[[error:invalid-cid]]');
 		}
 		const zsets = [
 			`cid:${topicData.cid}:tids`,
@@ -113,7 +113,7 @@ Crossposts.add = async function (tid, cid, uid) {
 		]);
 		await categories.onTopicsMoved([cid]);
 	} else {
-		throw new Error("[[error:topic-already-crossposted]]");
+		throw new Error('[[error:topic-already-crossposted]]');
 	}
 
 	return [...crossposts, { id: crosspostId, uid, tid, cid, timestamp: now }];
@@ -137,11 +137,11 @@ Crossposts.remove = async function (tid, cid, uid) {
 		null,
 	);
 	if (!crosspostId) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	const [author, pids] = await Promise.all([
-		topics.getTopicField(tid, "uid"),
+		topics.getTopicField(tid, 'uid'),
 		topics.getPids(tid),
 	]);
 	let bulkRemove = [

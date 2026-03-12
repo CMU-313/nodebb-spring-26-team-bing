@@ -24,7 +24,7 @@ post:
               description: Target user id
               example: 1
   responses:
-    "200":
+    '200':
       description: Owner changed successfully
       content:
         application/json:
@@ -35,5 +35,5 @@ post:
                 $ref: ../../components/schemas/Status.yaml#/Status
               response:
                 type: object
-    "404":
+    '404':
       description: Post not found

@@ -9,26 +9,26 @@ get:
         type: string
         enum:
           [
-            "joindate",
-            "online",
-            "sort-posts",
-            "sort-reputation",
-            "banned",
-            "flagged",
+            'joindate',
+            'online',
+            'sort-posts',
+            'sort-reputation',
+            'banned',
+            'flagged',
           ]
       required: false
       description: Allows filtering of the user list via pre-defined sections
-      example: "joindate"
+      example: 'joindate'
     - in: query
       name: term
       schema:
         type: string
       required: false
       description: Allows for searching of user list
-      example: ""
+      example: ''
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:
@@ -94,7 +94,7 @@ get:
                             A six-character hexadecimal colour code assigned to the user. This
                             value is used in conjunction with `icon:text`
                             for the user's auto-generated icon
-                          example: "#f44336"
+                          example: '#f44336'
                         joindateISO:
                           type: string
                         lastonlineISO:

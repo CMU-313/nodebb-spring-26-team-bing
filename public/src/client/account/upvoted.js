@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-define("forum/account/upvoted", [
-	"forum/account/header",
-	"forum/account/posts",
+define('forum/account/upvoted', [
+	'forum/account/header',
+	'forum/account/posts',
 ], function (header, posts) {
 	const Upvoted = {};
 
@@ -10,10 +10,10 @@ define("forum/account/upvoted", [
 		header.init();
 
 		$('[component="post/content"] img:not(.not-responsive)').addClass(
-			"img-fluid",
+			'img-fluid',
 		);
 
-		posts.handleInfiniteScroll("account/upvoted");
+		posts.handleInfiniteScroll('account/upvoted');
 	};
 
 	return Upvoted;

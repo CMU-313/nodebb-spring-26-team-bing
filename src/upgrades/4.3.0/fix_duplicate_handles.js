@@ -1,23 +1,23 @@
-"use strict";
+'use strict';
 
-const user = require("../../user");
-const categories = require("../../categories");
-const activitypub = require("../../activitypub");
+const user = require('../../user');
+const categories = require('../../categories');
+const activitypub = require('../../activitypub');
 
-const db = require("../../database");
+const db = require('../../database');
 
 module.exports = {
 	// you should use spaces
 	// the underscores are there so you can double click to select the whole thing
-	name: "Fix duplicate accounts sharing identical handles",
+	name: 'Fix duplicate accounts sharing identical handles',
 	// remember, month is zero-indexed (so January is 0, December is 11)
 	timestamp: Date.UTC(2025, 3, 29),
 	method: async function () {
 		const { progress } = this;
 
 		// Build list of duplicate remote user handles
-		let handles = await db.getSortedSetMembers("ap.preferredUsername:sorted");
-		handles = handles.map((handle) => handle.split(":https://")[0]);
+		let handles = await db.getSortedSetMembers('ap.preferredUsername:sorted');
+		handles = handles.map((handle) => handle.split(':https://')[0]);
 		const duplicateUsers = new Set();
 		handles.forEach((handle, idx) => {
 			if (handles.indexOf(handle) !== idx) {
@@ -26,10 +26,10 @@ module.exports = {
 		});
 
 		// Build list of duplicate remote category handles
-		handles = await db.getSortedSetMembers("categories:name");
+		handles = await db.getSortedSetMembers('categories:name');
 		handles = handles
-			.filter((handle) => handle.indexOf("@") !== -1) // zset contains category names too
-			.map((handle) => handle.split(":https://")[0]);
+			.filter((handle) => handle.indexOf('@') !== -1) // zset contains category names too
+			.map((handle) => handle.split(':https://')[0]);
 		const duplicateCategories = new Set();
 		handles.forEach((handle, idx) => {
 			if (handles.indexOf(handle) !== idx) {
@@ -43,11 +43,11 @@ module.exports = {
 		await Promise.all(
 			Array.from(duplicateUsers).map(async (handle) => {
 				const max =
-					"(" +
+					'(' +
 					handle.substr(0, handle.length - 1) +
 					String.fromCharCode(handle.charCodeAt(handle.length - 1) + 1);
 				let ids = await db.getSortedSetRangeByLex(
-					"ap.preferredUsername:sorted",
+					'ap.preferredUsername:sorted',
 					`[${handle}`,
 					max,
 				);
@@ -63,7 +63,7 @@ module.exports = {
 							} catch (e) {
 								// User doesn't exist, maybe never did.
 								await db.sortedSetRemove(
-									"ap.preferredUsername:sorted",
+									'ap.preferredUsername:sorted',
 									`${handle}:${id}`,
 								);
 							}
@@ -73,7 +73,7 @@ module.exports = {
 
 				// Fix handle:uid backreference or delete
 				if (canonicalId) {
-					await db.setObjectField("handle:uid", handle, canonicalId);
+					await db.setObjectField('handle:uid', handle, canonicalId);
 				}
 
 				progress.incr();
@@ -84,11 +84,11 @@ module.exports = {
 		await Promise.all(
 			Array.from(duplicateCategories).map(async (handle) => {
 				const max =
-					"(" +
+					'(' +
 					handle.substr(0, handle.length - 1) +
 					String.fromCharCode(handle.charCodeAt(handle.length - 1) + 1);
 				let ids = await db.getSortedSetRangeByLex(
-					"categories:name",
+					'categories:name',
 					`[${handle}`,
 					max,
 				);
@@ -106,7 +106,7 @@ module.exports = {
 
 				// Fix handle:uid backreference or delete
 				if (canonicalId) {
-					await db.setObjectField("handle:cid", handle, canonicalId);
+					await db.setObjectField('handle:cid', handle, canonicalId);
 				}
 
 				progress.incr();

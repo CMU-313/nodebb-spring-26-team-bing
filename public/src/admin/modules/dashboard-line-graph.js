@@ -7,13 +7,13 @@ import {
 	PointElement,
 	Tooltip,
 	Filler,
-} from "chart.js";
+} from 'chart.js';
 
-import * as Benchpress from "benchpressjs";
-import * as bootbox from "bootbox";
-import * as translator from "../../modules/translator";
-import * as api from "../../modules/api";
-import * as hooks from "../../modules/hooks";
+import * as Benchpress from 'benchpressjs';
+import * as bootbox from 'bootbox';
+import * as translator from '../../modules/translator';
+import * as api from '../../modules/api';
+import * as hooks from '../../modules/hooks';
 
 Chart.register(
 	LineController,
@@ -29,8 +29,8 @@ let _current = null;
 let isMobile = false;
 
 export function init({ set, dataset }) {
-	const canvas = document.getElementById("analytics-traffic");
-	const canvasCtx = canvas.getContext("2d");
+	const canvas = document.getElementById('analytics-traffic');
+	const canvasCtx = canvas.getContext('2d');
 	const trafficLabels = utils.getHoursArray();
 
 	isMobile =
@@ -46,7 +46,7 @@ export function init({ set, dataset }) {
 	const t = translator.Translator.create();
 	return new Promise((resolve) => {
 		t.translateKey(
-			`admin/menu:${ajaxify.data.template.name.replace("admin/", "")}`,
+			`admin/menu:${ajaxify.data.template.name.replace('admin/', '')}`,
 			[],
 		).then((key) => {
 			const data = {
@@ -56,12 +56,12 @@ export function init({ set, dataset }) {
 						label: key,
 						fill: true,
 						tension: 0.25,
-						backgroundColor: "rgba(151,187,205,0.2)",
-						borderColor: "rgba(151,187,205,1)",
-						pointBackgroundColor: "rgba(151,187,205,1)",
-						pointHoverBackgroundColor: "rgba(151,187,205,1)",
-						pointBorderColor: "#fff",
-						pointHoverBorderColor: "rgba(151,187,205,1)",
+						backgroundColor: 'rgba(151,187,205,0.2)',
+						borderColor: 'rgba(151,187,205,1)',
+						pointBackgroundColor: 'rgba(151,187,205,1)',
+						pointHoverBackgroundColor: 'rgba(151,187,205,1)',
+						pointBorderColor: '#fff',
+						pointHoverBorderColor: 'rgba(151,187,205,1)',
 						data: dataset || [
 							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 							0, 0,
@@ -72,17 +72,17 @@ export function init({ set, dataset }) {
 
 			canvas.width = $(canvas).parent().width();
 
-			data.datasets[0].yAxisID = "left-y-axis";
+			data.datasets[0].yAxisID = 'left-y-axis';
 
 			_current = new Chart(canvasCtx, {
-				type: "line",
+				type: 'line',
 				data: data,
 				options: {
 					responsive: true,
 					scales: {
-						"left-y-axis": {
-							type: "linear",
-							position: "left",
+						'left-y-axis': {
+							type: 'linear',
+							position: 'left',
 							beginAtZero: true,
 							title: {
 								display: true,
@@ -92,7 +92,7 @@ export function init({ set, dataset }) {
 					},
 					interaction: {
 						intersect: false,
-						mode: "index",
+						mode: 'index',
 					},
 				},
 			});
@@ -108,19 +108,19 @@ export function init({ set, dataset }) {
 
 function handleUpdateControls({ set }) {
 	$('[data-action="updateGraph"]:not([data-units="custom"])').on(
-		"click",
+		'click',
 		function () {
 			let until = new Date();
-			const amount = $(this).attr("data-amount");
-			if ($(this).attr("data-units") === "days") {
+			const amount = $(this).attr('data-amount');
+			if ($(this).attr('data-units') === 'days') {
 				until.setHours(0, 0, 0, 0);
 			}
 			until = until.getTime();
-			update(set, $(this).attr("data-units"), until, amount);
+			update(set, $(this).attr('data-units'), until, amount);
 
-			require(["translator"], function (translator) {
+			require(['translator'], function (translator) {
 				translator.translate(
-					"[[admin/dashboard:page-views-custom]]",
+					'[[admin/dashboard:page-views-custom]]',
 					function (translated) {
 						$('[data-action="updateGraph"][data-units="custom"]').text(
 							translated,
@@ -132,54 +132,54 @@ function handleUpdateControls({ set }) {
 	);
 
 	$('[data-action="updateGraph"][data-units="custom"]').on(
-		"click",
+		'click',
 		function () {
 			const targetEl = $(this);
 
-			Benchpress.render("admin/partials/pageviews-range-select", {}).then(
+			Benchpress.render('admin/partials/pageviews-range-select', {}).then(
 				function (html) {
 					const modal = bootbox
 						.dialog({
-							title: "[[admin/dashboard:page-views-custom]]",
+							title: '[[admin/dashboard:page-views-custom]]',
 							message: html,
 							buttons: {
 								submit: {
-									label: "[[global:search]]",
-									className: "btn-primary",
+									label: '[[global:search]]',
+									className: 'btn-primary',
 									callback: submit,
 								},
 							},
 						})
-						.on("shown.bs.modal", function () {
+						.on('shown.bs.modal', function () {
 							const date = new Date();
 							const today = date.toISOString().slice(0, 10);
 							date.setDate(date.getDate() - 1);
 							const yesterday = date.toISOString().slice(0, 10);
 
 							modal
-								.find("#startRange")
-								.val(targetEl.attr("data-startRange") || yesterday);
+								.find('#startRange')
+								.val(targetEl.attr('data-startRange') || yesterday);
 							modal
-								.find("#endRange")
-								.val(targetEl.attr("data-endRange") || today);
+								.find('#endRange')
+								.val(targetEl.attr('data-endRange') || today);
 						});
 
 					function submit() {
 						// NEED TO ADD VALIDATION HERE FOR YYYY-MM-DD
-						const formData = modal.find("form").serializeObject();
+						const formData = modal.find('form').serializeObject();
 						const validRegexp = /\d{4}-\d{2}-\d{2}/;
 
 						// Input validation
 						if (!formData.startRange && !formData.endRange) {
 							// No range? Assume last 30 days
-							update(set, "days");
+							update(set, 'days');
 							return;
 						} else if (
 							!validRegexp.test(formData.startRange) ||
 							!validRegexp.test(formData.endRange)
 						) {
 							// Invalid Input
-							modal.find(".alert-danger").removeClass("hidden");
+							modal.find('.alert-danger').removeClass('hidden');
 							return false;
 						}
 
@@ -190,13 +190,13 @@ function handleUpdateControls({ set }) {
 							(until - new Date(formData.startRange).getTime()) /
 							(1000 * 60 * 60 * 24);
 
-						update(set, "days", until, amount);
+						update(set, 'days', until, amount);
 
 						// Update "custom range" label
-						targetEl.attr("data-startRange", formData.startRange);
-						targetEl.attr("data-endRange", formData.endRange);
+						targetEl.attr('data-startRange', formData.startRange);
+						targetEl.attr('data-endRange', formData.endRange);
 						targetEl.html(
-							formData.startRange + " &ndash; " + formData.endRange,
+							formData.startRange + ' &ndash; ' + formData.endRange,
 						);
 					}
 				},
@@ -207,19 +207,19 @@ function handleUpdateControls({ set }) {
 
 function update(
 	set,
-	units = ajaxify.data.query.units || "hours",
+	units = ajaxify.data.query.units || 'hours',
 	until = ajaxify.data.query.until,
 	amount = ajaxify.data.query.count,
 ) {
 	if (!_current) {
-		return Promise.reject(new Error("[[error:invalid-data]]"));
+		return Promise.reject(new Error('[[error:invalid-data]]'));
 	}
 
 	return new Promise((resolve) => {
 		api
 			.get(`/admin/analytics/${set}`, { units, until, amount })
 			.then((dataset) => {
-				if (units === "days") {
+				if (units === 'days') {
 					_current.data.xLabels = utils.getDaysArray(until, amount);
 				} else {
 					_current.data.xLabels = utils.getHoursArray();
@@ -230,19 +230,19 @@ function update(
 				_current.update();
 
 				// Update address bar and "View as JSON" button url
-				const apiEl = $("#view-as-json");
+				const apiEl = $('#view-as-json');
 				const newHref = $.param({
-					units: units || "hours",
+					units: units || 'hours',
 					until: until,
 					count: amount,
 				});
 				apiEl.attr(
-					"href",
+					'href',
 					`${config.relative_path}/api/v3/admin/analytics/${ajaxify.data.set}?${newHref}`,
 				);
 				const url = ajaxify.removeRelativePath(ajaxify.data.url.slice(1));
 				ajaxify.updateHistory(`${url}?${newHref}`, true);
-				hooks.fire("action:admin.dashboard.updateGraph", {
+				hooks.fire('action:admin.dashboard.updateGraph', {
 					graph: _current,
 				});
 				resolve(_current);

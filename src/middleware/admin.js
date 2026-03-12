@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
-const user = require("../user");
-const meta = require("../meta");
-const plugins = require("../plugins");
-const privileges = require("../privileges");
-const helpers = require("./helpers");
+const user = require('../user');
+const meta = require('../meta');
+const plugins = require('../plugins');
+const privileges = require('../privileges');
+const helpers = require('./helpers');
 
 const controllers = {
-	admin: require("../controllers/admin"),
-	helpers: require("../controllers/helpers"),
+	admin: require('../controllers/admin'),
+	helpers: require('../controllers/helpers'),
 };
 
 const middleware = module.exports;
 
 middleware.buildHeader = helpers.try(async (req, res, next) => {
 	res.locals.renderAdminHeader = true;
-	if (req.method === "GET") {
-		await require("./index").applyCSRFasync(req, res);
+	if (req.method === 'GET') {
+		await require('./index').applyCSRFasync(req, res);
 	}
 
 	res.locals.config = await controllers.admin.loadConfig(req);
@@ -32,7 +32,7 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
 	}
 
 	// Otherwise, check for privilege based on page (if not in mapping, deny access)
-	const path = req.path.replace(/^(\/api)?(\/v3)?\/admin\/?/g, "");
+	const path = req.path.replace(/^(\/api)?(\/v3)?\/admin\/?/g, '');
 	if (path) {
 		const privilege = privileges.admin.resolve(path);
 		if (!(await privileges.admin.can(privilege, req.uid))) {
@@ -69,18 +69,18 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
 	}
 
 	let returnTo = req.path;
-	if (nconf.get("relative_path")) {
+	if (nconf.get('relative_path')) {
 		returnTo = req.path.replace(
-			new RegExp(`^${nconf.get("relative_path")}`),
-			"",
+			new RegExp(`^${nconf.get('relative_path')}`),
+			'',
 		);
 	}
-	returnTo = returnTo.replace(/^\/api/, "");
+	returnTo = returnTo.replace(/^\/api/, '');
 
 	req.session.returnTo = returnTo;
 	req.session.forceLogin = 1;
 
-	await plugins.hooks.fire("response:auth.relogin", { req, res });
+	await plugins.hooks.fire('response:auth.relogin', { req, res });
 	if (res.headersSent) {
 		return;
 	}
@@ -88,6 +88,6 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
 	if (res.locals.isAPI) {
 		controllers.helpers.formatApiResponse(401, res);
 	} else {
-		res.redirect(`${nconf.get("relative_path")}/login?local=1`);
+		res.redirect(`${nconf.get('relative_path')}/login?local=1`);
 	}
 });

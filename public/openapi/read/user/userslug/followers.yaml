@@ -13,10 +13,10 @@ get:
       in: query
       schema:
         type: number
-      example: ""
+      example: ''
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:
@@ -79,7 +79,7 @@ get:
                             A six-character hexadecimal colour code assigned to the user. This
                             value is used in conjunction with `icon:text`
                             for the user's auto-generated icon
-                          example: "#f44336"
+                          example: '#f44336'
                         joindateISO:
                           type: string
                         lastonlineISO:

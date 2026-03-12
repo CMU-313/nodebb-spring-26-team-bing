@@ -75,7 +75,7 @@ PostObject:
             value is used in conjunction with
             `icon:text` for the user's auto-generated
             icon
-          example: "#f44336"
+          example: '#f44336'
     topic:
       type: object
       properties:
@@ -177,7 +177,7 @@ PostDataObject:
           type: string
         anonymous:
           type: string
-          default: "false"
+          default: 'false'
         timestamp:
           type: number
         votes:
@@ -269,7 +269,7 @@ PostDataObject:
                 value is used in conjunction with
                 `icon:text` for the user's auto-generated
                 icon
-              example: "#f44336"
+              example: '#f44336'
             lastonlineISO:
               type: string
             banned_until:
@@ -349,7 +349,7 @@ PostDataObject:
                       value is used in conjunction with
                       `icon:text` for the user's auto-generated
                       icon
-                    example: "#f44336"
+                    example: '#f44336'
                   administrator:
                     type: boolean
             text:

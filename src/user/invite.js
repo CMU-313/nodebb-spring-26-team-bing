@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const nconf = require("nconf");
-const validator = require("validator");
-const winston = require("winston");
+const async = require('async');
+const nconf = require('nconf');
+const validator = require('validator');
+const winston = require('winston');
 
-const db = require("../database");
-const meta = require("../meta");
-const emailer = require("../emailer");
-const groups = require("../groups");
-const translator = require("../translator");
-const utils = require("../utils");
-const plugins = require("../plugins");
+const db = require('../database');
+const meta = require('../meta');
+const emailer = require('../emailer');
+const groups = require('../groups');
+const translator = require('../translator');
+const utils = require('../utils');
+const plugins = require('../plugins');
 
 module.exports = function (User) {
 	User.getInvites = async function (uid) {
@@ -24,7 +24,7 @@ module.exports = function (User) {
 	};
 
 	User.getInvitingUsers = async function () {
-		return await db.getSetMembers("invitation:uids");
+		return await db.getSetMembers('invitation:uids');
 	};
 
 	User.getAllInvites = async function () {
@@ -38,7 +38,7 @@ module.exports = function (User) {
 
 	User.sendInvitationEmail = async function (uid, email, groupsToJoin) {
 		if (!uid) {
-			throw new Error("[[error:invalid-uid]]");
+			throw new Error('[[error:invalid-uid]]');
 		}
 
 		const email_exists = await User.getUidByEmail(email);
@@ -51,39 +51,39 @@ module.exports = function (User) {
 			`invitation:uid:${uid}:invited:${email}`,
 		);
 		if (invitation_exists) {
-			throw new Error("[[error:email-invited]]");
+			throw new Error('[[error:email-invited]]');
 		}
 
 		const data = await prepareInvitation(uid, email, groupsToJoin);
 		await emailer.sendToEmail(
-			"invitation",
+			'invitation',
 			email,
 			meta.config.defaultLang,
 			data,
 		);
-		plugins.hooks.fire("action:user.invite", { uid, email, groupsToJoin });
+		plugins.hooks.fire('action:user.invite', { uid, email, groupsToJoin });
 	};
 
 	User.verifyInvitation = async function (query) {
 		if (!query.token) {
-			if (meta.config.registrationType.startsWith("admin-")) {
-				throw new Error("[[register:invite.error-admin-only]]");
+			if (meta.config.registrationType.startsWith('admin-')) {
+				throw new Error('[[register:invite.error-admin-only]]');
 			} else {
-				throw new Error("[[register:invite.error-invite-only]]");
+				throw new Error('[[register:invite.error-invite-only]]');
 			}
 		}
 		const token = await db.getObjectField(
 			`invitation:token:${query.token}`,
-			"token",
+			'token',
 		);
 		if (!token || token !== query.token) {
-			throw new Error("[[register:invite.error-invalid-data]]");
+			throw new Error('[[register:invite.error-invalid-data]]');
 		}
 	};
 
 	User.isInviteTokenValid = async function (token, enteredEmail) {
 		if (!token) return false;
-		const email = await db.getObjectField(`invitation:token:${token}`, "email");
+		const email = await db.getObjectField(`invitation:token:${token}`, 'email');
 		return email && email === enteredEmail;
 	};
 
@@ -91,10 +91,10 @@ module.exports = function (User) {
 		if (!enteredEmail) {
 			return;
 		}
-		const email = await db.getObjectField(`invitation:token:${token}`, "email");
+		const email = await db.getObjectField(`invitation:token:${token}`, 'email');
 		// "Confirm" user's email if registration completed with invited address
 		if (email && email === enteredEmail) {
-			await User.setUserField(uid, "email", email);
+			await User.setUserField(uid, 'email', email);
 			await User.email.confirmByUid(uid);
 		}
 	};
@@ -102,7 +102,7 @@ module.exports = function (User) {
 	User.joinGroupsFromInvitation = async function (uid, token) {
 		let groupsToJoin = await db.getObjectField(
 			`invitation:token:${token}`,
-			"groupsToJoin",
+			'groupsToJoin',
 		);
 
 		try {
@@ -122,7 +122,7 @@ module.exports = function (User) {
 	User.deleteInvitation = async function (invitedBy, email) {
 		const invitedByUid = await User.getUidByUsername(invitedBy);
 		if (!invitedByUid) {
-			throw new Error("[[error:invalid-username]]");
+			throw new Error('[[error:invalid-username]]');
 		}
 		const token = await db.get(
 			`invitation:uid:${invitedByUid}:invited:${email}`,
@@ -169,24 +169,24 @@ module.exports = function (User) {
 		]);
 		const count = await db.setCount(`invitation:uid:${uid}`);
 		if (count === 0) {
-			await db.setRemove("invitation:uids", uid);
+			await db.setRemove('invitation:uids', uid);
 		}
 	}
 
 	async function prepareInvitation(uid, email, groupsToJoin) {
 		const inviterExists = await User.exists(uid);
 		if (!inviterExists) {
-			throw new Error("[[error:invalid-uid]]");
+			throw new Error('[[error:invalid-uid]]');
 		}
 
 		const token = utils.generateUUID();
-		const registerLink = `${nconf.get("url")}/register?token=${token}`;
+		const registerLink = `${nconf.get('url')}/register?token=${token}`;
 
 		const expireDays = meta.config.inviteExpiration;
 		const expireIn = expireDays * 86400000;
 
 		await db.setAdd(`invitation:uid:${uid}`, email);
-		await db.setAdd("invitation:uids", uid);
+		await db.setAdd('invitation:uids', uid);
 		// Referencing from uid and email to token
 		await db.set(`invitation:uid:${uid}:invited:${email}`, token);
 		// Keeping references for all invites to this email address
@@ -199,8 +199,8 @@ module.exports = function (User) {
 		});
 		await db.pexpireAt(`invitation:token:${token}`, Date.now() + expireIn);
 
-		const username = await User.getUserField(uid, "username");
-		const title = meta.config.title || meta.config.browserTitle || "NodeBB";
+		const username = await User.getUserField(uid, 'username');
+		const title = meta.config.title || meta.config.browserTitle || 'NodeBB';
 		const subject = await translator.translate(
 			`[[email:invite, ${title}]]`,
 			meta.config.defaultLang,
@@ -212,7 +212,7 @@ module.exports = function (User) {
 			registerLink: registerLink,
 			subject: subject,
 			username: username,
-			template: "invitation",
+			template: 'invitation',
 			expireDays: expireDays,
 		};
 	}

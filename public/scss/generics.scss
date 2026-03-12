@@ -23,13 +23,13 @@
   overscroll-behavior: contain;
 }
 
-[component="category-selector"],
+[component='category-selector'],
 .category-dropdown-container {
   #category-dropdown-check:checked + .dropdown-menu {
     display: block;
   }
 }
-html[data-dir="ltr"] {
+html[data-dir='ltr'] {
   .dropdown-left .dropdown-menu {
     --bs-position: start;
   }
@@ -37,7 +37,7 @@ html[data-dir="ltr"] {
     --bs-position: end;
   }
 }
-html[data-dir="rtl"] {
+html[data-dir='rtl'] {
   .dropdown-left .dropdown-menu {
     --bs-position: end;
   }

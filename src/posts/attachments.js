@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const crypto = require("crypto");
-const _ = require("lodash");
-const mime = require("mime");
+const crypto = require('crypto');
+const _ = require('lodash');
+const mime = require('mime');
 
-const db = require("../database");
+const db = require('../database');
 
 const Attachments = module.exports;
-const posts = require("./index");
+const posts = require('./index');
 
 Attachments.get = async (pids) => {
 	const isArray = Array.isArray(pids);
@@ -51,11 +51,11 @@ Attachments.update = async (pid, attachments) => {
 				url = href;
 			}
 
-			const hash = crypto.createHash("sha256").update(url).digest("hex");
+			const hash = crypto.createHash('sha256').update(url).digest('hex');
 			const key = `attachment:${hash}`;
 
 			if (_type) {
-				_type = "attachment";
+				_type = 'attachment';
 			}
 
 			if (!mediaType) {
@@ -70,17 +70,17 @@ Attachments.update = async (pid, attachments) => {
 
 	await Promise.all([
 		db.setObjectBulk(bulkOps.hash),
-		db.setObjectField(`post:${pid}`, "attachments", hashes.join(",")),
+		db.setObjectField(`post:${pid}`, 'attachments', hashes.join(',')),
 		posts.clearCachedPost(pid),
 	]);
 };
 
 Attachments.empty = async (pids) => {
 	const postKeys = pids.map((pid) => `post:${pid}`);
-	const hashes = await posts.getPostsFields(postKeys, ["attachments"]);
+	const hashes = await posts.getPostsFields(postKeys, ['attachments']);
 	const keys = _.uniq(_.flatten(hashes));
 	await Promise.all([
 		db.deleteAll(keys.map((hash) => `attachment:${hash}`)),
-		db.deleteObjectFields(postKeys, ["attachments"]),
+		db.deleteObjectFields(postKeys, ['attachments']),
 	]);
 };

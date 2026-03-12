@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
 const helpers = module.exports;
-const winston = require("winston");
-const middleware = require("../middleware");
-const controllerHelpers = require("../controllers/helpers");
+const winston = require('winston');
+const middleware = require('../middleware');
+const controllerHelpers = require('../controllers/helpers');
 
 // router, name, middleware(deprecated), middlewares(optional), controller
 helpers.setupPageRoute = function (...args) {
@@ -64,7 +64,7 @@ helpers.setupApiRoute = function (...args) {
 	const [router, verb, name] = args;
 	let middlewares = args.length > 4 ? args[args.length - 2] : [];
 	const controller = args[args.length - 1];
-	const upload = require("../middleware/multer");
+	const upload = require('../middleware/multer');
 	middlewares = [
 		middleware.autoLocale,
 		middleware.applyBlacklist,
@@ -91,7 +91,7 @@ helpers.tryRoute = function (controller, handler) {
 	if (
 		controller &&
 		controller.constructor &&
-		controller.constructor.name === "AsyncFunction"
+		controller.constructor.name === 'AsyncFunction'
 	) {
 		return async function (req, res, next) {
 			try {

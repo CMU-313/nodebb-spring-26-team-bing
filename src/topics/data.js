@@ -1,31 +1,31 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
+const validator = require('validator');
 
-const db = require("../database");
-const categories = require("../categories");
-const utils = require("../utils");
-const translator = require("../translator");
-const plugins = require("../plugins");
+const db = require('../database');
+const categories = require('../categories');
+const utils = require('../utils');
+const translator = require('../translator');
+const plugins = require('../plugins');
 
 const intFields = [
-	"tid",
-	"cid",
-	"uid",
-	"mainPid",
-	"postcount",
-	"viewcount",
-	"postercount",
-	"followercount",
-	"deleted",
-	"locked",
-	"pinned",
-	"pinExpiry",
-	"timestamp",
-	"upvotes",
-	"downvotes",
-	"lastposttime",
-	"deleterUid",
+	'tid',
+	'cid',
+	'uid',
+	'mainPid',
+	'postcount',
+	'viewcount',
+	'postercount',
+	'followercount',
+	'deleted',
+	'locked',
+	'pinned',
+	'pinExpiry',
+	'timestamp',
+	'upvotes',
+	'downvotes',
+	'lastposttime',
+	'deleterUid',
 ];
 
 module.exports = function (Topics) {
@@ -35,13 +35,13 @@ module.exports = function (Topics) {
 		}
 
 		// "scheduled" is derived from "timestamp"
-		if (fields.includes("scheduled") && !fields.includes("timestamp")) {
-			fields.push("timestamp");
+		if (fields.includes('scheduled') && !fields.includes('timestamp')) {
+			fields.push('timestamp');
 		}
 
 		const keys = tids.map((tid) => `topic:${tid}`);
 		const topics = await db.getObjects(keys, fields);
-		const result = await plugins.hooks.fire("filter:topic.getFields", {
+		const result = await plugins.hooks.fire('filter:topic.getFields', {
 			tids: tids,
 			topics: topics,
 			fields: fields,
@@ -71,7 +71,7 @@ module.exports = function (Topics) {
 	};
 
 	Topics.getCategoryData = async function (tid) {
-		const cid = await Topics.getTopicField(tid, "cid");
+		const cid = await Topics.getTopicField(tid, 'cid');
 		return await categories.getCategoryData(cid);
 	};
 
@@ -110,40 +110,40 @@ function modifyTopic(topic, fields) {
 
 	db.parseIntFields(topic, intFields, fields);
 
-	if (topic.hasOwnProperty("title")) {
+	if (topic.hasOwnProperty('title')) {
 		topic.titleRaw = topic.title;
 		topic.title = String(topic.title);
 	}
 
 	escapeTitle(topic);
 
-	if (topic.hasOwnProperty("timestamp")) {
+	if (topic.hasOwnProperty('timestamp')) {
 		topic.timestampISO = utils.toISOString(topic.timestamp);
-		if (!fields.length || fields.includes("scheduled")) {
+		if (!fields.length || fields.includes('scheduled')) {
 			topic.scheduled = topic.timestamp > Date.now();
 		}
 	}
 
-	if (topic.hasOwnProperty("lastposttime")) {
+	if (topic.hasOwnProperty('lastposttime')) {
 		topic.lastposttimeISO = utils.toISOString(topic.lastposttime);
 	}
 
-	if (topic.hasOwnProperty("pinExpiry")) {
+	if (topic.hasOwnProperty('pinExpiry')) {
 		topic.pinExpiryISO = utils.toISOString(topic.pinExpiry);
 	}
 
-	if (topic.hasOwnProperty("upvotes") && topic.hasOwnProperty("downvotes")) {
+	if (topic.hasOwnProperty('upvotes') && topic.hasOwnProperty('downvotes')) {
 		topic.votes = topic.upvotes - topic.downvotes;
 	}
 
-	if (fields.includes("teaserPid") || !fields.length) {
+	if (fields.includes('teaserPid') || !fields.length) {
 		topic.teaserPid = topic.teaserPid || null;
 	}
 
-	if (fields.includes("tags") || !fields.length) {
-		const tags = String(topic.tags || "");
+	if (fields.includes('tags') || !fields.length) {
+		const tags = String(topic.tags || '');
 		topic.tags = tags
-			.split(",")
+			.split(',')
 			.filter(Boolean)
 			.map((tag) => {
 				const escaped = validator.escape(String(tag));
@@ -151,15 +151,15 @@ function modifyTopic(topic, fields) {
 					value: tag,
 					valueEscaped: escaped,
 					valueEncoded: encodeURIComponent(tag),
-					class: escaped.replace(/\s/g, "-"),
+					class: escaped.replace(/\s/g, '-'),
 				};
 			});
 	}
 
-	if (fields.includes("thumbs") || !fields.length) {
+	if (fields.includes('thumbs') || !fields.length) {
 		try {
 			topic.thumbs = topic.thumbs
-				? JSON.parse(String(topic.thumbs || "[]"))
+				? JSON.parse(String(topic.thumbs || '[]'))
 				: [];
 		} catch (e) {
 			topic.thumbs = [];

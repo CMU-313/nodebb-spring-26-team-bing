@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
-const topics = require("../../topics");
+const db = require('../../database');
+const batch = require('../../batch');
+const topics = require('../../topics');
 
 module.exports = {
-	name: "Category topics sorted sets by views",
+	name: 'Category topics sorted sets by views',
 	timestamp: Date.UTC(2021, 8, 28),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				let topicData = await topics.getTopicsData(tids);
 				topicData = topicData.filter((t) => t && t.cid);

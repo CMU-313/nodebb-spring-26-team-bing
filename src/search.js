@@ -1,52 +1,52 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("./database");
-const batch = require("./batch");
-const posts = require("./posts");
-const topics = require("./topics");
-const categories = require("./categories");
-const user = require("./user");
-const plugins = require("./plugins");
-const privileges = require("./privileges");
-const activitypub = require("./activitypub");
-const utils = require("./utils");
+const db = require('./database');
+const batch = require('./batch');
+const posts = require('./posts');
+const topics = require('./topics');
+const categories = require('./categories');
+const user = require('./user');
+const plugins = require('./plugins');
+const privileges = require('./privileges');
+const activitypub = require('./activitypub');
+const utils = require('./utils');
 
 const search = module.exports;
 
 search.search = async function (data) {
 	const start = process.hrtime();
-	data.sortBy = data.sortBy || "relevance";
+	data.sortBy = data.sortBy || 'relevance';
 
 	let result;
 	switch (data.searchIn) {
-		case "users": {
+		case 'users': {
 			result = await user.search(data);
 			break;
 		}
 
-		case "categories": {
+		case 'categories': {
 			result = await categories.search(data);
 			break;
 		}
 
-		case "tags": {
+		case 'tags': {
 			result = await topics.searchAndLoadTags(data);
 			break;
 		}
 
 		default: {
 			if (
-				["posts", "titles", "titlesposts", "bookmarks"].includes(data.searchIn)
+				['posts', 'titles', 'titlesposts', 'bookmarks'].includes(data.searchIn)
 			) {
 				result = await searchInContent(data);
 			} else if (data.searchIn) {
-				result = await plugins.hooks.fire("filter:search.searchIn", {
+				result = await plugins.hooks.fire('filter:search.searchIn', {
 					data,
 				});
 			} else {
-				throw new Error("[[error:unknown-search-filter]]");
+				throw new Error('[[error:unknown-search-filter]]');
 			}
 		}
 	}
@@ -65,10 +65,10 @@ async function searchInContent(data) {
 
 	async function doSearch(type, searchIn) {
 		if (searchIn.includes(data.searchIn)) {
-			const result = await plugins.hooks.fire("filter:search.query", {
+			const result = await plugins.hooks.fire('filter:search.query', {
 				index: type,
 				content: data.query,
-				matchWords: data.matchWords || "all",
+				matchWords: data.matchWords || 'all',
 				cid: searchCids,
 				uid: searchUids,
 				searchData: data,
@@ -80,23 +80,23 @@ async function searchInContent(data) {
 	}
 	let pids = [];
 	let tids = [];
-	const inTopic = String(data.query || "").match(/^in:topic-([\d]+) /);
+	const inTopic = String(data.query || '').match(/^in:topic-([\d]+) /);
 	if (inTopic) {
 		const tid = inTopic[1];
-		const cleanedTerm = data.query.replace(inTopic[0], "");
+		const cleanedTerm = data.query.replace(inTopic[0], '');
 		pids = await topics.search(tid, cleanedTerm);
-	} else if (data.searchIn === "bookmarks") {
+	} else if (data.searchIn === 'bookmarks') {
 		pids = await searchInBookmarks(data, searchCids, searchUids);
 	} else {
 		let result;
 		if (data.uid && activitypub.helpers.isUri(data.query)) {
 			const local = await activitypub.helpers.resolveLocalId(data.query);
-			if (local.type === "post") {
+			if (local.type === 'post') {
 				result = [[local.id], []];
 			} else {
 				try {
 					result = await fetchRemoteObject(data);
-					if (result.hasOwnProperty("users")) {
+					if (result.hasOwnProperty('users')) {
 						return result;
 					}
 				} catch (e) {
@@ -109,8 +109,8 @@ async function searchInContent(data) {
 			[pids, tids] = result;
 		} else {
 			[pids, tids] = await Promise.all([
-				doSearch("post", ["posts", "titlesposts"]),
-				doSearch("topic", ["titles", "titlesposts"]),
+				doSearch('post', ['posts', 'titlesposts']),
+				doSearch('topic', ['titles', 'titlesposts']),
 			]);
 		}
 	}
@@ -119,10 +119,10 @@ async function searchInContent(data) {
 
 	let allPids = mainPids.concat(pids).filter(Boolean);
 
-	allPids = await privileges.posts.filter("topics:read", allPids, data.uid);
+	allPids = await privileges.posts.filter('topics:read', allPids, data.uid);
 	allPids = await filterAndSort(allPids, data);
 
-	const metadata = await plugins.hooks.fire("filter:search.inContent", {
+	const metadata = await plugins.hooks.fire('filter:search.inContent', {
 		pids: allPids,
 		data: data,
 	});
@@ -154,9 +154,9 @@ async function searchInContent(data) {
 	}
 
 	returnData.posts = await posts.getPostSummaryByPids(metadata.pids, data.uid, {
-		extraFields: ["attachments"],
+		extraFields: ['attachments'],
 	});
-	await plugins.hooks.fire("filter:search.contentGetResult", {
+	await plugins.hooks.fire('filter:search.contentGetResult', {
 		result: returnData,
 		data: data,
 	});
@@ -171,23 +171,23 @@ async function fetchRemoteObject(data) {
 	try {
 		let id = uri;
 		let exists = await posts.exists(id);
-		let tid = exists ? await posts.getPostField(id, "tid") : undefined;
+		let tid = exists ? await posts.getPostField(id, 'tid') : undefined;
 		if (!exists) {
 			let type;
-			({ id, type } = await activitypub.get("uid", 0, id));
+			({ id, type } = await activitypub.get('uid', 0, id));
 			if (activitypub._constants.acceptedPostTypes.includes(type)) {
 				exists = await posts.exists(id);
 				if (!exists) {
 					({ tid } = await activitypub.notes.assert(uid, id));
 				} else {
-					tid = await posts.getPostField(id, "tid");
+					tid = await posts.getPostField(id, 'tid');
 				}
 			} else if (activitypub._constants.acceptableActorTypes.has(type)) {
-				data.searchIn = "users";
+				data.searchIn = 'users';
 				return await user.search(data);
 			} else if (activitypub._constants.acceptable.contextTypes.has(type)) {
 				({ tid } = await activitypub.notes.assert(uid, id));
-				id = await topics.getTopicField(tid, "mainPid");
+				id = await topics.getTopicField(tid, 'mainPid');
 			}
 		}
 
@@ -210,21 +210,21 @@ async function searchInBookmarks(data, searchCids, searchUids) {
 				pids = await posts.filterPidsByUid(pids, searchUids);
 			}
 			if (query) {
-				const tokens = String(query).split(" ");
+				const tokens = String(query).split(' ');
 				const postData = await db.getObjectsFields(
 					pids.map((pid) => `post:${pid}`),
-					["content", "tid"],
+					['content', 'tid'],
 				);
 				const tids = _.uniq(postData.map((p) => p.tid));
 				const topicData = await db.getObjectsFields(
 					tids.map((tid) => `topic:${tid}`),
-					["title"],
+					['title'],
 				);
 				const tidToTopic = _.zipObject(tids, topicData);
 				pids = pids.filter((pid, i) => {
 					const content = String(postData[i].content);
 					const title = String(tidToTopic[postData[i].tid].title);
-					const method = matchWords === "any" ? "some" : "every";
+					const method = matchWords === 'any' ? 'some' : 'every';
 					return tokens[method](
 						(token) => content.includes(token) || title.includes(token),
 					);
@@ -242,12 +242,12 @@ async function searchInBookmarks(data, searchCids, searchUids) {
 
 async function filterAndSort(pids, data) {
 	if (
-		data.sortBy === "relevance" &&
+		data.sortBy === 'relevance' &&
 		!data.replies &&
 		!data.timeRange &&
 		!data.hasTags &&
-		data.searchIn !== "bookmarks" &&
-		!plugins.hooks.hasListeners("filter:search.filterAndSort")
+		data.searchIn !== 'bookmarks' &&
+		!plugins.hooks.hasListeners('filter:search.filterAndSort')
 	) {
 		return pids;
 	}
@@ -263,7 +263,7 @@ async function filterAndSort(pids, data) {
 
 	sortPosts(postsData, data);
 
-	const result = await plugins.hooks.fire("filter:search.filterAndSort", {
+	const result = await plugins.hooks.fire('filter:search.filterAndSort', {
 		pids: pids,
 		posts: postsData,
 		data: data,
@@ -273,13 +273,13 @@ async function filterAndSort(pids, data) {
 
 async function getMatchedPosts(pids, data) {
 	const postFields = [
-		"pid",
-		"uid",
-		"tid",
-		"timestamp",
-		"deleted",
-		"upvotes",
-		"downvotes",
+		'pid',
+		'uid',
+		'tid',
+		'timestamp',
+		'deleted',
+		'upvotes',
+		'downvotes',
 	];
 
 	let postsData = await posts.getPostsFields(pids, postFields);
@@ -311,8 +311,8 @@ async function getMatchedPosts(pids, data) {
 }
 
 async function getUsers(uids, data) {
-	if (data.sortBy.startsWith("user")) {
-		return user.getUsersFields(uids, ["username"]);
+	if (data.sortBy.startsWith('user')) {
+		return user.getUsersFields(uids, ['username']);
 	}
 	return [];
 }
@@ -338,8 +338,8 @@ async function getTopics(tids, data) {
 async function getCategories(cids, data) {
 	const categoryFields = [];
 
-	if (data.sortBy.startsWith("category.")) {
-		categoryFields.push(data.sortBy.split(".")[1]);
+	if (data.sortBy.startsWith('category.')) {
+		categoryFields.push(data.sortBy.split('.')[1]);
 	}
 	if (!categoryFields.length) {
 		return null;
@@ -354,7 +354,7 @@ async function getCategories(cids, data) {
 function filterByPostcount(posts, postCount, repliesFilter) {
 	postCount = parseInt(postCount, 10);
 	if (postCount) {
-		if (repliesFilter === "atleast") {
+		if (repliesFilter === 'atleast') {
 			posts = posts.filter(
 				(post) => post.topic && post.topic.postcount >= postCount,
 			);
@@ -371,7 +371,7 @@ function filterByTimerange(posts, timeRange, timeFilter) {
 	timeRange = parseInt(timeRange, 10) * 1000;
 	if (timeRange) {
 		const time = Date.now() - timeRange;
-		if (timeFilter === "newer") {
+		if (timeFilter === 'newer') {
 			posts = posts.filter((post) => post.timestamp >= time);
 		} else {
 			posts = posts.filter((post) => post.timestamp <= time);
@@ -399,13 +399,13 @@ function filterByTags(posts, hasTags) {
 }
 
 function sortPosts(posts, data) {
-	if (!posts.length || data.sortBy === "relevance") {
+	if (!posts.length || data.sortBy === 'relevance') {
 		return;
 	}
 
-	data.sortDirection = data.sortDirection || "desc";
-	const direction = data.sortDirection === "desc" ? 1 : -1;
-	const fields = data.sortBy.split(".");
+	data.sortDirection = data.sortDirection || 'desc';
+	const direction = data.sortDirection === 'desc' ? 1 : -1;
+	const fields = data.sortBy.split('.');
 	if (fields.length === 1) {
 		return posts.sort((p1, p2) => direction * (p2[fields[0]] - p1[fields[0]]));
 	}
@@ -444,11 +444,11 @@ async function getSearchCids(data) {
 		return [];
 	}
 
-	if (data.categories.includes("all")) {
+	if (data.categories.includes('all')) {
 		return await categories.getCidsByPrivilege(
-			"categories:cid",
+			'categories:cid',
 			data.uid,
-			"read",
+			'read',
 		);
 	}
 
@@ -462,7 +462,7 @@ async function getSearchCids(data) {
 }
 
 async function getWatchedCids(data) {
-	if (!data.categories.includes("watched")) {
+	if (!data.categories.includes('watched')) {
 		return [];
 	}
 	return await user.getWatchedCategories(data.uid);
@@ -476,7 +476,7 @@ async function getChildrenCids(data) {
 		data.categories.map((cid) => categories.getChildrenCids(cid)),
 	);
 	return await privileges.categories.filterCids(
-		"find",
+		'find',
 		_.uniq(_.flatten(childrenCids)),
 		data.uid,
 	);
@@ -491,4 +491,4 @@ async function getSearchUids(data) {
 	);
 }
 
-require("./promisify")(search);
+require('./promisify')(search);

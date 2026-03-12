@@ -121,7 +121,7 @@
   cursor: pointer;
 
   &.line-clamp-#{$lines}::before {
-    content: "";
+    content: '';
     position: absolute;
     top: calc(1.5em * ($lines - 2));
     display: block;

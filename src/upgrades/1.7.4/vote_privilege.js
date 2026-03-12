@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-const async = require("async");
+const async = require('async');
 
-const privileges = require("../../privileges");
-const db = require("../../database");
+const privileges = require('../../privileges');
+const db = require('../../database');
 
 module.exports = {
-	name: "Give vote privilege to registered-users on all categories",
+	name: 'Give vote privilege to registered-users on all categories',
 	timestamp: Date.UTC(2018, 0, 9),
 	method: function (callback) {
-		db.getSortedSetRange("categories:cid", 0, -1, (err, cids) => {
+		db.getSortedSetRange('categories:cid', 0, -1, (err, cids) => {
 			if (err) {
 				return callback(err);
 			}
@@ -17,9 +17,9 @@ module.exports = {
 				cids,
 				(cid, next) => {
 					privileges.categories.give(
-						["groups:posts:upvote", "groups:posts:downvote"],
+						['groups:posts:upvote', 'groups:posts:downvote'],
 						cid,
-						"registered-users",
+						'registered-users',
 						next,
 					);
 				},

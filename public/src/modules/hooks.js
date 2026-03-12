@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("hooks", [], () => {
+define('hooks', [], () => {
 	const Hooks = {
 		loaded: {},
 		temporary: new Set(),
@@ -74,7 +74,7 @@ define("hooks", [], () => {
 		return Hooks.register(hookName, method);
 	};
 	Hooks.onPage = Hooks.registerPage;
-	Hooks.register("action:ajaxify.start", () => {
+	Hooks.register('action:ajaxify.start', () => {
 		Hooks.temporary.forEach((pair) => {
 			Hooks.unregister(pair.hookName, pair.method);
 			Hooks.temporary.delete(pair);
@@ -100,7 +100,7 @@ define("hooks", [], () => {
 
 	const _onHookError = (e, listener, data) => {
 		console.warn(
-			`[hooks] Exception encountered in ${listener.name ? listener.name : "anonymous function"}, stack trace follows.`,
+			`[hooks] Exception encountered in ${listener.name ? listener.name : 'anonymous function'}, stack trace follows.`,
 		);
 		console.error(e);
 		return Promise.resolve(data);
@@ -153,18 +153,18 @@ define("hooks", [], () => {
 	};
 
 	Hooks.fire = (hookName, data) => {
-		const type = hookName.split(":").shift();
+		const type = hookName.split(':').shift();
 		let result;
 		switch (type) {
-			case "filter":
+			case 'filter':
 				result = _fireFilterHook(hookName, data);
 				break;
 
-			case "action":
+			case 'action':
 				result = _fireActionHook(hookName, data);
 				break;
 
-			case "static":
+			case 'static':
 				result = _fireStaticHook(hookName, data);
 				break;
 		}

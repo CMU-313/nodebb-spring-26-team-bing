@@ -1,19 +1,19 @@
-@use "pkg:@fontsource-utils/scss" as fontsource;
-@use "pkg:@fontsource/inter/scss" as inter;
-@use "pkg:@fontsource/poppins/scss" as poppins;
+@use 'pkg:@fontsource-utils/scss' as fontsource;
+@use 'pkg:@fontsource/inter/scss' as inter;
+@use 'pkg:@fontsource/poppins/scss' as poppins;
 
 $weights:
   $font-weight-light, $font-weight-normal, $font-weight-semibold,
   $font-weight-bold;
 $subsets: (latin, latin-ext);
-$font-path: "./plugins/nodebb-theme-harmony" !default;
+$font-path: './plugins/nodebb-theme-harmony' !default;
 
 @include fontsource.faces(
   $metadata: inter.$metadata,
   $subsets: $subsets,
   $weights: $weights,
   $styles: all,
-  $directory: "#{$font-path}/inter"
+  $directory: '#{$font-path}/inter'
 );
 
 @include fontsource.faces(
@@ -21,5 +21,5 @@ $font-path: "./plugins/nodebb-theme-harmony" !default;
   $subsets: $subsets,
   $weights: $weights,
   $styles: all,
-  $directory: "#{$font-path}/poppins"
+  $directory: '#{$font-path}/poppins'
 );

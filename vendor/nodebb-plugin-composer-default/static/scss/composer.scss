@@ -40,12 +40,12 @@
   }
 
   .title-container {
-    > div[data-component="composer/handle"] {
+    > div[data-component='composer/handle'] {
       flex: 0.33;
     }
 
     .category-list-container {
-      [component="category-selector"] {
+      [component='category-selector'] {
         .category-dropdown-menu {
           max-height: 300px;
         }
@@ -68,14 +68,14 @@
   .formatting-bar {
     .spacer {
       &:before {
-        content: " | ";
+        content: ' | ';
         color: $gray-200;
       }
     }
   }
 
   .tags-container {
-    [component="composer/tag/dropdown"] {
+    [component='composer/tag/dropdown'] {
       .dropdown-menu {
         max-height: 400px;
         overflow-y: auto;
@@ -214,7 +214,7 @@
   }
 
   .draft-icon {
-    font-family: "FontAwesome";
+    font-family: 'FontAwesome';
     color: $success;
     opacity: 0;
 
@@ -357,9 +357,9 @@
   }
 }
 
-@import "./zen-mode";
-@import "./page-compose";
-@import "./textcomplete";
+@import './zen-mode';
+@import './page-compose';
+@import './textcomplete';
 
 .skin-noskin,
 .skin-cosmo,

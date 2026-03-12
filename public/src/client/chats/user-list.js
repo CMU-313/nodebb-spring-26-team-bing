@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("forum/chats/user-list", ["api"], function (api) {
+define('forum/chats/user-list', ['api'], function (api) {
 	const userList = {};
 
 	let updateInterval = 0;
@@ -13,19 +13,19 @@ define("forum/chats/user-list", ["api"], function (api) {
 		const pinnedMessageListEl = container.find(
 			'[component="chat/messages/pinned/container"]',
 		);
-		container.find('[component="chat/user/list/btn"]').on("click", () => {
-			userListEl.toggleClass("hidden");
-			if (userListEl.hasClass("hidden")) {
+		container.find('[component="chat/user/list/btn"]').on('click', () => {
+			userListEl.toggleClass('hidden');
+			if (userListEl.hasClass('hidden')) {
 				stopUpdating();
 			} else {
-				pinnedMessageListEl.addClass("hidden");
+				pinnedMessageListEl.addClass('hidden');
 				startUpdating(roomId, userListEl);
 			}
 		});
 
 		$(window)
-			.off("action:ajaxify.start", stopUpdating)
-			.one("action:ajaxify.start", stopUpdating);
+			.off('action:ajaxify.start', stopUpdating)
+			.one('action:ajaxify.start', stopUpdating);
 
 		userList.addInfiniteScrollHandler(
 			roomId,
@@ -33,8 +33,8 @@ define("forum/chats/user-list", ["api"], function (api) {
 			async (listEl, data) => {
 				listEl.append(
 					await app.parseAndTranslate(
-						"partials/chats/user-list",
-						"users",
+						'partials/chats/user-list',
+						'users',
 						data,
 					),
 				);
@@ -63,12 +63,12 @@ define("forum/chats/user-list", ["api"], function (api) {
 			ajaxify.data.template.chats &&
 			app.isFocused &&
 			userListEl.scrollTop() === 0 &&
-			!userListEl.hasClass("hidden")
+			!userListEl.hasClass('hidden')
 		) {
 			const data = await api.get(`/chats/${roomId}/users`, { start: 0 });
-			userListEl.find('[data-bs-toggle="tooltip"]').tooltip("dispose");
+			userListEl.find('[data-bs-toggle="tooltip"]').tooltip('dispose');
 			userListEl.html(
-				await app.parseAndTranslate("partials/chats/user-list", "users", data),
+				await app.parseAndTranslate('partials/chats/user-list', 'users', data),
 			);
 			userListEl.find('[data-bs-toggle="tooltip"]').tooltip();
 		}
@@ -76,14 +76,14 @@ define("forum/chats/user-list", ["api"], function (api) {
 
 	userList.addInfiniteScrollHandler = function (roomId, listEl, callback) {
 		listEl.on(
-			"scroll",
+			'scroll',
 			utils.debounce(async () => {
 				const bottom = (listEl[0].scrollHeight - listEl.height()) * 0.85;
 				if (listEl.scrollTop() > bottom) {
 					const lastIndex = listEl
-						.find("[data-index]")
+						.find('[data-index]')
 						.last()
-						.attr("data-index");
+						.attr('data-index');
 					const data = await api.get(`/chats/${roomId}/users`, {
 						start: parseInt(lastIndex, 10) + 1,
 					});
@@ -97,7 +97,7 @@ define("forum/chats/user-list", ["api"], function (api) {
 
 	userList.addSearchHandler = function (roomId, inputEl, callback) {
 		inputEl.on(
-			"keyup",
+			'keyup',
 			utils.debounce(async () => {
 				const query = inputEl.val();
 				const data = await api.get(`/search/chats/${roomId}/users`, { query });

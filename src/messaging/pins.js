@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
+const db = require('../database');
 
 module.exports = function (Messaging) {
 	Messaging.pinMessage = async (mid, roomId) => {

@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-const crypto = require("crypto");
+const crypto = require('crypto');
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 const md5 = (filename) =>
-	crypto.createHash("md5").update(filename).digest("hex");
+	crypto.createHash('md5').update(filename).digest('hex');
 
 module.exports = {
-	name: "Fix paths in user uploads sorted sets",
+	name: 'Fix paths in user uploads sorted sets',
 	timestamp: Date.UTC(2022, 1, 10),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				progress.incr(uids.length);
 
@@ -27,7 +27,7 @@ module.exports = {
 						if (uploads.length) {
 							// Don't process those that have already the right format
 							uploads = uploads.filter((upload) =>
-								upload.value.startsWith("/files/"),
+								upload.value.startsWith('/files/'),
 							);
 
 							await db.sortedSetRemove(

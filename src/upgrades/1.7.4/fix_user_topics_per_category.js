@@ -1,26 +1,26 @@
-"use strict";
+'use strict';
 
-const batch = require("../../batch");
-const db = require("../../database");
+const batch = require('../../batch');
+const db = require('../../database');
 
 module.exports = {
-	name: "Fix topics in categories per user if they were moved",
+	name: 'Fix topics in categories per user if they were moved',
 	timestamp: Date.UTC(2018, 0, 22),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				await Promise.all(
 					tids.map(async (tid) => {
 						progress.incr();
 						const topicData = await db.getObjectFields(`topic:${tid}`, [
-							"cid",
-							"tid",
-							"uid",
-							"oldCid",
-							"timestamp",
+							'cid',
+							'tid',
+							'uid',
+							'oldCid',
+							'timestamp',
 						]);
 						if (topicData.cid && topicData.oldCid) {
 							const isMember = await db.isSortedSetMember(

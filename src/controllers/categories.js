@@ -1,31 +1,31 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const _ = require("lodash");
+const nconf = require('nconf');
+const _ = require('lodash');
 
-const categories = require("../categories");
-const meta = require("../meta");
-const pagination = require("../pagination");
-const helpers = require("./helpers");
-const privileges = require("../privileges");
+const categories = require('../categories');
+const meta = require('../meta');
+const pagination = require('../pagination');
+const helpers = require('./helpers');
+const privileges = require('../privileges');
 
 const categoriesController = module.exports;
 
 categoriesController.list = async function (req, res) {
 	res.locals.metaTags = [
 		{
-			name: "title",
-			content: String(meta.config.title || "NodeBB"),
+			name: 'title',
+			content: String(meta.config.title || 'NodeBB'),
 		},
 		{
-			property: "og:type",
-			content: "website",
+			property: 'og:type',
+			content: 'website',
 		},
 	];
 
-	const allRootCids = await categories.getAllCidsFromSet("cid:0:children");
+	const allRootCids = await categories.getAllCidsFromSet('cid:0:children');
 	const rootCids = await privileges.categories.filterCids(
-		"find",
+		'find',
 		allRootCids,
 		req.uid,
 	);
@@ -42,7 +42,7 @@ categoriesController.list = async function (req, res) {
 		await Promise.all(pageCids.map(categories.getChildrenCids)),
 	);
 	const childCids = await privileges.categories.filterCids(
-		"find",
+		'find',
 		allChildCids,
 		req.uid,
 	);
@@ -56,8 +56,8 @@ categoriesController.list = async function (req, res) {
 	]);
 
 	const data = {
-		title: meta.config.homePageTitle || "[[pages:home]]",
-		selectCategoryLabel: "[[pages:categories]]",
+		title: meta.config.homePageTitle || '[[pages:home]]',
+		selectCategoryLabel: '[[pages:categories]]',
 		categories: tree,
 		pagination: pagination.create(page, pageCount, req.query),
 	};
@@ -71,17 +71,17 @@ categoriesController.list = async function (req, res) {
 
 	if (
 		req.originalUrl.startsWith(
-			`${nconf.get("relative_path")}/api/categories`,
+			`${nconf.get('relative_path')}/api/categories`,
 		) ||
-		req.originalUrl.startsWith(`${nconf.get("relative_path")}/categories`)
+		req.originalUrl.startsWith(`${nconf.get('relative_path')}/categories`)
 	) {
-		data.title = "[[pages:categories]]";
+		data.title = '[[pages:categories]]';
 		data.breadcrumbs = helpers.buildBreadcrumbs([{ text: data.title }]);
 		res.locals.metaTags.push({
-			property: "og:title",
-			content: "[[pages:categories]]",
+			property: 'og:title',
+			content: '[[pages:categories]]',
 		});
 	}
 
-	res.render("categories", data);
+	res.render('categories', data);
 };

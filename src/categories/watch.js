@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const user = require("../user");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const db = require('../database');
+const user = require('../user');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 module.exports = function (Categories) {
 	Categories.watchStates = {

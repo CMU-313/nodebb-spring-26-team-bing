@@ -1,29 +1,29 @@
-"use strict";
+'use strict';
 
-const meta = require.main.require("./src/meta");
-const privileges = require.main.require("./src/privileges");
-const posts = require.main.require("./src/posts");
-const topics = require.main.require("./src/topics");
-const plugins = require.main.require("./src/plugins");
+const meta = require.main.require('./src/meta');
+const privileges = require.main.require('./src/privileges');
+const posts = require.main.require('./src/posts');
+const topics = require.main.require('./src/topics');
+const plugins = require.main.require('./src/plugins');
 
 const Sockets = module.exports;
 
 Sockets.push = async function (socket, pid) {
-	const canRead = await privileges.posts.can("topics:read", pid, socket.uid);
+	const canRead = await privileges.posts.can('topics:read', pid, socket.uid);
 	if (!canRead) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const postData = await posts.getPostFields(pid, [
-		"content",
-		"sourceContent",
-		"tid",
-		"uid",
-		"handle",
-		"timestamp",
+		'content',
+		'sourceContent',
+		'tid',
+		'uid',
+		'handle',
+		'timestamp',
 	]);
 	if (!postData && !postData.content) {
-		throw new Error("[[error:invalid-pid]]");
+		throw new Error('[[error:invalid-pid]]');
 	}
 
 	const [topic, isMain] = await Promise.all([
@@ -32,10 +32,10 @@ Sockets.push = async function (socket, pid) {
 	]);
 
 	if (!topic) {
-		throw new Error("[[error:no-topic]]");
+		throw new Error('[[error:no-topic]]');
 	}
 
-	const result = await plugins.hooks.fire("filter:composer.push", {
+	const result = await plugins.hooks.fire('filter:composer.push', {
 		pid: pid,
 		uid: postData.uid,
 		handle: parseInt(meta.config.allowGuestHandles, 10)
@@ -57,34 +57,34 @@ Sockets.editCheck = async function (socket, pid) {
 };
 
 Sockets.renderPreview = async function (socket, content) {
-	return await plugins.hooks.fire("filter:parse.raw", content);
+	return await plugins.hooks.fire('filter:parse.raw', content);
 };
 
 Sockets.renderHelp = async function () {
-	const helpText = meta.config["composer:customHelpText"] || "";
-	if (!meta.config["composer:showHelpTab"]) {
-		throw new Error("help-hidden");
+	const helpText = meta.config['composer:customHelpText'] || '';
+	if (!meta.config['composer:showHelpTab']) {
+		throw new Error('help-hidden');
 	}
 
-	const parsed = await plugins.hooks.fire("filter:parse.raw", helpText);
+	const parsed = await plugins.hooks.fire('filter:parse.raw', helpText);
 	if (
-		meta.config["composer:allowPluginHelp"] &&
-		plugins.hooks.hasListeners("filter:composer.help")
+		meta.config['composer:allowPluginHelp'] &&
+		plugins.hooks.hasListeners('filter:composer.help')
 	) {
 		return (
-			(await plugins.hooks.fire("filter:composer.help", parsed)) || helpText
+			(await plugins.hooks.fire('filter:composer.help', parsed)) || helpText
 		);
 	}
 	return helpText;
 };
 
 Sockets.getFormattingOptions = async function () {
-	return await require("./library").getFormattingOptions();
+	return await require('./library').getFormattingOptions();
 };
 
 Sockets.shouldQueue = async function (socket, data) {
 	if (!data || !data.postData) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	if (socket.uid <= 0) {
 		return false;
@@ -92,15 +92,15 @@ Sockets.shouldQueue = async function (socket, data) {
 
 	let shouldQueue = false;
 	const { postData } = data;
-	if (postData.action === "posts.reply") {
+	if (postData.action === 'posts.reply') {
 		shouldQueue = await posts.shouldQueue(socket.uid, {
 			tid: postData.tid,
-			content: postData.content || "",
+			content: postData.content || '',
 		});
-	} else if (postData.action === "topics.post") {
+	} else if (postData.action === 'topics.post') {
 		shouldQueue = await posts.shouldQueue(socket.uid, {
 			cid: postData.cid,
-			content: postData.content || "",
+			content: postData.content || '',
 		});
 	}
 	return shouldQueue;

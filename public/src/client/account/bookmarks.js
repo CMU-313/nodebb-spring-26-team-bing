@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-define("forum/account/bookmarks", [
-	"forum/account/header",
-	"forum/account/posts",
+define('forum/account/bookmarks', [
+	'forum/account/header',
+	'forum/account/posts',
 ], function (header, posts) {
 	const Bookmarks = {};
 
@@ -10,10 +10,10 @@ define("forum/account/bookmarks", [
 		header.init();
 
 		$('[component="post/content"] img:not(.not-responsive)').addClass(
-			"img-fluid",
+			'img-fluid',
 		);
 
-		posts.handleInfiniteScroll("account/bookmarks");
+		posts.handleInfiniteScroll('account/bookmarks');
 	};
 
 	return Bookmarks;

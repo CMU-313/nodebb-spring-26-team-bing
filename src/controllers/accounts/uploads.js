@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const path = require("path");
+const path = require('path');
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
-const db = require("../../database");
-const helpers = require("../helpers");
-const meta = require("../../meta");
-const pagination = require("../../pagination");
+const db = require('../../database');
+const helpers = require('../helpers');
+const meta = require('../../meta');
+const pagination = require('../../pagination');
 
 const uploadsController = module.exports;
 
@@ -25,7 +25,7 @@ uploadsController.get = async function (req, res) {
 
 	payload.uploads = uploadNames.map((uploadName) => ({
 		name: uploadName,
-		url: path.posix.join(nconf.get("upload_url"), uploadName),
+		url: path.posix.join(nconf.get('upload_url'), uploadName),
 	}));
 	const pageCount = Math.ceil(itemCount / itemsPerPage);
 	payload.pagination = pagination.create(page, pageCount, req.query);
@@ -33,8 +33,8 @@ uploadsController.get = async function (req, res) {
 	payload.title = `[[pages:account/uploads, ${username}]]`;
 	payload.breadcrumbs = helpers.buildBreadcrumbs([
 		{ text: username, url: `/user/${userslug}` },
-		{ text: "[[global:uploads]]" },
+		{ text: '[[global:uploads]]' },
 	]);
 
-	res.render("account/uploads", payload);
+	res.render('account/uploads', payload);
 };

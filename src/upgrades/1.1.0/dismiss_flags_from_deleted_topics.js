@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const winston = require("winston");
-const db = require("../../database");
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Dismiss flags from deleted topics",
+	name: 'Dismiss flags from deleted topics',
 	timestamp: Date.UTC(2016, 3, 29),
 	method: async function () {
-		const posts = require("../../posts");
-		const topics = require("../../topics");
+		const posts = require('../../posts');
+		const topics = require('../../topics');
 
-		const pids = await db.getSortedSetRange("posts:flagged", 0, -1);
-		const postData = await posts.getPostsFields(pids, ["tid"]);
+		const pids = await db.getSortedSetRange('posts:flagged', 0, -1);
+		const postData = await posts.getPostsFields(pids, ['tid']);
 		const tids = postData.map((t) => t.tid);
-		const topicData = await topics.getTopicsFields(tids, ["deleted"]);
+		const topicData = await topics.getTopicsFields(tids, ['deleted']);
 		const toDismiss = topicData
 			.map((t, idx) => (parseInt(t.deleted, 10) === 1 ? pids[idx] : null))
 			.filter(Boolean);
@@ -27,17 +27,17 @@ module.exports = {
 // https://github.com/NodeBB/NodeBB/blob/v1.x.x/src/posts/flags.js
 async function dismissFlag(pid) {
 	const postData = await db.getObjectFields(`post:${pid}`, [
-		"pid",
-		"uid",
-		"flags",
+		'pid',
+		'uid',
+		'flags',
 	]);
 	if (!postData.pid) {
 		return;
 	}
 	if (parseInt(postData.uid, 10) && parseInt(postData.flags, 10) > 0) {
 		await Promise.all([
-			db.sortedSetIncrBy("users:flags", -postData.flags, postData.uid),
-			db.incrObjectFieldBy(`user:${postData.uid}`, "flags", -postData.flags),
+			db.sortedSetIncrBy('users:flags', -postData.flags, postData.uid),
+			db.incrObjectFieldBy(`user:${postData.uid}`, 'flags', -postData.flags),
 		]);
 	}
 	const uids = await db.getSortedSetRange(`pid:${pid}:flag:uids`, 0, -1);
@@ -45,21 +45,21 @@ async function dismissFlag(pid) {
 
 	await Promise.all([
 		db.deleteAll(nids.map((nid) => `notifications:${nid}`)),
-		db.sortedSetRemove("notifications", nids),
+		db.sortedSetRemove('notifications', nids),
 		db.delete(`pid:${pid}:flag:uids`),
 		db.sortedSetsRemove(
-			["posts:flagged", "posts:flags:count", `uid:${postData.uid}:flag:pids`],
+			['posts:flagged', 'posts:flags:count', `uid:${postData.uid}:flag:pids`],
 			pid,
 		),
-		db.deleteObjectField(`post:${pid}`, "flags"),
+		db.deleteObjectField(`post:${pid}`, 'flags'),
 		db.delete(`pid:${pid}:flag:uid:reason`),
 		db.deleteObjectFields(`post:${pid}`, [
-			"flag:state",
-			"flag:assignee",
-			"flag:notes",
-			"flag:history",
+			'flag:state',
+			'flag:assignee',
+			'flag:notes',
+			'flag:history',
 		]),
 	]);
 
-	await db.sortedSetsRemoveRangeByScore(["users:flags"], "-inf", 0);
+	await db.sortedSetsRemoveRangeByScore(['users:flags'], '-inf', 0);
 }

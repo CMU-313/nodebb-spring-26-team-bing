@@ -1,8 +1,8 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
 module.exports = {
 	name: "Change the schema of simple keys so they don't use value field (mongodb only)",
@@ -10,7 +10,7 @@ module.exports = {
 	method: async function () {
 		let configJSON;
 		try {
-			configJSON = require("../../../config.json") || {
+			configJSON = require('../../../config.json') || {
 				[process.env.database]: true,
 				database: process.env.database,
 			};
@@ -21,7 +21,7 @@ module.exports = {
 			};
 		}
 		const isMongo =
-			configJSON.hasOwnProperty("mongo") && configJSON.database === "mongo";
+			configJSON.hasOwnProperty('mongo') && configJSON.database === 'mongo';
 		const { progress } = this;
 		if (!isMongo) {
 			return;
@@ -32,9 +32,9 @@ module.exports = {
 			value: { $exists: true },
 			score: { $exists: false },
 		};
-		progress.total = await client.collection("objects").countDocuments(query);
+		progress.total = await client.collection('objects').countDocuments(query);
 		const cursor = await client
-			.collection("objects")
+			.collection('objects')
 			.find(query)
 			.batchSize(1000);
 
@@ -48,12 +48,12 @@ module.exports = {
 				delete item.expireAt;
 				if (
 					Object.keys(item).length === 3 &&
-					item.hasOwnProperty("_key") &&
-					item.hasOwnProperty("value")
+					item.hasOwnProperty('_key') &&
+					item.hasOwnProperty('value')
 				) {
 					await client
-						.collection("objects")
-						.updateOne({ _key: item._key }, { $rename: { value: "data" } });
+						.collection('objects')
+						.updateOne({ _key: item._key }, { $rename: { value: 'data' } });
 				}
 			}
 		}

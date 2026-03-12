@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const path = require("path");
-const nconf = require("nconf");
-const validator = require("validator");
+const path = require('path');
+const nconf = require('nconf');
+const validator = require('validator');
 
-const user = require("../user");
-const meta = require("../meta");
-const file = require("../file");
-const plugins = require("../plugins");
-const image = require("../image");
-const privileges = require("../privileges");
+const user = require('../user');
+const meta = require('../meta');
+const file = require('../file');
+const plugins = require('../plugins');
+const image = require('../image');
+const privileges = require('../privileges');
 
-const helpers = require("./helpers");
+const helpers = require('./helpers');
 
 const uploadsController = module.exports;
 
@@ -28,7 +28,7 @@ uploadsController.upload = async function (req, res, filesIterator) {
 		return helpers.formatApiResponse(
 			500,
 			res,
-			new Error("[[error:invalid-file]]"),
+			new Error('[[error:invalid-file]]'),
 		);
 	}
 
@@ -60,25 +60,25 @@ uploadsController.uploadPost = async function (req, res) {
 };
 
 async function uploadAsImage(req, uploadedFile) {
-	const canUpload = await privileges.global.can("upload:post:image", req.uid);
+	const canUpload = await privileges.global.can('upload:post:image', req.uid);
 	if (!canUpload) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 	await image.checkDimensions(uploadedFile.path);
 	await image.stripEXIF({ path: uploadedFile.path, type: uploadedFile.type });
 
-	if (plugins.hooks.hasListeners("filter:uploadImage")) {
-		return await plugins.hooks.fire("filter:uploadImage", {
+	if (plugins.hooks.hasListeners('filter:uploadImage')) {
+		return await plugins.hooks.fire('filter:uploadImage', {
 			image: uploadedFile,
 			uid: req.uid,
-			folder: "files",
+			folder: 'files',
 		});
 	}
 	await image.isFileTypeAllowed(uploadedFile.path);
 
 	let fileObj = await uploadsController.uploadFile(req.uid, uploadedFile);
 	// sharp can't save svgs skip resize for them
-	const isSVG = uploadedFile.type === "image/svg+xml";
+	const isSVG = uploadedFile.type === 'image/svg+xml';
 	if (
 		isSVG ||
 		meta.config.resizeImageWidth === 0 ||
@@ -92,9 +92,9 @@ async function uploadAsImage(req, uploadedFile) {
 }
 
 async function uploadAsFile(req, uploadedFile) {
-	const canUpload = await privileges.global.can("upload:post:file", req.uid);
+	const canUpload = await privileges.global.can('upload:post:file', req.uid);
 	if (!canUpload) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const fileObj = await uploadsController.uploadFile(req.uid, uploadedFile);
@@ -116,14 +116,14 @@ async function resizeImage(fileObj) {
 	await image.resizeImage({
 		path: fileObj.path,
 		target: meta.config.resizeImageKeepOriginal
-			? file.appendToFileName(fileObj.path, "-resized")
+			? file.appendToFileName(fileObj.path, '-resized')
 			: fileObj.path,
 		width: meta.config.resizeImageWidth,
 		quality: meta.config.resizeImageQuality,
 	});
 	// Return the resized version to the composer/postData
 	if (meta.config.resizeImageKeepOriginal) {
-		fileObj.url = file.appendToFileName(fileObj.url, "-resized");
+		fileObj.url = file.appendToFileName(fileObj.url, '-resized');
 	}
 
 	return fileObj;
@@ -135,13 +135,13 @@ uploadsController.uploadThumb = async function (req, res) {
 		return helpers.formatApiResponse(
 			503,
 			res,
-			new Error("[[error:topic-thumbnails-are-disabled]]"),
+			new Error('[[error:topic-thumbnails-are-disabled]]'),
 		);
 	}
 
 	return await uploadsController.upload(req, res, async (uploadedFile) => {
 		if (!uploadedFile.type.match(/image./)) {
-			throw new Error("[[error:invalid-file]]");
+			throw new Error('[[error:invalid-file]]');
 		}
 		await image.isFileTypeAllowed(uploadedFile.path);
 		const dimensions = await image.checkDimensions(uploadedFile.path);
@@ -152,11 +152,11 @@ uploadsController.uploadThumb = async function (req, res) {
 				width: meta.config.topicThumbSize,
 			});
 		}
-		if (plugins.hooks.hasListeners("filter:uploadImage")) {
-			return await plugins.hooks.fire("filter:uploadImage", {
+		if (plugins.hooks.hasListeners('filter:uploadImage')) {
+			return await plugins.hooks.fire('filter:uploadImage', {
 				image: uploadedFile,
 				uid: req.uid,
-				folder: "files",
+				folder: 'files',
 			});
 		}
 
@@ -165,16 +165,16 @@ uploadsController.uploadThumb = async function (req, res) {
 };
 
 uploadsController.uploadFile = async function (uid, uploadedFile) {
-	if (plugins.hooks.hasListeners("filter:uploadFile")) {
-		return await plugins.hooks.fire("filter:uploadFile", {
+	if (plugins.hooks.hasListeners('filter:uploadFile')) {
+		return await plugins.hooks.fire('filter:uploadFile', {
 			file: uploadedFile,
 			uid: uid,
-			folder: "files",
+			folder: 'files',
 		});
 	}
 
 	if (!uploadedFile) {
-		throw new Error("[[error:invalid-file]]");
+		throw new Error('[[error:invalid-file]]');
 	}
 	const isAdmin = await user.isAdministrator(uid);
 	if (!isAdmin && uploadedFile.size > meta.config.maximumFileSize * 1024) {
@@ -186,17 +186,17 @@ uploadsController.uploadFile = async function (uid, uploadedFile) {
 	const extension = path.extname(uploadedFile.name).toLowerCase();
 	if (
 		allowed.length > 0 &&
-		(!extension || extension === "." || !allowed.includes(extension))
+		(!extension || extension === '.' || !allowed.includes(extension))
 	) {
-		throw new Error(`[[error:invalid-file-type, ${allowed.join("&#44; ")}]]`);
+		throw new Error(`[[error:invalid-file-type, ${allowed.join('&#44; ')}]]`);
 	}
 
-	return await saveFileToLocal(uid, "files", uploadedFile);
+	return await saveFileToLocal(uid, 'files', uploadedFile);
 };
 
 async function saveFileToLocal(uid, folder, uploadedFile) {
-	const name = uploadedFile.name || "upload";
-	const extension = path.extname(name) || "";
+	const name = uploadedFile.name || 'upload';
+	const extension = path.extname(name) || '';
 
 	const filename = `${Date.now()}-${validator.escape(name.slice(0, -extension.length)).slice(0, 255)}${extension}`;
 
@@ -206,16 +206,16 @@ async function saveFileToLocal(uid, folder, uploadedFile) {
 		uploadedFile.path,
 	);
 	const storedFile = {
-		url: nconf.get("relative_path") + upload.url,
+		url: nconf.get('relative_path') + upload.url,
 		path: upload.path,
 		name: uploadedFile.name,
 	};
 
 	await user.associateUpload(
 		uid,
-		upload.url.replace(`${nconf.get("upload_url")}`, ""),
+		upload.url.replace(`${nconf.get('upload_url')}`, ''),
 	);
-	const data = await plugins.hooks.fire("filter:uploadStored", {
+	const data = await plugins.hooks.fire('filter:uploadStored', {
 		uid: uid,
 		uploadedFile: uploadedFile,
 		storedFile: storedFile,
@@ -229,8 +229,8 @@ function deleteTempFiles(files) {
 	}
 }
 
-require("../promisify")(uploadsController, [
-	"upload",
-	"uploadPost",
-	"uploadThumb",
+require('../promisify')(uploadsController, [
+	'upload',
+	'uploadPost',
+	'uploadThumb',
 ]);

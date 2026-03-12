@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const socketUser = require("./user");
-const socketGroup = require("./groups");
-const image = require("../image");
-const meta = require("../meta");
-const plugins = require("../plugins");
+const socketUser = require('./user');
+const socketGroup = require('./groups');
+const image = require('../image');
+const meta = require('../meta');
+const plugins = require('../plugins');
 
 const inProgress = {};
 
@@ -18,21 +18,21 @@ uploads.upload = async function (socket, data) {
 		!data.params ||
 		!data.params.method
 	) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	const { method } = data.params;
 	const defaultMaxSize =
-		method === "user.uploadCroppedPicture"
+		method === 'user.uploadCroppedPicture'
 			? meta.config.maximumProfileImageSize
 			: meta.config.maximumCoverImageSize;
 
 	const { methods, maxSize } = await plugins.hooks.fire(
-		"filter:uploads.upload",
+		'filter:uploads.upload',
 		{
 			methods: {
-				"user.uploadCroppedPicture": socketUser.uploadCroppedPicture,
-				"user.updateCover": socketUser.updateCover,
-				"groups.cover.update": socketGroup.cover.update,
+				'user.uploadCroppedPicture': socketUser.uploadCroppedPicture,
+				'user.updateCover': socketUser.updateCover,
+				'groups.cover.update': socketGroup.cover.update,
 			},
 			maxSize: defaultMaxSize,
 			data: data,
@@ -40,13 +40,13 @@ uploads.upload = async function (socket, data) {
 	);
 
 	if (!methods.hasOwnProperty(data.params.method)) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	inProgress[socket.id] = inProgress[socket.id] || Object.create(null);
 	const socketUploads = inProgress[socket.id];
 
-	socketUploads[method] = socketUploads[method] || { imageData: "" };
+	socketUploads[method] = socketUploads[method] || { imageData: '' };
 	socketUploads[method].imageData += data.chunk;
 
 	try {

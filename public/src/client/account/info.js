@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-define("forum/account/info", [
-	"forum/account/header",
-	"alerts",
-	"forum/account/sessions",
+define('forum/account/info', [
+	'forum/account/header',
+	'alerts',
+	'forum/account/sessions',
 ], function (header, alerts, sessions) {
 	const Info = {};
 
@@ -14,11 +14,11 @@ define("forum/account/info", [
 	};
 
 	function handleModerationNote() {
-		$('[component="account/save-moderation-note"]').on("click", function () {
+		$('[component="account/save-moderation-note"]').on('click', function () {
 			const noteEl = $('[component="account/moderation-note"]');
 			const note = noteEl.val();
 			socket.emit(
-				"user.setModerationNote",
+				'user.setModerationNote',
 				{
 					uid: ajaxify.data.uid,
 					note: note,
@@ -27,52 +27,52 @@ define("forum/account/info", [
 					if (err) {
 						return alerts.error(err);
 					}
-					noteEl.val("");
+					noteEl.val('');
 
 					app.parseAndTranslate(
-						"account/info",
-						"moderationNotes",
+						'account/info',
+						'moderationNotes',
 						{ moderationNotes: notes },
 						function (html) {
 							$('[component="account/moderation-note/list"]').prepend(html);
-							html.find(".timeago").timeago();
+							html.find('.timeago').timeago();
 						},
 					);
 				},
 			);
 		});
 
-		$('[component="account/moderation-note/edit"]').on("click", function () {
-			const parent = $(this).parents("[data-id]");
+		$('[component="account/moderation-note/edit"]').on('click', function () {
+			const parent = $(this).parents('[data-id]');
 			const contentArea = parent.find(
 				'[component="account/moderation-note/content-area"]',
 			);
 			const editArea = parent.find(
 				'[component="account/moderation-note/edit-area"]',
 			);
-			contentArea.addClass("hidden");
-			editArea.removeClass("hidden");
-			editArea.find("textarea").trigger("focus").putCursorAtEnd();
+			contentArea.addClass('hidden');
+			editArea.removeClass('hidden');
+			editArea.find('textarea').trigger('focus').putCursorAtEnd();
 		});
 
 		$('[component="account/moderation-note/save-edit"]').on(
-			"click",
+			'click',
 			function () {
-				const parent = $(this).parents("[data-id]");
+				const parent = $(this).parents('[data-id]');
 				const contentArea = parent.find(
 					'[component="account/moderation-note/content-area"]',
 				);
 				const editArea = parent.find(
 					'[component="account/moderation-note/edit-area"]',
 				);
-				contentArea.removeClass("hidden");
-				const textarea = editArea.find("textarea");
+				contentArea.removeClass('hidden');
+				const textarea = editArea.find('textarea');
 
 				socket.emit(
-					"user.editModerationNote",
+					'user.editModerationNote',
 					{
 						uid: ajaxify.data.uid,
-						id: parent.attr("data-id"),
+						id: parent.attr('data-id'),
 						note: textarea.val(),
 					},
 					function (err, notes) {
@@ -80,27 +80,27 @@ define("forum/account/info", [
 							return alerts.error(err);
 						}
 						textarea.css({
-							height: textarea.prop("scrollHeight") + "px",
+							height: textarea.prop('scrollHeight') + 'px',
 						});
-						editArea.addClass("hidden");
-						contentArea.find(".content").html(notes[0].note);
+						editArea.addClass('hidden');
+						contentArea.find('.content').html(notes[0].note);
 					},
 				);
 			},
 		);
 
 		$('[component="account/moderation-note/cancel-edit"]').on(
-			"click",
+			'click',
 			function () {
-				const parent = $(this).parents("[data-id]");
+				const parent = $(this).parents('[data-id]');
 				const contentArea = parent.find(
 					'[component="account/moderation-note/content-area"]',
 				);
 				const editArea = parent.find(
 					'[component="account/moderation-note/edit-area"]',
 				);
-				contentArea.removeClass("hidden");
-				editArea.addClass("hidden");
+				contentArea.removeClass('hidden');
+				editArea.addClass('hidden');
 			},
 		);
 
@@ -109,10 +109,10 @@ define("forum/account/info", [
 				const $el = $(el);
 				$el
 					.css({
-						height: $el.prop("scrollHeight") + "px",
+						height: $el.prop('scrollHeight') + 'px',
 					})
 					.parent()
-					.addClass("hidden");
+					.addClass('hidden');
 			},
 		);
 	}

@@ -3,8 +3,8 @@ get:
     - admin
   summary: Get system digest info/settings
   responses:
-    "200":
-      description: "A JSON object containing recent digest sends and settings"
+    '200':
+      description: 'A JSON object containing recent digest sends and settings'
       content:
         application/json:
           schema:
@@ -42,7 +42,7 @@ get:
                             A six-character hexadecimal colour code assigned to the user. This
                             value is used in conjunction with `icon:text`
                             for the user's auto-generated icon
-                          example: "#f44336"
+                          example: '#f44336'
                         lastDelivery:
                           type: string
                         setting:

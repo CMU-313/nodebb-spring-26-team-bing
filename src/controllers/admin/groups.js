@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const validator = require("validator");
+const nconf = require('nconf');
+const validator = require('validator');
 
-const db = require("../../database");
-const user = require("../../user");
-const groups = require("../../groups");
-const meta = require("../../meta");
-const pagination = require("../../pagination");
-const events = require("../../events");
+const db = require('../../database');
+const user = require('../../user');
+const groups = require('../../groups');
+const meta = require('../../meta');
+const pagination = require('../../pagination');
+const events = require('../../events');
 
 const groupsController = module.exports;
 
@@ -23,7 +23,7 @@ groupsController.list = async function (req, res) {
 	groupNames = groupNames.slice(start, stop + 1);
 
 	const groupData = await groups.getGroupsData(groupNames.map((g) => g.name));
-	res.render("admin/manage/groups", {
+	res.render('admin/manage/groups', {
 		groups: groupData,
 		pagination: pagination.create(page, pageCount),
 		yourid: req.uid,
@@ -37,7 +37,7 @@ groupsController.get = async function (req, res, next) {
 			req.params.slug = lowercaseSlug;
 		} else {
 			return res.redirect(
-				`${nconf.get("relative_path")}/admin/manage/groups/${lowercaseSlug}`,
+				`${nconf.get('relative_path')}/admin/manage/groups/${lowercaseSlug}`,
 			);
 		}
 	}
@@ -66,7 +66,7 @@ groupsController.get = async function (req, res, next) {
 		selected: g.name === groupName,
 	}));
 
-	res.render("admin/manage/group", {
+	res.render('admin/manage/group', {
 		group: group,
 		groupNames: groupNameData,
 		allowPrivateGroups: meta.config.allowPrivateGroups,
@@ -76,14 +76,14 @@ groupsController.get = async function (req, res, next) {
 };
 
 async function getGroupNames() {
-	let groupEntries = Object.entries(await db.getObject("groupslug:groupname"));
+	let groupEntries = Object.entries(await db.getObject('groupslug:groupname'));
 	groupEntries = groupEntries.map((g) => ({ slug: g[0], name: g[1] }));
 	return groupEntries
 		.filter(
 			(g) =>
-				g.name !== "registered-users" &&
-				g.name !== "verified-users" &&
-				g.name !== "unverified-users" &&
+				g.name !== 'registered-users' &&
+				g.name !== 'verified-users' &&
+				g.name !== 'unverified-users' &&
 				g.name !== groups.BANNED_USERS,
 		)
 		.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
@@ -94,27 +94,27 @@ groupsController.getCSV = async function (req, res) {
 
 	if (
 		!referer ||
-		!referer.replace(nconf.get("url"), "").startsWith("/admin/manage/groups")
+		!referer.replace(nconf.get('url'), '').startsWith('/admin/manage/groups')
 	) {
-		return res.status(403).send("[[error:invalid-origin]]");
+		return res.status(403).send('[[error:invalid-origin]]');
 	}
 	await events.log({
-		type: "getGroupCSV",
+		type: 'getGroupCSV',
 		uid: req.uid,
 		ip: req.ip,
 		group: req.params.groupname,
 	});
 	const groupName = req.params.groupname;
 	const members = (await groups.getMembersOfGroups([groupName]))[0];
-	const fields = ["email", "username", "uid"];
+	const fields = ['email', 'username', 'uid'];
 	const userData = await user.getUsersFields(members, fields);
-	let csvContent = `${fields.join(",")}\n`;
+	let csvContent = `${fields.join(',')}\n`;
 	csvContent += userData.reduce((memo, user) => {
 		memo += `${user.email},${user.username},${user.uid}\n`;
 		return memo;
-	}, "");
+	}, '');
 
 	res.attachment(`${validator.escape(groupName)}_members.csv`);
-	res.setHeader("Content-Type", "text/csv");
+	res.setHeader('Content-Type', 'text/csv');
 	res.end(csvContent);
 };

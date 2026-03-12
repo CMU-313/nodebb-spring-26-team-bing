@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const async = require("async");
+const async = require('async');
 
-const db = require("../database");
-const user = require("../user");
+const db = require('../database');
+const user = require('../user');
 
 module.exports = function (Topics) {
 	Topics.getUserBookmark = async function (tid, uid) {
@@ -62,7 +62,7 @@ module.exports = function (Topics) {
 			}
 
 			const settings = await user.getSettings(data.uid);
-			if (settings.topicPostSort === "most_votes") {
+			if (settings.topicPostSort === 'most_votes') {
 				return;
 			}
 

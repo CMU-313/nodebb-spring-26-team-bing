@@ -1,28 +1,28 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Change category sort settings",
+	name: 'Change category sort settings',
 	timestamp: Date.UTC(2024, 2, 4),
 	method: async function () {
 		const { progress } = this;
 
-		const currentSort = await db.getObjectField("config", "categoryTopicSort");
+		const currentSort = await db.getObjectField('config', 'categoryTopicSort');
 		if (
-			currentSort === "oldest_to_newest" ||
-			currentSort === "newest_to_oldest"
+			currentSort === 'oldest_to_newest' ||
+			currentSort === 'newest_to_oldest'
 		) {
 			await db.setObjectField(
-				"config",
-				"categoryTopicSort",
-				"recently_replied",
+				'config',
+				'categoryTopicSort',
+				'recently_replied',
 			);
 		}
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				progress.incr(uids.length);
 				const usersSettings = await db.getObjects(
@@ -32,12 +32,12 @@ module.exports = {
 				usersSettings.forEach((userSetting, i) => {
 					if (
 						userSetting &&
-						(userSetting.categoryTopicSort === "newest_to_oldest" ||
-							userSetting.categoryTopicSort === "oldest_to_newest")
+						(userSetting.categoryTopicSort === 'newest_to_oldest' ||
+							userSetting.categoryTopicSort === 'oldest_to_newest')
 					) {
 						bulkSet.push([
 							`user:${uids[i]}:settings`,
-							{ categoryTopicSort: "recently_replied" },
+							{ categoryTopicSort: 'recently_replied' },
 						]);
 					}
 				});

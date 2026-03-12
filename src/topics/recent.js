@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const plugins = require("../plugins");
-const posts = require("../posts");
-const utils = require("../utils");
+const db = require('../database');
+const plugins = require('../plugins');
+const posts = require('../posts');
+const utils = require('../utils');
 
 module.exports = function (Topics) {
 	const terms = {
@@ -20,7 +20,7 @@ module.exports = function (Topics) {
 			start: start,
 			stop: stop,
 			filter: filter,
-			sort: "recent",
+			sort: 'recent',
 		});
 	};
 
@@ -28,7 +28,7 @@ module.exports = function (Topics) {
 	Topics.getLatestTopics = async function (options) {
 		// uid, start, stop, term
 		const tids = await Topics.getLatestTidsFromSet(
-			"topics:recent",
+			'topics:recent',
 			options.start,
 			options.stop,
 			options.term,
@@ -51,7 +51,7 @@ module.exports = function (Topics) {
 			set,
 			start,
 			count,
-			"+inf",
+			'+inf',
 			Date.now() - since,
 		);
 	};
@@ -61,7 +61,7 @@ module.exports = function (Topics) {
 		if (!pid) {
 			return;
 		}
-		const timestamp = await posts.getPostField(pid, "timestamp");
+		const timestamp = await posts.getPostField(pid, 'timestamp');
 		if (!timestamp) {
 			return;
 		}
@@ -69,11 +69,11 @@ module.exports = function (Topics) {
 	};
 
 	Topics.updateLastPostTime = async function (tid, lastposttime) {
-		await Topics.setTopicField(tid, "lastposttime", lastposttime);
+		await Topics.setTopicField(tid, 'lastposttime', lastposttime);
 		const topicData = await Topics.getTopicFields(tid, [
-			"cid",
-			"deleted",
-			"pinned",
+			'cid',
+			'deleted',
+			'pinned',
 		]);
 
 		await db.sortedSetAdd(
@@ -93,16 +93,16 @@ module.exports = function (Topics) {
 		let data = { tid, timestamp };
 
 		// Topics in /world are excluded from /recent
-		const cid = await Topics.getTopicField(tid, "cid");
+		const cid = await Topics.getTopicField(tid, 'cid');
 		if (!utils.isNumber(cid) || cid === -1) {
-			return await db.sortedSetRemove("topics:recent", data.tid);
+			return await db.sortedSetRemove('topics:recent', data.tid);
 		}
 
-		if (plugins.hooks.hasListeners("filter:topics.updateRecent")) {
-			data = await plugins.hooks.fire("filter:topics.updateRecent", data);
+		if (plugins.hooks.hasListeners('filter:topics.updateRecent')) {
+			data = await plugins.hooks.fire('filter:topics.updateRecent', data);
 		}
 		if (data && data.tid && data.timestamp) {
-			await db.sortedSetAdd("topics:recent", data.timestamp, data.tid);
+			await db.sortedSetAdd('topics:recent', data.timestamp, data.tid);
 		}
 	};
 };

@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-define("forum/account/moderate", [
-	"benchpress",
-	"api",
-	"bootbox",
-	"alerts",
+define('forum/account/moderate', [
+	'benchpress',
+	'api',
+	'bootbox',
+	'alerts',
 ], function (Benchpress, api, bootbox, alerts) {
 	const AccountModerate = {};
 
@@ -12,8 +12,8 @@ define("forum/account/moderate", [
 		theirid = theirid || ajaxify.data.theirid;
 
 		throwModal({
-			tpl: "modals/temporary-ban",
-			title: "[[user:ban-account]]",
+			tpl: 'modals/temporary-ban',
+			title: '[[user:ban-account]]',
 			onSubmit: function (formData) {
 				const until =
 					formData.length > 0
@@ -25,12 +25,12 @@ define("forum/account/moderate", [
 								(parseInt(formData.unit, 10) ? 24 : 1)
 						: 0;
 				api
-					.put("/users/" + theirid + "/ban", {
+					.put('/users/' + theirid + '/ban', {
 						until: until,
-						reason: formData.reason || "",
+						reason: formData.reason || '',
 					})
 					.then(() => {
-						if (typeof onSuccess === "function") {
+						if (typeof onSuccess === 'function') {
 							return onSuccess();
 						}
 
@@ -43,12 +43,12 @@ define("forum/account/moderate", [
 
 	AccountModerate.unbanAccount = function (theirid) {
 		throwModal({
-			tpl: "modals/unban",
-			title: "[[user:unban-account]]",
+			tpl: 'modals/unban',
+			title: '[[user:unban-account]]',
 			onSubmit: function (formData) {
 				api
-					.del("/users/" + theirid + "/ban", {
-						reason: formData.reason || "",
+					.del('/users/' + theirid + '/ban', {
+						reason: formData.reason || '',
 					})
 					.then(() => {
 						ajaxify.refresh();
@@ -61,8 +61,8 @@ define("forum/account/moderate", [
 	AccountModerate.muteAccount = function (theirid, onSuccess) {
 		theirid = theirid || ajaxify.data.theirid;
 		throwModal({
-			tpl: "modals/temporary-mute",
-			title: "[[user:mute-account]]",
+			tpl: 'modals/temporary-mute',
+			title: '[[user:mute-account]]',
 			onSubmit: function (formData) {
 				const until =
 					formData.length > 0
@@ -75,12 +75,12 @@ define("forum/account/moderate", [
 						: 0;
 
 				api
-					.put("/users/" + theirid + "/mute", {
+					.put('/users/' + theirid + '/mute', {
 						until: until,
-						reason: formData.reason || "",
+						reason: formData.reason || '',
 					})
 					.then(() => {
-						if (typeof onSuccess === "function") {
+						if (typeof onSuccess === 'function') {
 							return onSuccess();
 						}
 						ajaxify.refresh();
@@ -92,12 +92,12 @@ define("forum/account/moderate", [
 
 	AccountModerate.unmuteAccount = function (theirid) {
 		throwModal({
-			tpl: "modals/unmute",
-			title: "[[user:unmute-account]]",
+			tpl: 'modals/unmute',
+			title: '[[user:unmute-account]]',
 			onSubmit: function (formData) {
 				api
-					.del("/users/" + theirid + "/mute", {
-						reason: formData.reason || "",
+					.del('/users/' + theirid + '/mute', {
+						reason: formData.reason || '',
 					})
 					.then(() => {
 						ajaxify.refresh();
@@ -116,14 +116,14 @@ define("forum/account/moderate", [
 				onEscape: true,
 				buttons: {
 					close: {
-						label: "[[global:close]]",
-						className: "btn-link",
+						label: '[[global:close]]',
+						className: 'btn-link',
 					},
 					submit: {
 						label: options.title,
 						callback: function () {
 							const formData = modal
-								.find("form")
+								.find('form')
 								.serializeArray()
 								.reduce(function (data, cur) {
 									data[cur.name] = cur.value;

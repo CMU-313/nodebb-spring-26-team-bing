@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const _ = require("lodash");
+const async = require('async');
+const _ = require('lodash');
 
-const db = require("../database");
-const plugins = require("../plugins");
-const meta = require("../meta");
-const privileges = require("../privileges");
-const utils = require("../utils");
-const slugify = require("../slugify");
-const cache = require("../cache");
+const db = require('../database');
+const plugins = require('../plugins');
+const meta = require('../meta');
+const privileges = require('../privileges');
+const utils = require('../utils');
+const slugify = require('../slugify');
+const cache = require('../cache');
 
 module.exports = function (Categories) {
 	Categories.create = async function (data) {
 		const parentCid = data.parentCid ? data.parentCid : 0;
 		const [cid, firstChild] = await Promise.all([
-			db.incrObjectField("global", "nextCid"),
+			db.incrObjectField('global', 'nextCid'),
 			db.getSortedSetRangeWithScores(`cid:${parentCid}:children`, 0, 0),
 		]);
 
@@ -30,9 +30,9 @@ module.exports = function (Categories) {
 			cid: cid,
 			name: data.name,
 			handle,
-			description: data.description ? data.description : "",
-			descriptionParsed: data.descriptionParsed ? data.descriptionParsed : "",
-			icon: data.icon ? data.icon : "",
+			description: data.description ? data.description : '',
+			descriptionParsed: data.descriptionParsed ? data.descriptionParsed : '',
+			icon: data.icon ? data.icon : '',
 			bgColor: data.bgColor || colours[0],
 			color: data.color || colours[1],
 			slug: slug,
@@ -41,10 +41,10 @@ module.exports = function (Categories) {
 			post_count: 0,
 			disabled: data.disabled ? 1 : 0,
 			order: order,
-			link: data.link || "",
+			link: data.link || '',
 			numRecentReplies: 1,
-			class: data.class ? data.class : "col-md-3 col-6",
-			imageClass: "cover",
+			class: data.class ? data.class : 'col-md-3 col-6',
+			imageClass: 'cover',
 			isSection: 0,
 			subCategoriesPerPage: 10,
 		};
@@ -54,31 +54,31 @@ module.exports = function (Categories) {
 		}
 
 		const defaultPrivileges = [
-			"groups:find",
-			"groups:read",
-			"groups:topics:read",
-			"groups:topics:create",
-			"groups:topics:reply",
-			"groups:topics:tag",
-			"groups:posts:edit",
-			"groups:posts:history",
-			"groups:posts:delete",
-			"groups:posts:upvote",
-			"groups:posts:downvote",
-			"groups:topics:delete",
+			'groups:find',
+			'groups:read',
+			'groups:topics:read',
+			'groups:topics:create',
+			'groups:topics:reply',
+			'groups:topics:tag',
+			'groups:posts:edit',
+			'groups:posts:history',
+			'groups:posts:delete',
+			'groups:posts:upvote',
+			'groups:posts:downvote',
+			'groups:topics:delete',
 		];
 		const modPrivileges = defaultPrivileges.concat([
-			"groups:topics:schedule",
-			"groups:posts:view_deleted",
-			"groups:purge",
+			'groups:topics:schedule',
+			'groups:posts:view_deleted',
+			'groups:purge',
 		]);
 		const guestPrivileges = [
-			"groups:find",
-			"groups:read",
-			"groups:topics:read",
+			'groups:find',
+			'groups:read',
+			'groups:topics:read',
 		];
 
-		const result = await plugins.hooks.fire("filter:category.create", {
+		const result = await plugins.hooks.fire('filter:category.create', {
 			category: category,
 			data: data,
 			defaultPrivileges: defaultPrivileges,
@@ -93,30 +93,30 @@ module.exports = function (Categories) {
 		}
 
 		await db.sortedSetAddBulk([
-			["categories:cid", category.order, category.cid],
+			['categories:cid', category.order, category.cid],
 			[`cid:${parentCid}:children`, category.order, category.cid],
 			[
-				"categories:name",
+				'categories:name',
 				0,
 				`${data.name.slice(0, 200).toLowerCase()}:${category.cid}`,
 			],
-			["categoryhandle:cid", cid, handle],
+			['categoryhandle:cid', cid, handle],
 		]);
 
 		await privileges.categories.give(result.defaultPrivileges, category.cid, [
-			"registered-users",
-			"fediverse",
+			'registered-users',
+			'fediverse',
 		]);
 		await privileges.categories.give(result.modPrivileges, category.cid, [
-			"administrators",
-			"Global Moderators",
+			'administrators',
+			'Global Moderators',
 		]);
 		await privileges.categories.give(result.guestPrivileges, category.cid, [
-			"guests",
-			"spiders",
+			'guests',
+			'spiders',
 		]);
 
-		cache.del("categories:cid");
+		cache.del('categories:cid');
 		await clearParentCategoryCache(parentCid);
 
 		if (data.cloneFromCid && parseInt(data.cloneFromCid, 10)) {
@@ -135,7 +135,7 @@ module.exports = function (Categories) {
 			);
 		}
 
-		plugins.hooks.fire("action:category.create", { category: category });
+		plugins.hooks.fire('action:category.create', { category: category });
 		return category;
 	};
 
@@ -148,7 +148,7 @@ module.exports = function (Categories) {
 			}
 			// clear all the way to root
 			// eslint-disable-next-line no-await-in-loop
-			parentCid = await Categories.getCategoryField(parentCid, "parentCid");
+			parentCid = await Categories.getCategoryField(parentCid, 'parentCid');
 		}
 	}
 
@@ -178,7 +178,7 @@ module.exports = function (Categories) {
 			taken = await meta.slugTaken(slug);
 		} catch (e) {
 			// invalid slug passed in
-			slug = "category";
+			slug = 'category';
 			taken = true;
 		}
 
@@ -189,30 +189,30 @@ module.exports = function (Categories) {
 			taken = await meta.slugTaken(`${slug}-${suffix}`);
 		}
 
-		return `${slug}${suffix ? `-${suffix}` : ""}`;
+		return `${slug}${suffix ? `-${suffix}` : ''}`;
 	}
 	Categories.generateHandle = generateHandle; // exported for upgrade script (4.0.0)
 
 	Categories.assignColours = function () {
 		const backgrounds = [
-			"#AB4642",
-			"#DC9656",
-			"#F7CA88",
-			"#A1B56C",
-			"#86C1B9",
-			"#7CAFC2",
-			"#BA8BAF",
-			"#A16946",
+			'#AB4642',
+			'#DC9656',
+			'#F7CA88',
+			'#A1B56C',
+			'#86C1B9',
+			'#7CAFC2',
+			'#BA8BAF',
+			'#A16946',
 		];
 		const text = [
-			"#ffffff",
-			"#ffffff",
-			"#333333",
-			"#ffffff",
-			"#333333",
-			"#ffffff",
-			"#ffffff",
-			"#ffffff",
+			'#ffffff',
+			'#ffffff',
+			'#333333',
+			'#ffffff',
+			'#333333',
+			'#ffffff',
+			'#ffffff',
+			'#ffffff',
 		];
 		const index = utils.secureRandom(0, backgrounds.length - 1);
 		return [backgrounds[index], text[index]];
@@ -224,7 +224,7 @@ module.exports = function (Categories) {
 			db.getObject(`category:${toCid}`),
 		]);
 		if (!source) {
-			throw new Error("[[error:invalid-cid]]");
+			throw new Error('[[error:invalid-cid]]');
 		}
 
 		const oldParent = parseInt(destination.parentCid, 10) || 0;
@@ -256,7 +256,7 @@ module.exports = function (Categories) {
 		if (copyParent) {
 			destination.parentCid = source.parentCid || 0;
 		}
-		await plugins.hooks.fire("filter:categories.copySettingsFrom", {
+		await plugins.hooks.fire('filter:categories.copySettingsFrom', {
 			source: source,
 			destination: destination,
 			copyParent: copyParent,
@@ -292,7 +292,7 @@ module.exports = function (Categories) {
 		group,
 		filter,
 	) {
-		group = group || "";
+		group = group || '';
 		let privsToCopy = privileges.categories.getPrivilegesByFilter(filter);
 
 		if (group) {
@@ -304,7 +304,7 @@ module.exports = function (Categories) {
 		}
 
 		const data = await plugins.hooks.fire(
-			"filter:categories.copyPrivilegesFrom",
+			'filter:categories.copyPrivilegesFrom',
 			{
 				privileges: privsToCopy,
 				fromCid: fromCid,

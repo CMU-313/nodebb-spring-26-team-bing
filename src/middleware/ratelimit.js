@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const winston = require("winston");
+const winston = require('winston');
 
 const ratelimit = module.exports;
 

@@ -1,23 +1,23 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const crypto = require("crypto");
+const crypto = require('crypto');
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 const md5 = (filename) =>
-	crypto.createHash("md5").update(filename).digest("hex");
+	crypto.createHash('md5').update(filename).digest('hex');
 
 module.exports = {
-	name: "Rename object and sorted sets used in post uploads",
+	name: 'Rename object and sorted sets used in post uploads',
 	timestamp: Date.UTC(2022, 1, 10),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			async (pids) => {
 				let keys = pids.map((pid) => `post:${pid}:uploads`);
 				const exists = await db.exists(keys);
@@ -32,7 +32,7 @@ module.exports = {
 					// Don't process those that have already the right format
 					uploads = uploads.filter(
 						(upload) =>
-							upload && upload.value && !upload.value.startsWith("files/"),
+							upload && upload.value && !upload.value.startsWith('files/'),
 					);
 
 					// Rename the zset members

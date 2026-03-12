@@ -5,7 +5,7 @@ get:
   description: Returns a list of the current user's unread topics, sorted by the
     last post's timestamp.
   responses:
-    "200":
+    '200':
       description: An array of unread topic objects sorted by the last post's timestamp.
       content:
         application/json:
@@ -111,7 +111,7 @@ get:
                                     value is used in conjunction with
                                     `icon:text` for the user's auto-generated
                                     icon
-                                  example: "#f44336"
+                                  example: '#f44336'
                                 banned_until_readable:
                                   type: string
                               required:
@@ -183,7 +183,7 @@ get:
                                         value is used in conjunction with
                                         `icon:text` for the user's
                                         auto-generated icon
-                                      example: "#f44336"
+                                      example: '#f44336'
                                 index:
                                   type: number
                             tags:

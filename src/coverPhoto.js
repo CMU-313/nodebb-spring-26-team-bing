@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const meta = require("./meta");
+const nconf = require('nconf');
+const meta = require('./meta');
 
-const relative_path = nconf.get("relative_path");
+const relative_path = nconf.get('relative_path');
 
 const coverPhoto = module.exports;
 
 coverPhoto.getDefaultGroupCover = function (groupName) {
-	return getCover("groups", groupName);
+	return getCover('groups', groupName);
 };
 
 coverPhoto.getDefaultProfileCover = function (uid) {
-	return getCover("profile", parseInt(uid, 10));
+	return getCover('profile', parseInt(uid, 10));
 };
 
 function getCover(type, id) {
@@ -26,13 +26,13 @@ function getCover(type, id) {
 			return coverPhoto;
 		}
 
-		if (typeof id === "string") {
+		if (typeof id === 'string') {
 			id = (id.charCodeAt(0) + id.charCodeAt(1)) % covers.length;
 		} else {
 			id %= covers.length;
 		}
 		if (covers[id]) {
-			coverPhoto = covers[id].startsWith("http")
+			coverPhoto = covers[id].startsWith('http')
 				? covers[id]
 				: relative_path + covers[id];
 		}

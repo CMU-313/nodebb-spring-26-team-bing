@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const router = require("express").Router();
-const middleware = require("../../middleware");
-const controllers = require("../../controllers");
-const routeHelpers = require("../helpers");
+const router = require('express').Router();
+const middleware = require('../../middleware');
+const controllers = require('../../controllers');
+const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
@@ -12,222 +12,222 @@ module.exports = function () {
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid",
+		'get',
+		'/:pid',
 		[middleware.assert.post],
 		controllers.write.posts.get,
 	);
 	// There is no POST route because you POST to a topic to create a new post. Intuitive, no?
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid",
+		'put',
+		'/:pid',
 		[
 			middleware.ensureLoggedIn,
-			middleware.checkRequired.bind(null, ["content"]),
+			middleware.checkRequired.bind(null, ['content']),
 		],
 		controllers.write.posts.edit,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:pid",
+		'delete',
+		'/:pid',
 		middlewares,
 		controllers.write.posts.purge,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/index",
+		'get',
+		'/:pid/index',
 		[middleware.assert.post],
 		controllers.write.posts.getIndex,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/raw",
+		'get',
+		'/:pid/raw',
 		[middleware.assert.post],
 		controllers.write.posts.getRaw,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/summary",
+		'get',
+		'/:pid/summary',
 		[middleware.assert.post],
 		controllers.write.posts.getSummary,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/state",
+		'put',
+		'/:pid/state',
 		middlewares,
 		controllers.write.posts.restore,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:pid/state",
+		'delete',
+		'/:pid/state',
 		middlewares,
 		controllers.write.posts.delete,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/move",
-		[...middlewares, middleware.checkRequired.bind(null, ["tid"])],
+		'put',
+		'/:pid/move',
+		[...middlewares, middleware.checkRequired.bind(null, ['tid'])],
 		controllers.write.posts.move,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/vote",
-		[...middlewares, middleware.checkRequired.bind(null, ["delta"])],
+		'put',
+		'/:pid/vote',
+		[...middlewares, middleware.checkRequired.bind(null, ['delta'])],
 		controllers.write.posts.vote,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:pid/vote",
+		'delete',
+		'/:pid/vote',
 		middlewares,
 		controllers.write.posts.unvote,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/voters",
+		'get',
+		'/:pid/voters',
 		[middleware.assert.post],
 		controllers.write.posts.getVoters,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/upvoters",
+		'get',
+		'/:pid/upvoters',
 		[middleware.assert.post],
 		controllers.write.posts.getUpvoters,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/announcers",
+		'get',
+		'/:pid/announcers',
 		[middleware.assert.post],
 		controllers.write.posts.getAnnouncers,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/announcers/tooltip",
+		'get',
+		'/:pid/announcers/tooltip',
 		[middleware.assert.post],
 		controllers.write.posts.getAnnouncersTooltip,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/bookmark",
+		'put',
+		'/:pid/bookmark',
 		middlewares,
 		controllers.write.posts.bookmark,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:pid/bookmark",
+		'delete',
+		'/:pid/bookmark',
 		middlewares,
 		controllers.write.posts.unbookmark,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/diffs",
+		'get',
+		'/:pid/diffs',
 		[middleware.assert.post],
 		controllers.write.posts.getDiffs,
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/diffs/:since",
+		'get',
+		'/:pid/diffs/:since',
 		[middleware.assert.post],
 		controllers.write.posts.loadDiff,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/diffs/:since",
+		'put',
+		'/:pid/diffs/:since',
 		middlewares,
 		controllers.write.posts.restoreDiff,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:pid/diffs/:timestamp",
+		'delete',
+		'/:pid/diffs/:timestamp',
 		middlewares,
 		controllers.write.posts.deleteDiff,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:pid/replies",
+		'get',
+		'/:pid/replies',
 		[middleware.assert.post],
 		controllers.write.posts.getReplies,
 	);
 
 	setupApiRoute(
 		router,
-		"post",
-		"/queue/:id",
+		'post',
+		'/queue/:id',
 		controllers.write.posts.acceptQueuedPost,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/queue/:id",
+		'delete',
+		'/queue/:id',
 		controllers.write.posts.removeQueuedPost,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/queue/:id",
+		'put',
+		'/queue/:id',
 		controllers.write.posts.editQueuedPost,
 	);
 	setupApiRoute(
 		router,
-		"post",
-		"/queue/:id/notify",
-		[middleware.checkRequired.bind(null, ["message"])],
+		'post',
+		'/queue/:id/notify',
+		[middleware.checkRequired.bind(null, ['message'])],
 		controllers.write.posts.notifyQueuedPostOwner,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:pid/owner",
+		'put',
+		'/:pid/owner',
 		[
 			middleware.ensureLoggedIn,
 			middleware.assert.post,
-			middleware.checkRequired.bind(null, ["uid"]),
+			middleware.checkRequired.bind(null, ['uid']),
 		],
 		controllers.write.posts.changeOwner,
 	);
 	setupApiRoute(
 		router,
-		"post",
-		"/owner",
+		'post',
+		'/owner',
 		[
 			middleware.ensureLoggedIn,
-			middleware.checkRequired.bind(null, ["pids", "uid"]),
+			middleware.checkRequired.bind(null, ['pids', 'uid']),
 		],
 		controllers.write.posts.changeOwner,
 	);
 
 	// Shorthand route to access post routes by topic index
 	router.all(
-		"/+byIndex/:index*?",
-		[middleware.checkRequired.bind(null, ["tid"])],
+		'/+byIndex/:index*?',
+		[middleware.checkRequired.bind(null, ['tid'])],
 		controllers.write.posts.redirectByIndex,
 	);
 

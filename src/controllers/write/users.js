@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const path = require("path");
-const crypto = require("crypto");
+const nconf = require('nconf');
+const path = require('path');
+const crypto = require('crypto');
 
-const api = require("../../api");
-const activitypub = require("../../activitypub");
-const user = require("../../user");
+const api = require('../../api');
+const activitypub = require('../../activitypub');
+const user = require('../../user');
 
-const helpers = require("../helpers");
+const helpers = require('../helpers');
 
 const Users = module.exports;
 
@@ -16,11 +16,11 @@ Users.redirectBySlug = async (req, res) => {
 	const uid = await user.getUidByUserslug(req.params.userslug);
 
 	if (uid) {
-		const path = req.path.split("/").slice(3).join("/");
-		const urlObj = new URL(nconf.get("url") + req.url);
+		const path = req.path.split('/').slice(3).join('/');
+		const urlObj = new URL(nconf.get('url') + req.url);
 		res.redirect(
 			308,
-			nconf.get("relative_path") +
+			nconf.get('relative_path') +
 				encodeURI(`/api/v3/users/${uid}/${path}${urlObj.search}`),
 		);
 	} else {
@@ -121,9 +121,9 @@ Users.changePassword = async (req, res) => {
 };
 
 Users.follow = async (req, res) => {
-	const remote = String(req.params.uid).includes("@");
+	const remote = String(req.params.uid).includes('@');
 	if (remote) {
-		await activitypub.out.follow("uid", req.uid, req.params.uid);
+		await activitypub.out.follow('uid', req.uid, req.params.uid);
 	} else {
 		await api.users.follow(req, req.params);
 	}
@@ -132,9 +132,9 @@ Users.follow = async (req, res) => {
 };
 
 Users.unfollow = async (req, res) => {
-	const remote = String(req.params.uid).includes("@");
+	const remote = String(req.params.uid).includes('@');
 	if (remote) {
-		await activitypub.out.undo.follow("uid", req.uid, req.params.uid);
+		await activitypub.out.undo.follow('uid', req.uid, req.params.uid);
 	} else {
 		await api.users.unfollow(req, req.params);
 	}
@@ -187,7 +187,7 @@ Users.invite = async (req, res) => {
 		await api.users.invite(req, { emails, groupsToJoin, ...req.params });
 		helpers.formatApiResponse(200, res);
 	} catch (e) {
-		if (e.message.startsWith("[[error:invite-maximum-met")) {
+		if (e.message.startsWith('[[error:invite-maximum-met')) {
 			return helpers.formatApiResponse(403, res, e);
 		}
 
@@ -239,10 +239,10 @@ Users.confirmEmail = async (req, res) => {
 Users.checkExportByType = async (req, res) => {
 	const stat = await api.users.checkExportByType(req, { ...req.params });
 	const modified = new Date(stat.mtimeMs);
-	res.set("Last-Modified", modified.toUTCString());
+	res.set('Last-Modified', modified.toUTCString());
 	res.set(
-		"ETag",
-		`"${crypto.createHash("md5").update(String(stat.mtimeMs)).digest("hex")}"`,
+		'ETag',
+		`"${crypto.createHash('md5').update(String(stat.mtimeMs)).digest('hex')}"`,
 	);
 	res.sendStatus(204);
 };
@@ -257,10 +257,10 @@ Users.getExportByType = async (req, res, next) => {
 	res.sendFile(
 		data.filename,
 		{
-			root: path.join(__dirname, "../../../build/export"),
+			root: path.join(__dirname, '../../../build/export'),
 			headers: {
-				"Content-Type": data.mime,
-				"Content-Disposition": `attachment; filename=${data.filename}`,
+				'Content-Type': data.mime,
+				'Content-Disposition': `attachment; filename=${data.filename}`,
 			},
 		},
 		(err) => {

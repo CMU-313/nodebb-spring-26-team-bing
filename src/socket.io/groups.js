@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
 /**
  * v4 note — all socket methods here have been deprecated and can be removed for v4
  *           EXCEPT socketGroups.cover.*
  */
 
-const groups = require("../groups");
-const user = require("../user");
-const utils = require("../utils");
-const privileges = require("../privileges");
-const api = require("../api");
-const slugify = require("../slugify");
+const groups = require('../groups');
+const user = require('../user');
+const utils = require('../utils');
+const privileges = require('../privileges');
+const api = require('../api');
+const slugify = require('../slugify');
 
-const sockets = require(".");
+const sockets = require('.');
 
 const SocketGroups = module.exports;
 
 SocketGroups.before = async (socket, method, data) => {
 	if (!data) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 };
 
@@ -40,7 +40,7 @@ SocketGroups.search = async (socket, data) => {
 };
 
 SocketGroups.loadMore = async (socket, data) => {
-	sockets.warnDeprecated(socket, "GET /api/v3/groups");
+	sockets.warnDeprecated(socket, 'GET /api/v3/groups');
 
 	// These restrictions were left behind for websocket specific calls, the API is more flexible and requires no params
 	if (
@@ -48,17 +48,17 @@ SocketGroups.loadMore = async (socket, data) => {
 		!utils.isNumber(data.after) ||
 		parseInt(data.after, 10) < 0
 	) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	return api.groups.list(socket, data);
 };
 
 SocketGroups.searchMembers = async (socket, data) => {
-	sockets.warnDeprecated(socket, "GET /api/v3/groups/:groupName/members");
+	sockets.warnDeprecated(socket, 'GET /api/v3/groups/:groupName/members');
 
 	if (!data.groupName) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	data.slug = slugify(data.groupName);
 	delete data.groupName;
@@ -67,14 +67,14 @@ SocketGroups.searchMembers = async (socket, data) => {
 };
 
 SocketGroups.loadMoreMembers = async (socket, data) => {
-	sockets.warnDeprecated(socket, "GET /api/v3/groups/:groupName/members");
+	sockets.warnDeprecated(socket, 'GET /api/v3/groups/:groupName/members');
 
 	if (
 		!data.groupName ||
 		!utils.isNumber(data.after) ||
 		parseInt(data.after, 10) < 0
 	) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	data.slug = slugify(data.groupName);
 	delete data.groupName;
@@ -83,11 +83,11 @@ SocketGroups.loadMoreMembers = async (socket, data) => {
 };
 
 SocketGroups.getChatGroups = async (socket) => {
-	sockets.warnDeprecated(socket, "GET /api/v3/admin/groups");
+	sockets.warnDeprecated(socket, 'GET /api/v3/admin/groups');
 
 	const isAdmin = await user.isAdministrator(socket.uid);
 	if (!isAdmin) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const { groups } = await api.admin.listGroups(socket);
@@ -101,10 +101,10 @@ SocketGroups.cover = {};
 
 SocketGroups.cover.update = async (socket, data) => {
 	if (!socket.uid) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 	if (data.file || (!data.imageData && !data.position)) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	await canModifyGroup(socket.uid, data.groupName);
 	return await groups.updateCover(socket.uid, {
@@ -116,7 +116,7 @@ SocketGroups.cover.update = async (socket, data) => {
 
 SocketGroups.cover.remove = async (socket, data) => {
 	if (!socket.uid) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	await canModifyGroup(socket.uid, data.groupName);
@@ -126,13 +126,13 @@ SocketGroups.cover.remove = async (socket, data) => {
 };
 
 async function canModifyGroup(uid, groupName) {
-	if (typeof groupName !== "string") {
-		throw new Error("[[error:invalid-group-name]]");
+	if (typeof groupName !== 'string') {
+		throw new Error('[[error:invalid-group-name]]');
 	}
 	const results = await utils.promiseParallel({
 		isOwner: groups.ownership.isOwner(uid, groupName),
-		system: groups.getGroupField(groupName, "system"),
-		hasAdminPrivilege: privileges.admin.can("admin:groups", uid),
+		system: groups.getGroupField(groupName, 'system'),
+		hasAdminPrivilege: privileges.admin.can('admin:groups', uid),
 		isGlobalMod: user.isGlobalModerator(uid),
 	});
 
@@ -143,8 +143,8 @@ async function canModifyGroup(uid, groupName) {
 			(results.isGlobalMod && !results.system)
 		)
 	) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 }
 
-require("../promisify")(SocketGroups);
+require('../promisify')(SocketGroups);

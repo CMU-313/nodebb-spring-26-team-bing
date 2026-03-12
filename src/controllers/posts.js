@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const querystring = require("querystring");
+const nconf = require('nconf');
+const querystring = require('querystring');
 
-const meta = require("../meta");
-const posts = require("../posts");
-const privileges = require("../privileges");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const meta = require('../meta');
+const posts = require('../posts');
+const privileges = require('../privileges');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
-const helpers = require("./helpers");
+const helpers = require('./helpers');
 
 const postsController = module.exports;
 
@@ -30,7 +30,7 @@ postsController.redirectToPost = async function (req, res, next) {
 	}
 
 	const [canRead, path] = await Promise.all([
-		privileges.posts.can("topics:read", pid, req.uid),
+		privileges.posts.can('topics:read', pid, req.uid),
 		posts.generatePostPath(pid, req.uid),
 	]);
 	if (!path) {
@@ -43,8 +43,8 @@ postsController.redirectToPost = async function (req, res, next) {
 	if (meta.config.activitypubEnabled) {
 		// Include link header for richer parsing
 		res.set(
-			"Link",
-			`<${nconf.get("url")}/post/${req.params.pid}>; rel="alternate"; type="application/activity+json"`,
+			'Link',
+			`<${nconf.get('url')}/post/${req.params.pid}>; rel="alternate"; type="application/activity+json"`,
 		);
 	}
 

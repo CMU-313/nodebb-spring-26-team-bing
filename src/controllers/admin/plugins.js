@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const winston = require("winston");
-const plugins = require("../../plugins");
-const meta = require("../../meta");
+const nconf = require('nconf');
+const winston = require('winston');
+const plugins = require('../../plugins');
+const meta = require('../../meta');
 
 const pluginsController = module.exports;
 
@@ -18,18 +18,18 @@ pluginsController.get = async function (req, res) {
 	const installedPlugins = compatible.filter(
 		(plugin) =>
 			plugin &&
-			(plugin.installed || (nconf.get("plugins:active") && plugin.active)),
+			(plugin.installed || (nconf.get('plugins:active') && plugin.active)),
 	);
 	const activePlugins = all.filter(
 		(plugin) =>
 			plugin &&
-			(plugin.installed || nconf.get("plugins:active")) &&
+			(plugin.installed || nconf.get('plugins:active')) &&
 			plugin.active,
 	);
 	const inactivePlugins = all.filter(
 		(plugin) =>
 			plugin &&
-			(plugin.installed || nconf.get("plugins:active")) &&
+			(plugin.installed || nconf.get('plugins:active')) &&
 			!plugin.active,
 	);
 
@@ -48,14 +48,14 @@ pluginsController.get = async function (req, res) {
 		});
 
 	const upgrade = compatible.filter((p) => p.installed && p.outdated);
-	res.render("admin/extend/plugins", {
+	res.render('admin/extend/plugins', {
 		installed: installedPlugins,
 		installedCount: installedPlugins.length,
 		active: activePlugins,
 		activeCount: activePlugins.length,
 		inactive: inactivePlugins,
 		inactiveCount: inactivePlugins.length,
-		canChangeState: !nconf.get("plugins:active"),
+		canChangeState: !nconf.get('plugins:active'),
 		upgrade: upgrade,
 		upgradeCount: upgrade.length,
 		download: compatible.filter((plugin) => !plugin.installed),
@@ -64,8 +64,8 @@ pluginsController.get = async function (req, res) {
 		),
 		trending: trendingPlugins,
 		submitPluginUsage: meta.config.submitPluginUsage,
-		version: nconf.get("version"),
-		isStarterPlan: nconf.get("saas_plan") === "starter",
+		version: nconf.get('version'),
+		isStarterPlan: nconf.get('saas_plan') === 'starter',
 	});
 };
 

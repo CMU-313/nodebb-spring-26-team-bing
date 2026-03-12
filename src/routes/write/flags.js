@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const router = require("express").Router();
-const middleware = require("../../middleware");
-const controllers = require("../../controllers");
-const routeHelpers = require("../helpers");
+const router = require('express').Router();
+const middleware = require('../../middleware');
+const controllers = require('../../controllers');
+const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
@@ -12,8 +12,8 @@ module.exports = function () {
 
 	setupApiRoute(
 		router,
-		"post",
-		"/",
+		'post',
+		'/',
 		[...middlewares],
 		controllers.write.flags.create,
 	);
@@ -21,45 +21,45 @@ module.exports = function () {
 	// Note: access control provided by middleware.assert.flag
 	setupApiRoute(
 		router,
-		"get",
-		"/:flagId",
+		'get',
+		'/:flagId',
 		[...middlewares, middleware.assert.flag],
 		controllers.write.flags.get,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:flagId",
+		'put',
+		'/:flagId',
 		[...middlewares, middleware.assert.flag],
 		controllers.write.flags.update,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:flagId",
+		'delete',
+		'/:flagId',
 		[...middlewares, middleware.assert.flag],
 		controllers.write.flags.delete,
 	);
 
 	setupApiRoute(
 		router,
-		"delete",
-		"/:flagId/report",
+		'delete',
+		'/:flagId/report',
 		middlewares,
 		controllers.write.flags.rescind,
 	);
 
 	setupApiRoute(
 		router,
-		"post",
-		"/:flagId/notes",
+		'post',
+		'/:flagId/notes',
 		[...middlewares, middleware.assert.flag],
 		controllers.write.flags.appendNote,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:flagId/notes/:datetime",
+		'delete',
+		'/:flagId/notes/:datetime',
 		[...middlewares, middleware.assert.flag],
 		controllers.write.flags.deleteNote,
 	);

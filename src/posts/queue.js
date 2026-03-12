@@ -1,28 +1,28 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const validator = require("validator");
-const nconf = require("nconf");
+const _ = require('lodash');
+const validator = require('validator');
+const nconf = require('nconf');
 
-const db = require("../database");
-const user = require("../user");
-const meta = require("../meta");
-const groups = require("../groups");
-const topics = require("../topics");
-const categories = require("../categories");
-const notifications = require("../notifications");
-const privileges = require("../privileges");
-const plugins = require("../plugins");
-const utils = require("../utils");
-const cache = require("../cache");
-const socketHelpers = require("../socket.io/helpers");
+const db = require('../database');
+const user = require('../user');
+const meta = require('../meta');
+const groups = require('../groups');
+const topics = require('../topics');
+const categories = require('../categories');
+const notifications = require('../notifications');
+const privileges = require('../privileges');
+const plugins = require('../plugins');
+const utils = require('../utils');
+const cache = require('../cache');
+const socketHelpers = require('../socket.io/helpers');
 
 module.exports = function (Posts) {
 	Posts.getQueuedPosts = async (filter = {}, options = {}) => {
 		options = { metadata: true, ...options }; // defaults
-		let postData = _.cloneDeep(cache.get("post-queue"));
+		let postData = _.cloneDeep(cache.get('post-queue'));
 		if (!postData) {
-			const ids = await db.getSortedSetRange("post:queue", 0, -1);
+			const ids = await db.getSortedSetRange('post:queue', 0, -1);
 			const keys = ids.map((id) => `post:queue:${id}`);
 			postData = (await db.getObjects(keys)).filter(Boolean);
 
@@ -34,12 +34,12 @@ module.exports = function (Posts) {
 			});
 			const uids = postData.map((data) => data && data.uid);
 			const userData = await user.getUsersFields(uids, [
-				"username",
-				"userslug",
-				"picture",
-				"joindate",
-				"postcount",
-				"reputation",
+				'username',
+				'userslug',
+				'picture',
+				'joindate',
+				'postcount',
+				'reputation',
 			]);
 			postData.forEach((postData, index) => {
 				if (postData) {
@@ -55,11 +55,11 @@ module.exports = function (Posts) {
 						String(postData.data.content),
 					);
 					postData.data.title = validator.escape(
-						String(postData.data.title || ""),
+						String(postData.data.title || ''),
 					);
 				}
 			});
-			cache.set("post-queue", _.cloneDeep(postData));
+			cache.set('post-queue', _.cloneDeep(postData));
 		}
 		if (filter.id) {
 			postData = postData.filter((p) => p && p.id === filter.id);
@@ -93,13 +93,13 @@ module.exports = function (Posts) {
 			postData.topic = { cid: parseInt(postData.data.cid, 10) };
 		} else if (postData.data.tid) {
 			postData.topic = await topics.getTopicFields(postData.data.tid, [
-				"title",
-				"cid",
-				"lastposttime",
+				'title',
+				'cid',
+				'lastposttime',
 			]);
 		}
 		postData.category = await categories.getCategoryData(postData.topic.cid);
-		const result = await plugins.hooks.fire("filter:parse.post", {
+		const result = await plugins.hooks.fire('filter:parse.post', {
 			postData: postData.data,
 		});
 		postData.data.content = result.postData.content;
@@ -110,22 +110,22 @@ module.exports = function (Posts) {
 			return true;
 		}
 		const [reputation, isPrivileged] = await Promise.all([
-			user.getUserField(uid, "reputation"),
+			user.getUserField(uid, 'reputation'),
 			user.isPrivileged(uid),
 		]);
 
-		if (!isPrivileged && reputation < meta.config["min:rep:post-links"]) {
+		if (!isPrivileged && reputation < meta.config['min:rep:post-links']) {
 			const parsed = await plugins.hooks.fire(
-				"filter:parse.raw",
+				'filter:parse.raw',
 				String(content),
 			);
 			const matches = parsed.matchAll(/<a[^>]*href="([^"]+)"[^>]*>/g);
 			let external = 0;
 			for (const [, href] of matches) {
 				const internal = utils.isInternalURI(
-					new URL(href, nconf.get("url")),
-					new URL(nconf.get("url")),
-					nconf.get("relative_path"),
+					new URL(href, nconf.get('url')),
+					new URL(nconf.get('url')),
+					nconf.get('relative_path'),
 				);
 				if (!internal) {
 					external += 1;
@@ -142,7 +142,7 @@ module.exports = function (Posts) {
 		if (shouldQueue) {
 			const [userData, isPrivileged, isMemberOfExempt, categoryQueueEnabled] =
 				await Promise.all([
-					user.getUserFields(uid, ["uid", "reputation", "postcount"]),
+					user.getUserFields(uid, ['uid', 'reputation', 'postcount']),
 					user.isPrivileged(uid),
 					groups.isMemberOfAny(uid, meta.config.groupsExemptFromPostQueue),
 					isCategoryQueueEnabled(data),
@@ -157,7 +157,7 @@ module.exports = function (Posts) {
 					!(await Posts.canUserPostContentWithLinks(uid, data.content)));
 		}
 
-		const result = await plugins.hooks.fire("filter:post.shouldQueue", {
+		const result = await plugins.hooks.fire('filter:post.shouldQueue', {
 			shouldQueue: !!shouldQueue,
 			uid: uid,
 			data: data,
@@ -171,16 +171,16 @@ module.exports = function (Posts) {
 		if (!cid) {
 			return true;
 		}
-		return await categories.getCategoryField(cid, "postQueue");
+		return await categories.getCategoryField(cid, 'postQueue');
 	}
 
 	function getType(data) {
-		if (data.hasOwnProperty("tid")) {
-			return "reply";
-		} else if (data.hasOwnProperty("cid")) {
-			return "topic";
+		if (data.hasOwnProperty('tid')) {
+			return 'reply';
+		} else if (data.hasOwnProperty('cid')) {
+			return 'topic';
 		}
-		throw new Error("[[error:invalid-type]]");
+		throw new Error('[[error:invalid-type]]');
 	}
 
 	async function removeQueueNotification(id) {
@@ -196,7 +196,7 @@ module.exports = function (Posts) {
 
 	async function getNotificationUids(cid) {
 		const results = await Promise.all([
-			groups.getMembersOfGroups(["administrators", "Global Moderators"]),
+			groups.getMembersOfGroups(['administrators', 'Global Moderators']),
 			categories.getModeratorUids([cid]),
 		]);
 		return _.uniq(_.flattenDeep(results));
@@ -214,26 +214,26 @@ module.exports = function (Posts) {
 			type: type,
 			data: data,
 		};
-		payload = await plugins.hooks.fire("filter:post-queue.save", payload);
+		payload = await plugins.hooks.fire('filter:post-queue.save', payload);
 
-		await db.sortedSetAdd("post:queue", now, id);
+		await db.sortedSetAdd('post:queue', now, id);
 		await db.setObject(`post:queue:${id}`, {
 			...payload,
 			data: JSON.stringify(payload.data),
 		});
-		await user.setUserField(data.uid, "lastqueuetime", now);
-		cache.del("post-queue");
+		await user.setUserField(data.uid, 'lastqueuetime', now);
+		cache.del('post-queue');
 
-		await plugins.hooks.fire("action:post-queue.save", payload);
+		await plugins.hooks.fire('action:post-queue.save', payload);
 		const cid = await getCid(type, data);
 		const uids = await getNotificationUids(cid);
 		const bodyLong = await parseBodyLong(cid, type, data);
 
 		const notifObj = await notifications.create({
-			type: "post-queue",
+			type: 'post-queue',
 			nid: `post-queue-${id}`,
-			mergeId: "post-queue",
-			bodyShort: "[[notifications:post-awaiting-review]]",
+			mergeId: 'post-queue',
+			bodyShort: '[[notifications:post-awaiting-review]]',
 			bodyLong: bodyLong,
 			path: `/post-queue/${id}`,
 		});
@@ -242,16 +242,16 @@ module.exports = function (Posts) {
 			id: id,
 			type: type,
 			queued: true,
-			message: "[[success:post-queued]]",
+			message: '[[success:post-queued]]',
 		};
 	};
 
 	async function parseBodyLong(cid, type, data) {
-		const url = nconf.get("url");
+		const url = nconf.get('url');
 		const [content, category, userData] = await Promise.all([
-			plugins.hooks.fire("filter:parse.raw", data.content),
-			categories.getCategoryFields(cid, ["name", "slug"]),
-			user.getUserFields(data.uid, ["uid", "username"]),
+			plugins.hooks.fire('filter:parse.raw', data.content),
+			categories.getCategoryFields(cid, ['name', 'slug']),
+			user.getUserFields(data.uid, ['uid', 'username']),
 		]);
 
 		category.url = `${url}/category/${category.slug}`;
@@ -260,12 +260,12 @@ module.exports = function (Posts) {
 		}
 
 		const topic = { cid: cid, title: data.title, tid: data.tid };
-		if (type === "reply") {
-			topic.title = await topics.getTopicField(data.tid, "title");
+		if (type === 'reply') {
+			topic.title = await topics.getTopicField(data.tid, 'title');
 			topic.url = `${url}/topic/${data.tid}`;
 		}
-		const { app } = require("../webserver");
-		return await app.renderAsync("emails/partials/post-queue-body", {
+		const { app } = require('../webserver');
+		return await app.renderAsync('emails/partials/post-queue-body', {
 			content: content,
 			category: category,
 			user: userData,
@@ -274,10 +274,10 @@ module.exports = function (Posts) {
 	}
 
 	async function getCid(type, data) {
-		if (type === "topic") {
+		if (type === 'topic') {
 			return data.cid;
-		} else if (type === "reply") {
-			return await topics.getTopicField(data.tid, "cid");
+		} else if (type === 'reply') {
+			return await topics.getTopicField(data.tid, 'cid');
 		}
 		return null;
 	}
@@ -285,12 +285,12 @@ module.exports = function (Posts) {
 	async function canPost(type, data) {
 		const cid = await getCid(type, data);
 		const typeToPrivilege = {
-			topic: "topics:create",
-			reply: "topics:reply",
+			topic: 'topics:create',
+			reply: 'topics:reply',
 		};
 
 		topics.checkContent(data.content);
-		if (type === "topic") {
+		if (type === 'topic') {
 			topics.checkTitle(data.title);
 			if (data.tags) {
 				await topics.validateTags(data.tags, cid, data.uid);
@@ -302,7 +302,7 @@ module.exports = function (Posts) {
 			user.isReadyToQueue(data.uid, cid),
 		]);
 		if (!canPost) {
-			throw new Error("[[error:no-privileges]]");
+			throw new Error('[[error:no-privileges]]');
 		}
 	}
 
@@ -312,11 +312,11 @@ module.exports = function (Posts) {
 			return null;
 		}
 		const result = await plugins.hooks.fire(
-			"filter:post-queue:removeFromQueue",
+			'filter:post-queue:removeFromQueue',
 			{ data: data },
 		);
 		await removeFromQueue(id);
-		plugins.hooks.fire("action:post-queue:removeFromQueue", {
+		plugins.hooks.fire('action:post-queue:removeFromQueue', {
 			data: result.data,
 		});
 		return result.data;
@@ -324,9 +324,9 @@ module.exports = function (Posts) {
 
 	async function removeFromQueue(id) {
 		await removeQueueNotification(id);
-		await db.sortedSetRemove("post:queue", id);
+		await db.sortedSetRemove('post:queue', id);
 		await db.delete(`post:queue:${id}`);
-		cache.del("post-queue");
+		cache.del('post-queue');
 	}
 
 	Posts.submitFromQueue = async function (id) {
@@ -335,21 +335,21 @@ module.exports = function (Posts) {
 			return null;
 		}
 		const result = await plugins.hooks.fire(
-			"filter:post-queue:submitFromQueue",
+			'filter:post-queue:submitFromQueue',
 			{ data: data },
 		);
 		data = result.data;
-		if (data.type === "topic") {
+		if (data.type === 'topic') {
 			const result = await createTopic(data.data);
 			data.pid = result.postData.pid;
 			data.tid = result.topicData.tid;
-		} else if (data.type === "reply") {
+		} else if (data.type === 'reply') {
 			const result = await createReply(data.data);
 			data.pid = result.pid;
 			data.tid = result.tid;
 		}
 		await removeFromQueue(id);
-		plugins.hooks.fire("action:post-queue:submitFromQueue", { data: data });
+		plugins.hooks.fire('action:post-queue:submitFromQueue', { data: data });
 		return data;
 	};
 
@@ -369,7 +369,7 @@ module.exports = function (Posts) {
 
 	async function createTopic(data) {
 		const result = await topics.post(data);
-		socketHelpers.notifyNew(data.uid, "newTopic", {
+		socketHelpers.notifyNew(data.uid, 'newTopic', {
 			posts: [result.postData],
 			topic: result.topicData,
 		});
@@ -380,23 +380,23 @@ module.exports = function (Posts) {
 		const postData = await topics.reply(data);
 		const result = {
 			posts: [postData],
-			"reputation:disabled": !!meta.config["reputation:disabled"],
-			"downvote:disabled": !!meta.config["downvote:disabled"],
+			'reputation:disabled': !!meta.config['reputation:disabled'],
+			'downvote:disabled': !!meta.config['downvote:disabled'],
 		};
-		socketHelpers.notifyNew(data.uid, "newPost", result);
+		socketHelpers.notifyNew(data.uid, 'newPost', result);
 		return postData;
 	}
 
 	Posts.editQueuedContent = async function (uid, editData) {
 		const [canEditQueue, data] = await Promise.all([
-			Posts.canEditQueue(uid, editData, "edit"),
+			Posts.canEditQueue(uid, editData, 'edit'),
 			getParsedObject(editData.id),
 		]);
 		if (!data) {
-			throw new Error("[[error:no-post]]");
+			throw new Error('[[error:no-post]]');
 		}
 		if (!canEditQueue) {
-			throw new Error("[[error:no-privileges]]");
+			throw new Error('[[error:no-privileges]]');
 		}
 
 		if (editData.content !== undefined) {
@@ -410,10 +410,10 @@ module.exports = function (Posts) {
 		}
 		await db.setObjectField(
 			`post:queue:${editData.id}`,
-			"data",
+			'data',
 			JSON.stringify(data.data),
 		);
-		cache.del("post-queue");
+		cache.del('post-queue');
 	};
 
 	Posts.canEditQueue = async function (uid, editData, action) {
@@ -427,16 +427,16 @@ module.exports = function (Posts) {
 		const selfPost = parseInt(uid, 10) === parseInt(data.uid, 10);
 		if (
 			isAdminOrGlobalMod ||
-			((action === "reject" || action === "edit") && selfPost)
+			((action === 'reject' || action === 'edit') && selfPost)
 		) {
 			return true;
 		}
 
 		let cid;
-		if (data.type === "topic") {
+		if (data.type === 'topic') {
 			cid = data.data.cid;
-		} else if (data.type === "reply") {
-			cid = await topics.getTopicField(data.data.tid, "cid");
+		} else if (data.type === 'reply') {
+			cid = await topics.getTopicField(data.data.tid, 'cid');
 		}
 		const isModerator = await user.isModerator(uid, cid);
 		let isModeratorOfTargetCid = true;
@@ -461,7 +461,7 @@ module.exports = function (Posts) {
 					{ data: JSON.stringify(p.data) },
 				]),
 			);
-			cache.del("post-queue");
+			cache.del('post-queue');
 		}
 	};
 };

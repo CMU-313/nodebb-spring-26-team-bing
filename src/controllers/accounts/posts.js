@@ -1,69 +1,69 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
-const db = require("../../database");
-const user = require("../../user");
-const posts = require("../../posts");
-const topics = require("../../topics");
-const categories = require("../../categories");
-const privileges = require("../../privileges");
-const pagination = require("../../pagination");
-const helpers = require("../helpers");
-const plugins = require("../../plugins");
-const utils = require("../../utils");
+const db = require('../../database');
+const user = require('../../user');
+const posts = require('../../posts');
+const topics = require('../../topics');
+const categories = require('../../categories');
+const privileges = require('../../privileges');
+const pagination = require('../../pagination');
+const helpers = require('../helpers');
+const plugins = require('../../plugins');
+const utils = require('../../utils');
 
 const postsController = module.exports;
 
-const url = nconf.get("url");
+const url = nconf.get('url');
 
 const templateToData = {
-	"account/bookmarks": {
-		type: "posts",
-		noItemsFoundKey: "[[topic:bookmarks.has-no-bookmarks]]",
-		crumb: "[[user:bookmarks]]",
+	'account/bookmarks': {
+		type: 'posts',
+		noItemsFoundKey: '[[topic:bookmarks.has-no-bookmarks]]',
+		crumb: '[[user:bookmarks]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:bookmarks`;
 		},
 	},
-	"account/posts": {
-		type: "posts",
-		noItemsFoundKey: "[[user:has-no-posts]]",
-		crumb: "[[global:posts]]",
+	'account/posts': {
+		type: 'posts',
+		noItemsFoundKey: '[[user:has-no-posts]]',
+		crumb: '[[global:posts]]',
 		getSets: async function (callerUid, userData) {
 			const cids = await categories.getCidsByPrivilege(
-				"categories:cid",
+				'categories:cid',
 				callerUid,
-				"topics:read",
+				'topics:read',
 			);
 			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids`);
 		},
 	},
-	"account/upvoted": {
-		type: "posts",
-		noItemsFoundKey: "[[user:has-no-upvoted-posts]]",
-		crumb: "[[global:upvoted]]",
+	'account/upvoted': {
+		type: 'posts',
+		noItemsFoundKey: '[[user:has-no-upvoted-posts]]',
+		crumb: '[[global:upvoted]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:upvote`;
 		},
 	},
-	"account/downvoted": {
-		type: "posts",
-		noItemsFoundKey: "[[user:has-no-downvoted-posts]]",
-		crumb: "[[global:downvoted]]",
+	'account/downvoted': {
+		type: 'posts',
+		noItemsFoundKey: '[[user:has-no-downvoted-posts]]',
+		crumb: '[[global:downvoted]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:downvote`;
 		},
 	},
-	"account/best": {
-		type: "posts",
-		noItemsFoundKey: "[[user:has-no-best-posts]]",
-		crumb: "[[global:best]]",
+	'account/best': {
+		type: 'posts',
+		noItemsFoundKey: '[[user:has-no-best-posts]]',
+		crumb: '[[global:best]]',
 		getSets: async function (callerUid, userData) {
 			const cids = await categories.getCidsByPrivilege(
-				"categories:cid",
+				'categories:cid',
 				callerUid,
-				"topics:read",
+				'topics:read',
 			);
 			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids:votes`);
 		},
@@ -72,10 +72,10 @@ const templateToData = {
 				sets,
 				start,
 				stop - start + 1,
-				"+inf",
+				'+inf',
 				1,
 			);
-			pids = await privileges.posts.filter("topics:read", pids, req.uid);
+			pids = await privileges.posts.filter('topics:read', pids, req.uid);
 			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, {
 				stripTags: false,
 			});
@@ -83,20 +83,20 @@ const templateToData = {
 		},
 		getItemCount: async (sets) => {
 			const counts = await Promise.all(
-				sets.map((set) => db.sortedSetCount(set, 1, "+inf")),
+				sets.map((set) => db.sortedSetCount(set, 1, '+inf')),
 			);
 			return counts.reduce((acc, val) => acc + val, 0);
 		},
 	},
-	"account/controversial": {
-		type: "posts",
-		noItemsFoundKey: "[[user:has-no-controversial-posts]]",
-		crumb: "[[global:controversial]]",
+	'account/controversial': {
+		type: 'posts',
+		noItemsFoundKey: '[[user:has-no-controversial-posts]]',
+		crumb: '[[global:controversial]]',
 		getSets: async function (callerUid, userData) {
 			const cids = await categories.getCidsByPrivilege(
-				"categories:cid",
+				'categories:cid',
 				callerUid,
-				"topics:read",
+				'topics:read',
 			);
 			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids:votes`);
 		},
@@ -105,10 +105,10 @@ const templateToData = {
 				sets,
 				start,
 				stop - start + 1,
-				"-inf",
+				'-inf',
 				-1,
 			);
-			pids = await privileges.posts.filter("topics:read", pids, req.uid);
+			pids = await privileges.posts.filter('topics:read', pids, req.uid);
 			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, {
 				stripTags: false,
 			});
@@ -116,26 +116,26 @@ const templateToData = {
 		},
 		getItemCount: async (sets) => {
 			const counts = await Promise.all(
-				sets.map((set) => db.sortedSetCount(set, "-inf", -1)),
+				sets.map((set) => db.sortedSetCount(set, '-inf', -1)),
 			);
 			return counts.reduce((acc, val) => acc + val, 0);
 		},
 	},
-	"account/watched": {
-		type: "topics",
-		noItemsFoundKey: "[[user:has-no-watched-topics]]",
-		crumb: "[[user:watched]]",
+	'account/watched': {
+		type: 'topics',
+		noItemsFoundKey: '[[user:has-no-watched-topics]]',
+		crumb: '[[user:watched]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:followed_tids`;
 		},
 		getTopics: async function (set, req, start, stop) {
 			const { sort } = req.query;
 			const map = {
-				votes: "topics:votes",
-				posts: "topics:posts",
-				views: "topics:views",
-				lastpost: "topics:recent",
-				firstpost: "topics:tid",
+				votes: 'topics:votes',
+				posts: 'topics:posts',
+				views: 'topics:views',
+				lastpost: 'topics:recent',
+				firstpost: 'topics:tid',
 			};
 
 			if (!sort || !map[sort]) {
@@ -155,39 +155,39 @@ const templateToData = {
 			return { topics: topicsData, nextStart: stop + 1 };
 		},
 	},
-	"account/ignored": {
-		type: "topics",
-		noItemsFoundKey: "[[user:has-no-ignored-topics]]",
-		crumb: "[[user:ignored]]",
+	'account/ignored': {
+		type: 'topics',
+		noItemsFoundKey: '[[user:has-no-ignored-topics]]',
+		crumb: '[[user:ignored]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:ignored_tids`;
 		},
 	},
-	"account/read": {
-		type: "topics",
-		noItemsFoundKey: "[[user:has-no-read-topics]]",
-		crumb: "[[user:read]]",
+	'account/read': {
+		type: 'topics',
+		noItemsFoundKey: '[[user:has-no-read-topics]]',
+		crumb: '[[user:read]]',
 		getSets: function (callerUid, userData) {
 			return `uid:${userData.uid}:tids_read`;
 		},
 	},
-	"account/topics": {
-		type: "topics",
-		noItemsFoundKey: "[[user:has-no-topics]]",
-		crumb: "[[global:topics]]",
+	'account/topics': {
+		type: 'topics',
+		noItemsFoundKey: '[[user:has-no-topics]]',
+		crumb: '[[global:topics]]',
 		getSets: async function (callerUid, userData) {
 			const cids = await categories.getCidsByPrivilege(
-				"categories:cid",
+				'categories:cid',
 				callerUid,
-				"topics:read",
+				'topics:read',
 			);
 			return cids.map((c) => `cid:${c}:uid:${userData.uid}:tids`);
 		},
 	},
-	"account/shares": {
-		type: "topics",
-		noItemsFoundKey: "[[user:has-no-shares]]",
-		crumb: "[[user:shares]]",
+	'account/shares': {
+		type: 'topics',
+		noItemsFoundKey: '[[user:has-no-shares]]',
+		crumb: '[[user:shares]]',
 		getSets: async function (callerUid, userData) {
 			return `uid:${userData.uid}:shares`;
 		},
@@ -195,47 +195,47 @@ const templateToData = {
 };
 
 postsController.getBookmarks = async function (req, res, next) {
-	await getPostsFromUserSet("account/bookmarks", req, res, next);
+	await getPostsFromUserSet('account/bookmarks', req, res, next);
 };
 
 postsController.getPosts = async function (req, res, next) {
-	await getPostsFromUserSet("account/posts", req, res, next);
+	await getPostsFromUserSet('account/posts', req, res, next);
 };
 
 postsController.getUpVotedPosts = async function (req, res, next) {
-	await getPostsFromUserSet("account/upvoted", req, res, next);
+	await getPostsFromUserSet('account/upvoted', req, res, next);
 };
 
 postsController.getDownVotedPosts = async function (req, res, next) {
-	await getPostsFromUserSet("account/downvoted", req, res, next);
+	await getPostsFromUserSet('account/downvoted', req, res, next);
 };
 
 postsController.getBestPosts = async function (req, res, next) {
-	await getPostsFromUserSet("account/best", req, res, next);
+	await getPostsFromUserSet('account/best', req, res, next);
 };
 
 postsController.getControversialPosts = async function (req, res, next) {
-	await getPostsFromUserSet("account/controversial", req, res, next);
+	await getPostsFromUserSet('account/controversial', req, res, next);
 };
 
 postsController.getWatchedTopics = async function (req, res, next) {
-	await getPostsFromUserSet("account/watched", req, res, next);
+	await getPostsFromUserSet('account/watched', req, res, next);
 };
 
 postsController.getIgnoredTopics = async function (req, res, next) {
-	await getPostsFromUserSet("account/ignored", req, res, next);
+	await getPostsFromUserSet('account/ignored', req, res, next);
 };
 
 postsController.getReadTopics = async function (req, res, next) {
-	await getPostsFromUserSet("account/read", req, res, next);
+	await getPostsFromUserSet('account/read', req, res, next);
 };
 
 postsController.getTopics = async function (req, res, next) {
-	await getPostsFromUserSet("account/topics", req, res, next);
+	await getPostsFromUserSet('account/topics', req, res, next);
 };
 
 postsController.getShares = async function (req, res, next) {
-	await getPostsFromUserSet("account/shares", req, res, next);
+	await getPostsFromUserSet('account/shares', req, res, next);
 };
 
 async function getPostsFromUserSet(template, req, res) {
@@ -245,7 +245,7 @@ async function getPostsFromUserSet(template, req, res) {
 	let { uid } = res.locals;
 	if (uid === -2) {
 		uid = await db.getObjectField(
-			"handle:uid",
+			'handle:uid',
 			req.params.userslug.toLowerCase(),
 		);
 	}
@@ -253,18 +253,18 @@ async function getPostsFromUserSet(template, req, res) {
 	const payload = res.locals.userData;
 	const { username, userslug } =
 		uid === -2
-			? await user.getUserFields(uid, ["username", "userslug"])
+			? await user.getUserFields(uid, ['username', 'userslug'])
 			: payload;
 	const settings = await user.getSettings(req.uid);
 
 	const itemsPerPage =
-		data.type === "topics" ? settings.topicsPerPage : settings.postsPerPage;
+		data.type === 'topics' ? settings.topicsPerPage : settings.postsPerPage;
 	const start = (page - 1) * itemsPerPage;
 	const stop = start + itemsPerPage - 1;
 	const sets = await data.getSets(req.uid, { uid, username, userslug });
 	let result;
-	if (plugins.hooks.hasListeners("filter:account.getPostsFromUserSet")) {
-		result = await plugins.hooks.fire("filter:account.getPostsFromUserSet", {
+	if (plugins.hooks.hasListeners('filter:account.getPostsFromUserSet')) {
+		result = await plugins.hooks.fire('filter:account.getPostsFromUserSet', {
 			req: req,
 			template: template,
 			userData: { uid, username, userslug },
@@ -295,14 +295,14 @@ async function getPostsFromUserSet(template, req, res) {
 		{ text: username, url: `/user/${userslug}` },
 		{ text: data.crumb },
 	]);
-	payload.showSort = template === "account/watched";
-	const baseUrl = req.baseUrl + req.path.replace(/^\/api/, "");
+	payload.showSort = template === 'account/watched';
+	const baseUrl = req.baseUrl + req.path.replace(/^\/api/, '');
 	payload.sortOptions = [
-		{ url: `${baseUrl}?sort=votes`, name: "[[global:votes]]" },
-		{ url: `${baseUrl}?sort=posts`, name: "[[global:posts]]" },
-		{ url: `${baseUrl}?sort=views`, name: "[[global:views]]" },
-		{ url: `${baseUrl}?sort=lastpost`, name: "[[global:lastpost]]" },
-		{ url: `${baseUrl}?sort=firstpost`, name: "[[global:firstpost]]" },
+		{ url: `${baseUrl}?sort=votes`, name: '[[global:votes]]' },
+		{ url: `${baseUrl}?sort=posts`, name: '[[global:posts]]' },
+		{ url: `${baseUrl}?sort=views`, name: '[[global:views]]' },
+		{ url: `${baseUrl}?sort=lastpost`, name: '[[global:lastpost]]' },
+		{ url: `${baseUrl}?sort=firstpost`, name: '[[global:firstpost]]' },
 	];
 	payload.sortOptions.forEach((option) => {
 		option.selected = option.url.includes(`sort=${req.query.sort}`);
@@ -310,8 +310,8 @@ async function getPostsFromUserSet(template, req, res) {
 
 	res.locals.linkTags = [
 		{
-			rel: "canonical",
-			href: `${url}${req.url.replace(/^\/api/, "")}`,
+			rel: 'canonical',
+			href: `${url}${req.url.replace(/^\/api/, '')}`,
 		},
 	];
 
@@ -323,7 +323,7 @@ async function getItemData(sets, data, req, start, stop) {
 		return await data.getTopics(sets, req, start, stop);
 	}
 	const method =
-		data.type === "topics"
+		data.type === 'topics'
 			? topics.getTopicsFromSet
 			: posts.getPostSummariesFromSet;
 	return await method(sets, req.uid, start, stop);

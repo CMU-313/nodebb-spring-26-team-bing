@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
-const db = require("../../database");
-const events = require("../../events");
-const pagination = require("../../pagination");
-const user = require("../../user");
-const groups = require("../../groups");
+const validator = require('validator');
+const db = require('../../database');
+const events = require('../../events');
+const pagination = require('../../pagination');
+const user = require('../../user');
+const groups = require('../../groups');
 
 const eventsController = module.exports;
 
@@ -27,12 +27,12 @@ eventsController.get = async function (req, res) {
 	from = from && from.setUTCHours(0, 0, 0, 0); // setHours returns a unix timestamp (Number, not Date)
 	to = to && to.setUTCHours(23, 59, 59, 999); // setHours returns a unix timestamp (Number, not Date)
 
-	const currentFilter = req.query.type || "";
+	const currentFilter = req.query.type || '';
 	const [eventCount, eventData, counts] = await Promise.all([
 		events.getEventCount({
 			filter: currentFilter,
 			uids,
-			from: from || "-inf",
+			from: from || '-inf',
 			to,
 		}),
 		events.getEvents({
@@ -40,35 +40,35 @@ eventsController.get = async function (req, res) {
 			uids,
 			start,
 			stop,
-			from: from || "-inf",
+			from: from || '-inf',
 			to,
 		}),
 		db.sortedSetsCard(
-			[""]
+			['']
 				.concat(events.types)
-				.map((type) => `events:time${type ? `:${type}` : ""}`),
+				.map((type) => `events:time${type ? `:${type}` : ''}`),
 		),
 	]);
 
-	const types = [""].concat(events.types).map((type, index) => ({
+	const types = [''].concat(events.types).map((type, index) => ({
 		value: type,
-		name: type || "all",
+		name: type || 'all',
 		selected: type === currentFilter,
 		count: counts[index],
 	}));
 
 	const pageCount = Math.max(1, Math.ceil(eventCount / itemsPerPage));
 
-	res.render("admin/advanced/events", {
+	res.render('admin/advanced/events', {
 		events: eventData,
 		pagination: pagination.create(page, pageCount, req.query),
 		types: types,
 		query: {
-			start: validator.escape(String(req.query.start || "")),
-			end: validator.escape(String(req.query.end || "")),
-			username: validator.escape(String(req.query.username || "")),
-			group: validator.escape(String(req.query.group || "")),
-			perPage: validator.escape(String(req.query.perPage || "")),
+			start: validator.escape(String(req.query.start || '')),
+			end: validator.escape(String(req.query.end || '')),
+			username: validator.escape(String(req.query.username || '')),
+			group: validator.escape(String(req.query.group || '')),
+			perPage: validator.escape(String(req.query.perPage || '')),
 		},
 	});
 };

@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const path = require("path");
-const nconf = require("nconf");
-const fs = require("fs");
-const meta = require("../../meta");
-const image = require("../../image");
+const async = require('async');
+const path = require('path');
+const nconf = require('nconf');
+const fs = require('fs');
+const meta = require('../../meta');
+const image = require('../../image');
 
 module.exports = {
-	name: "Generate email logo for use in email header",
+	name: 'Generate email logo for use in email header',
 	timestamp: Date.UTC(2017, 6, 17),
 	method: function (callback) {
 		let skip = false;
@@ -18,15 +18,15 @@ module.exports = {
 				function (next) {
 					// Resize existing logo (if present) to email header size
 					const uploadPath = path.join(
-						nconf.get("upload_path"),
-						"system",
-						"site-logo-x50.png",
+						nconf.get('upload_path'),
+						'system',
+						'site-logo-x50.png',
 					);
-					const sourcePath = meta.config["brand:logo"]
+					const sourcePath = meta.config['brand:logo']
 						? path.join(
-								nconf.get("upload_path"),
-								"system",
-								path.basename(meta.config["brand:logo"]),
+								nconf.get('upload_path'),
+								'system',
+								path.basename(meta.config['brand:logo']),
 							)
 						: null;
 
@@ -36,7 +36,7 @@ module.exports = {
 					}
 
 					fs.access(sourcePath, (err) => {
-						if (err || path.extname(sourcePath) === ".svg") {
+						if (err || path.extname(sourcePath) === '.svg') {
 							skip = true;
 							return setImmediate(next);
 						}
@@ -58,11 +58,11 @@ module.exports = {
 
 					meta.configs.setMultiple(
 						{
-							"brand:logo": path.join(
-								"/assets/uploads/system",
-								path.basename(meta.config["brand:logo"]),
+							'brand:logo': path.join(
+								'/assets/uploads/system',
+								path.basename(meta.config['brand:logo']),
 							),
-							"brand:emailLogo": "/assets/uploads/system/site-logo-x50.png",
+							'brand:emailLogo': '/assets/uploads/system/site-logo-x50.png',
 						},
 						next,
 					);

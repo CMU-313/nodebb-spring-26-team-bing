@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const db = require("../../database");
-const batch = require("../../batch");
-const topics = require("../../topics");
+const async = require('async');
+const db = require('../../database');
+const batch = require('../../batch');
+const topics = require('../../topics');
 
 module.exports = {
-	name: "Create category tags sorted sets",
+	name: 'Create category tags sorted sets',
 	timestamp: Date.UTC(2020, 10, 23),
 	method: async function () {
 		const { progress } = this;
@@ -16,10 +16,10 @@ module.exports = {
 		}
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const [topicData, tags] = await Promise.all([
-					topics.getTopicsFields(tids, ["tid", "cid", "timestamp"]),
+					topics.getTopicsFields(tids, ['tid', 'cid', 'timestamp']),
 					getTopicsTags(tids),
 				]);
 				const topicsWithTags = topicData

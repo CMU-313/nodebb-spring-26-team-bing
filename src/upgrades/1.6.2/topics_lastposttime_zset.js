@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "New sorted set cid:<cid>:tids:lastposttime",
+	name: 'New sorted set cid:<cid>:tids:lastposttime',
 	timestamp: Date.UTC(2017, 9, 30),
 	method: async function () {
 		const { progress } = this;
-		progress.total = await db.sortedSetCard("topics:tid");
+		progress.total = await db.sortedSetCard('topics:tid');
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const topicData = await db.getObjectsFields(
 					tids.map((tid) => `topic:${tid}`),
-					["tid", "cid", "timestamp", "lastposttime"],
+					['tid', 'cid', 'timestamp', 'lastposttime'],
 				);
 				const bulkAdd = [];
 				topicData.forEach((data) => {

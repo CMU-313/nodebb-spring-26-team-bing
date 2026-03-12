@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-define("forum/account/edit", [
-	"forum/account/header",
-	"accounts/picture",
-	"translator",
-	"api",
-	"hooks",
-	"bootbox",
-	"alerts",
-	"admin/modules/change-email",
+define('forum/account/edit', [
+	'forum/account/header',
+	'accounts/picture',
+	'translator',
+	'api',
+	'hooks',
+	'bootbox',
+	'alerts',
+	'admin/modules/change-email',
 ], function (
 	header,
 	picture,
@@ -24,13 +24,13 @@ define("forum/account/edit", [
 	AccountEdit.init = function () {
 		header.init();
 
-		$("#submitBtn").on("click", updateProfile);
+		$('#submitBtn').on('click', updateProfile);
 
 		if (
 			ajaxify.data.groupTitleArray.length === 1 &&
-			ajaxify.data.groupTitleArray[0] === ""
+			ajaxify.data.groupTitleArray[0] === ''
 		) {
-			$('#groupTitle option[value=""]').attr("selected", true);
+			$('#groupTitle option[value=""]').attr('selected', true);
 		}
 
 		handleAccountDelete();
@@ -42,12 +42,12 @@ define("forum/account/edit", [
 		if (!ajaxify.data.isSelf && ajaxify.data.canEdit) {
 			$(
 				`a[href="${config.relative_path}/user/${ajaxify.data.userslug}/edit/email"]`,
-			).on("click", () => {
+			).on('click', () => {
 				changeEmail.init({
 					uid: ajaxify.data.uid,
 					email: ajaxify.data.email,
 					onSuccess: function () {
-						alerts.success("[[user:email-updated]]");
+						alerts.success('[[user:email-updated]]');
 					},
 				});
 				return false;
@@ -60,14 +60,14 @@ define("forum/account/edit", [
 			const els = $(
 				'[component="group/badge/list"] [component="group/badge/item"][data-selected="true"]',
 			);
-			return els.map((i, el) => $(el).attr("data-value")).get();
+			return els.map((i, el) => $(el).attr('data-value')).get();
 		}
 		const editForm = $('form[component="profile/edit/form"]');
 		const userData = editForm.serializeObject();
 
 		// stringify multi selects
-		editForm.find("select[multiple]").each((i, el) => {
-			const name = $(el).attr("name");
+		editForm.find('select[multiple]').each((i, el) => {
+			const name = $(el).attr('name');
 			if (userData[name] && !Array.isArray(userData[name])) {
 				userData[name] = [userData[name]];
 			}
@@ -75,18 +75,18 @@ define("forum/account/edit", [
 		});
 
 		userData.uid = ajaxify.data.uid;
-		userData.groupTitle = userData.groupTitle || "";
+		userData.groupTitle = userData.groupTitle || '';
 		userData.groupTitle = JSON.stringify(getGroupSelection());
 
-		hooks.fire("action:profile.update", userData);
+		hooks.fire('action:profile.update', userData);
 
 		api
-			.put("/users/" + userData.uid, userData)
+			.put('/users/' + userData.uid, userData)
 			.then((res) => {
-				alerts.success("[[user:profile-update-success]]");
+				alerts.success('[[user:profile-update-success]]');
 
 				if (res.picture) {
-					$("#user-current-picture").attr("src", res.picture);
+					$('#user-current-picture').attr('src', res.picture);
 				}
 
 				picture.updateHeader(res.picture);
@@ -97,9 +97,9 @@ define("forum/account/edit", [
 	}
 
 	function handleAccountDelete() {
-		$("#deleteAccountBtn").on("click", function () {
+		$('#deleteAccountBtn').on('click', function () {
 			translator.translate(
-				"[[user:delete-account-confirm]]",
+				'[[user:delete-account-confirm]]',
 				function (translated) {
 					const modal = bootbox.confirm(
 						translated +
@@ -109,21 +109,21 @@ define("forum/account/edit", [
 								return;
 							}
 
-							const confirmBtn = modal.find(".btn-primary");
+							const confirmBtn = modal.find('.btn-primary');
 							confirmBtn.html('<i class="fa fa-spinner fa-spin"></i>');
-							confirmBtn.prop("disabled", true);
+							confirmBtn.prop('disabled', true);
 							api.del(
 								`/users/${ajaxify.data.uid}/account`,
 								{
-									password: $("#confirm-password").val(),
+									password: $('#confirm-password').val(),
 								},
 								function (err) {
 									function restoreButton() {
 										translator.translate(
-											"[[modules:bootbox.confirm]]",
+											'[[modules:bootbox.confirm]]',
 											function (confirmText) {
 												confirmBtn.text(confirmText);
-												confirmBtn.prop("disabled", false);
+												confirmBtn.prop('disabled', false);
 											},
 										);
 									}
@@ -142,8 +142,8 @@ define("forum/account/edit", [
 						},
 					);
 
-					modal.on("shown.bs.modal", function () {
-						modal.find("input").focus();
+					modal.on('shown.bs.modal', function () {
+						modal.find('input').focus();
 					});
 				},
 			);
@@ -152,43 +152,43 @@ define("forum/account/edit", [
 	}
 
 	function handleEmailConfirm() {
-		$("#confirm-email").on("click", function () {
-			const btn = $(this).attr("disabled", true);
-			socket.emit("user.emailConfirm", {}, function (err) {
-				btn.removeAttr("disabled");
+		$('#confirm-email').on('click', function () {
+			const btn = $(this).attr('disabled', true);
+			socket.emit('user.emailConfirm', {}, function (err) {
+				btn.removeAttr('disabled');
 				if (err) {
 					return alerts.error(err);
 				}
-				alerts.success("[[notifications:email-confirm-sent]]");
+				alerts.success('[[notifications:email-confirm-sent]]');
 			});
 		});
 	}
 
 	function getCharsLeft(el, max) {
-		return el.length ? "(" + el.val().length + "/" + max + ")" : "";
+		return el.length ? '(' + el.val().length + '/' + max + ')' : '';
 	}
 
 	function updateSignature() {
-		const el = $("#signature");
-		$("#signatureCharCountLeft").html(
+		const el = $('#signature');
+		$('#signatureCharCountLeft').html(
 			getCharsLeft(el, ajaxify.data.maximumSignatureLength),
 		);
 
-		el.on("keyup change", function () {
-			$("#signatureCharCountLeft").html(
+		el.on('keyup change', function () {
+			$('#signatureCharCountLeft').html(
 				getCharsLeft(el, ajaxify.data.maximumSignatureLength),
 			);
 		});
 	}
 
 	function updateAboutMe() {
-		const el = $("#aboutme");
-		$("#aboutMeCharCountLeft").html(
+		const el = $('#aboutme');
+		$('#aboutMeCharCountLeft').html(
 			getCharsLeft(el, ajaxify.data.maximumAboutMeLength),
 		);
 
-		el.on("keyup change", function () {
-			$("#aboutMeCharCountLeft").html(
+		el.on('keyup change', function () {
+			$('#aboutMeCharCountLeft').html(
 				getCharsLeft(el, ajaxify.data.maximumAboutMeLength),
 			);
 		});
@@ -196,37 +196,37 @@ define("forum/account/edit", [
 
 	function handleGroupControls() {
 		const { allowMultipleBadges } = ajaxify.data;
-		$('[component="group/toggle/hide"]').on("click", function () {
+		$('[component="group/toggle/hide"]').on('click', function () {
 			const groupEl = $(this).parents('[component="group/badge/item"]');
-			groupEl.attr("data-selected", "false");
-			$(this).addClass("hidden");
-			groupEl.find('[component="group/toggle/show"]').removeClass("hidden");
+			groupEl.attr('data-selected', 'false');
+			$(this).addClass('hidden');
+			groupEl.find('[component="group/toggle/show"]').removeClass('hidden');
 		});
 
-		$('[component="group/toggle/show"]').on("click", function () {
+		$('[component="group/toggle/show"]').on('click', function () {
 			if (!allowMultipleBadges) {
 				$(
 					'[component="group/badge/list"] [component="group/toggle/show"]',
-				).removeClass("hidden");
+				).removeClass('hidden');
 				$(
 					'[component="group/badge/list"] [component="group/toggle/hide"]',
-				).addClass("hidden");
+				).addClass('hidden');
 				$('[component="group/badge/list"] [component="group/badge/item"]').attr(
-					"data-selected",
-					"false",
+					'data-selected',
+					'false',
 				);
 			}
 			const groupEl = $(this).parents('[component="group/badge/item"]');
-			groupEl.attr("data-selected", "true");
-			$(this).addClass("hidden");
-			groupEl.find('[component="group/toggle/hide"]').removeClass("hidden");
+			groupEl.attr('data-selected', 'true');
+			$(this).addClass('hidden');
+			groupEl.find('[component="group/toggle/hide"]').removeClass('hidden');
 		});
 
-		$('[component="group/order/up"]').on("click", function () {
+		$('[component="group/order/up"]').on('click', function () {
 			const el = $(this).parents('[component="group/badge/item"]');
 			el.insertBefore(el.prev());
 		});
-		$('[component="group/order/down"]').on("click", function () {
+		$('[component="group/order/down"]').on('click', function () {
 			const el = $(this).parents('[component="group/badge/item"]');
 			el.insertAfter(el.next());
 		});

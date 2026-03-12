@@ -7,7 +7,7 @@ RelayObject:
       example: https://example.org/actor
     state:
       type: number
-      description: "The established state of the relay(0: pending; 1: one way receive; 2: bidirectional)"
+      description: 'The established state of the relay(0: pending; 1: one way receive; 2: bidirectional)'
       enum: [0, 1, 2]
     label:
       type: string
@@ -15,4 +15,4 @@ RelayObject:
 RelaysArray:
   type: array
   items:
-    $ref: "#/RelayObject"
+    $ref: '#/RelayObject'

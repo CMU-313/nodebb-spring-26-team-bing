@@ -1,33 +1,33 @@
-@import "fonts";
-@import "mixins";
-@import "common";
+@import 'fonts';
+@import 'mixins';
+@import 'common';
 
-@import "sidebar";
-@import "./mobile";
+@import 'sidebar';
+@import './mobile';
 
-@import "./general/dashboard";
-@import "./general/navigation";
-@import "./manage/categories";
-@import "./manage/privileges";
-@import "./manage/tags";
-@import "./manage/groups";
-@import "./settings/api";
-@import "./appearance/customise";
-@import "./extend/plugins";
-@import "./extend/widgets";
-@import "settings";
+@import './general/dashboard';
+@import './general/navigation';
+@import './manage/categories';
+@import './manage/privileges';
+@import './manage/tags';
+@import './manage/groups';
+@import './settings/api';
+@import './appearance/customise';
+@import './extend/plugins';
+@import './extend/widgets';
+@import 'settings';
 
-@import "../modules/alerts";
-@import "../modules/scrollbar.scss";
-@import "./modules/selectable";
-@import "./modules/nprogress";
-@import "./modules/search";
+@import '../modules/alerts';
+@import '../modules/scrollbar.scss';
+@import './modules/selectable';
+@import './modules/nprogress';
+@import './modules/search';
 
 body {
   overflow-y: scroll;
 }
 
-[data-bs-theme="dark"] {
+[data-bs-theme='dark'] {
   .admin .card:not([data-container-html]) {
     box-shadow: 0px 1px 3px 0px rgba(var(--bs-black-rgb), 0.5);
   }
@@ -169,7 +169,7 @@ body {
   }
 }
 
-[component="category-selector"] {
+[component='category-selector'] {
   .category-dropdown-menu {
     max-height: 500px;
     overflow-y: auto;

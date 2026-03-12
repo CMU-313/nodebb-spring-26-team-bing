@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("composer/post-queue", [], function () {
+define('composer/post-queue', [], function () {
 	const postQueue = {};
 
 	postQueue.showAlert = async function (postContainer, postData) {
@@ -16,11 +16,11 @@ define("composer/post-queue", [], function () {
 			alertEl.remove();
 			return;
 		}
-		const shouldQueue = await socket.emit("plugins.composer.shouldQueue", {
+		const shouldQueue = await socket.emit('plugins.composer.shouldQueue', {
 			postData: postData,
 		});
-		alertEl.toggleClass("show", shouldQueue);
-		alertEl.toggleClass("pe-none", !shouldQueue);
+		alertEl.toggleClass('show', shouldQueue);
+		alertEl.toggleClass('pe-none', !shouldQueue);
 	};
 
 	postQueue.onChangeCategory = async function (postContainer, postData) {

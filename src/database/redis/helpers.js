@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const helpers = module.exports;
 
@@ -27,11 +27,11 @@ helpers.normalizeLexRange = function (min, max, reverse) {
 	let minmin;
 	let maxmax;
 	if (reverse) {
-		minmin = "+";
-		maxmax = "-";
+		minmin = '+';
+		maxmax = '-';
 	} else {
-		minmin = "-";
-		maxmax = "+";
+		minmin = '-';
+		maxmax = '+';
 	}
 
 	if (min !== minmin && !min.match(/^[[(]/)) {

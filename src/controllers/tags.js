@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
-const nconf = require("nconf");
+const validator = require('validator');
+const nconf = require('nconf');
 
-const meta = require("../meta");
-const user = require("../user");
-const categories = require("../categories");
-const topics = require("../topics");
-const privileges = require("../privileges");
-const pagination = require("../pagination");
-const utils = require("../utils");
-const helpers = require("./helpers");
+const meta = require('../meta');
+const user = require('../user');
+const categories = require('../categories');
+const topics = require('../topics');
+const privileges = require('../privileges');
+const pagination = require('../pagination');
+const utils = require('../utils');
+const helpers = require('./helpers');
 
 const tagsController = module.exports;
 
-const url = nconf.get("url");
+const url = nconf.get('url');
 
 tagsController.getTag = async function (req, res) {
 	const tag = validator.escape(
@@ -30,7 +30,7 @@ tagsController.getTag = async function (req, res) {
 		topics: [],
 		tag: tag,
 		breadcrumbs: helpers.buildBreadcrumbs([
-			{ text: "[[tags:tags]]", url: "/tags" },
+			{ text: '[[tags:tags]]', url: '/tags' },
 			{ text: tag },
 		]),
 		title: `[[pages:tag, ${tag}]]`,
@@ -46,7 +46,7 @@ tagsController.getTag = async function (req, res) {
 	] = await Promise.all([
 		user.getSettings(req.uid),
 		cid ||
-			categories.getCidsByPrivilege("categories:cid", req.uid, "topics:read"),
+			categories.getCidsByPrivilege('categories:cid', req.uid, 'topics:read'),
 		helpers.getSelectedCategory(cid),
 		privileges.categories.canPostTopic(req.uid),
 		user.isPrivileged(req.uid),
@@ -67,17 +67,17 @@ tagsController.getTag = async function (req, res) {
 	templateData.showSelect = isPrivileged;
 	templateData.showTopicTools = isPrivileged;
 	templateData.isFollowing = isFollowing;
-	templateData.allCategoriesUrl = `tags/${tag}${helpers.buildQueryString(req.query, "cid", "")}`;
+	templateData.allCategoriesUrl = `tags/${tag}${helpers.buildQueryString(req.query, 'cid', '')}`;
 	templateData.selectedCategory = categoryData.selectedCategory;
 	templateData.selectedCids = categoryData.selectedCids;
 	topics.calculateTopicIndices(templateData.topics, start);
 	res.locals.metaTags = [
 		{
-			name: "title",
+			name: 'title',
 			content: tag,
 		},
 		{
-			property: "og:title",
+			property: 'og:title',
 			content: tag,
 		},
 	];
@@ -91,41 +91,41 @@ tagsController.getTag = async function (req, res) {
 		page: page,
 	});
 
-	templateData["feeds:disableRSS"] = meta.config["feeds:disableRSS"];
-	if (!meta.config["feeds:disableRSS"]) {
-		templateData.rssFeedUrl = `${nconf.get("relative_path")}/tags/${tag}.rss`;
+	templateData['feeds:disableRSS'] = meta.config['feeds:disableRSS'];
+	if (!meta.config['feeds:disableRSS']) {
+		templateData.rssFeedUrl = `${nconf.get('relative_path')}/tags/${tag}.rss`;
 		if (req.loggedIn) {
 			templateData.rssFeedUrl += `?uid=${req.uid}&token=${rssToken}`;
 		}
 	}
 
-	res.render("tag", templateData);
+	res.render('tag', templateData);
 };
 
 tagsController.getTags = async function (req, res) {
 	let cids = await categories.getCidsByPrivilege(
-		"categories:cid",
+		'categories:cid',
 		req.uid,
-		"topics:read",
+		'topics:read',
 	);
 	cids = cids.filter((cid) => cid !== -1);
 	const [canSearch, tags] = await Promise.all([
-		privileges.global.can("search:tags", req.uid),
+		privileges.global.can('search:tags', req.uid),
 		topics.getCategoryTagsData(cids, 0, 99),
 	]);
 
 	res.locals.linkTags = [
 		{
-			rel: "canonical",
+			rel: 'canonical',
 			href: `${url}/tags`,
 		},
 	];
 
-	res.render("tags", {
+	res.render('tags', {
 		tags: tags.filter(Boolean),
 		displayTagSearch: canSearch,
 		nextStart: 100,
-		breadcrumbs: helpers.buildBreadcrumbs([{ text: "[[tags:tags]]" }]),
-		title: "[[pages:tags]]",
+		breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[tags:tags]]' }]),
+		title: '[[pages:tags]]',
 	});
 };

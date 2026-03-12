@@ -1,41 +1,41 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const winston = require("winston");
+const nconf = require('nconf');
+const winston = require('winston');
 
-const db = require("../../database");
-const meta = require("../../meta");
-const privileges = require("../../privileges");
-const posts = require("../../posts");
-const topics = require("../../topics");
-const categories = require("../../categories");
-const messaging = require("../../messaging");
-const activitypub = require("../../activitypub");
-const utils = require("../../utils");
+const db = require('../../database');
+const meta = require('../../meta');
+const privileges = require('../../privileges');
+const posts = require('../../posts');
+const topics = require('../../topics');
+const categories = require('../../categories');
+const messaging = require('../../messaging');
+const activitypub = require('../../activitypub');
+const utils = require('../../utils');
 
 const Actors = module.exports;
 
 Actors.application = async function (req, res) {
-	const publicKey = await activitypub.getPublicKey("uid", 0);
-	const name = meta.config.title || "NodeBB";
+	const publicKey = await activitypub.getPublicKey('uid', 0);
+	const name = meta.config.title || 'NodeBB';
 
 	res.status(200).json({
-		"@context": [
-			"https://www.w3.org/ns/activitystreams",
-			"https://w3id.org/security/v1",
+		'@context': [
+			'https://www.w3.org/ns/activitystreams',
+			'https://w3id.org/security/v1',
 		],
-		id: `${nconf.get("url")}/actor`,
-		url: `${nconf.get("url")}/actor`,
-		inbox: `${nconf.get("url")}/inbox`,
-		outbox: `${nconf.get("url")}/outbox`,
+		id: `${nconf.get('url')}/actor`,
+		url: `${nconf.get('url')}/actor`,
+		inbox: `${nconf.get('url')}/inbox`,
+		outbox: `${nconf.get('url')}/outbox`,
 
-		type: "Application",
+		type: 'Application',
 		name,
-		preferredUsername: nconf.get("url_parsed").hostname,
+		preferredUsername: nconf.get('url_parsed').hostname,
 
 		publicKey: {
-			id: `${nconf.get("url")}/actor#key`,
-			owner: `${nconf.get("url")}/actor`,
+			id: `${nconf.get('url')}/actor#key`,
+			owner: `${nconf.get('url')}/actor`,
 			publicKeyPem: publicKey,
 		},
 	});
@@ -59,7 +59,7 @@ Actors.note = async function (req, res, next) {
 	// technically a note isn't an actor, but it is here purely for organizational purposes.
 	// but also, wouldn't it be wild if you could follow a note? lol.
 	const allowed = await privileges.posts.can(
-		"topics:read",
+		'topics:read',
 		req.params.pid,
 		activitypub._constants.uid,
 	);
@@ -69,13 +69,13 @@ Actors.note = async function (req, res, next) {
 
 	// Handle requests for remote content
 	if (!utils.isNumber(req.params.pid)) {
-		return res.set("Location", req.params.pid).sendStatus(308);
+		return res.set('Location', req.params.pid).sendStatus(308);
 	}
 
 	const post = (
 		await posts.getPostSummaryByPids([req.params.pid], req.uid, {
 			parse: false,
-			extraFields: ["edited"],
+			extraFields: ['edited'],
 		})
 	).pop();
 	if (!post || post.timestamp > Date.now()) {
@@ -97,7 +97,7 @@ Actors.replies = async function (req, res, next) {
 	const allowed =
 		utils.isNumber(req.params.pid) &&
 		(await privileges.posts.can(
-			"topics:read",
+			'topics:read',
 			req.params.pid,
 			activitypub._constants.uid,
 		));
@@ -113,7 +113,7 @@ Actors.replies = async function (req, res, next) {
 			set: `pid:${req.params.pid}:replies`,
 			page,
 			perPage: meta.config.postsPerPage,
-			url: `${nconf.get("url")}/post/${req.params.pid}/replies`,
+			url: `${nconf.get('url')}/post/${req.params.pid}/replies`,
 		});
 	} catch (e) {
 		return next(); // invalid page; 404
@@ -122,14 +122,14 @@ Actors.replies = async function (req, res, next) {
 	// Convert pids to urls
 	if (replies.orderedItems) {
 		replies.orderedItems = replies.orderedItems.map((pid) =>
-			utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+			utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 		);
 	}
 
 	const object = {
-		"@context": "https://www.w3.org/ns/activitystreams",
-		id: `${nconf.get("url")}/post/${req.params.pid}/replies${replies.orderedItems && page ? `?page=${page}` : ""}`,
-		url: `${nconf.get("url")}/post/${req.params.pid}`,
+		'@context': 'https://www.w3.org/ns/activitystreams',
+		id: `${nconf.get('url')}/post/${req.params.pid}/replies${replies.orderedItems && page ? `?page=${page}` : ''}`,
+		url: `${nconf.get('url')}/post/${req.params.pid}`,
 		...replies,
 	};
 
@@ -138,7 +138,7 @@ Actors.replies = async function (req, res, next) {
 
 Actors.topic = async function (req, res, next) {
 	const allowed = await privileges.topics.can(
-		"topics:read",
+		'topics:read',
 		req.params.tid,
 		activitypub._constants.uid,
 	);
@@ -155,11 +155,11 @@ Actors.topic = async function (req, res, next) {
 		slug,
 		timestamp,
 	} = await topics.getTopicFields(req.params.tid, [
-		"cid",
-		"title",
-		"mainPid",
-		"slug",
-		"timestamp",
+		'cid',
+		'title',
+		'mainPid',
+		'slug',
+		'timestamp',
 	]);
 	try {
 		if (timestamp > Date.now()) {
@@ -177,7 +177,7 @@ Actors.topic = async function (req, res, next) {
 					method: posts.getPidsFromSet,
 					page,
 					perPage,
-					url: `${nconf.get("url")}/topic/${req.params.tid}`,
+					url: `${nconf.get('url')}/topic/${req.params.tid}`,
 				}),
 				db.getSortedSetMembers(`tid:${req.params.tid}:posts`),
 			]);
@@ -186,13 +186,13 @@ Actors.topic = async function (req, res, next) {
 		}
 		pids.push(mainPid);
 		pids = pids.map((pid) =>
-			utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+			utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 		);
 
 		// Generate digest for ETag
 		const digest = activitypub.helpers.generateDigest(new Set(pids));
-		const ifNoneMatch = (req.get("If-None-Match") || "")
-			.split(",")
+		const ifNoneMatch = (req.get('If-None-Match') || '')
+			.split(',')
 			.map((tag) => {
 				tag = tag.trim();
 				if (tag.startsWith('"') && tag.endsWith('"')) {
@@ -204,7 +204,7 @@ Actors.topic = async function (req, res, next) {
 		if (ifNoneMatch.includes(digest)) {
 			return res.sendStatus(304);
 		}
-		res.set("ETag", digest);
+		res.set('ETag', digest);
 
 		// Add OP to collection on first (or only) page
 		if (page || collection.totalItems < perPage) {
@@ -218,17 +218,17 @@ Actors.topic = async function (req, res, next) {
 		// Convert pids to urls
 		if (collection.orderedItems) {
 			collection.orderedItems = collection.orderedItems.map((pid) =>
-				utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+				utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 			);
 		}
 
 		const object = {
-			"@context": "https://www.w3.org/ns/activitystreams",
-			id: `${nconf.get("url")}/topic/${req.params.tid}${collection.orderedItems && page ? `?page=${page}` : ""}`,
-			url: `${nconf.get("url")}/topic/${slug}`,
+			'@context': 'https://www.w3.org/ns/activitystreams',
+			id: `${nconf.get('url')}/topic/${req.params.tid}${collection.orderedItems && page ? `?page=${page}` : ''}`,
+			url: `${nconf.get('url')}/topic/${slug}`,
 			name,
-			attributedTo: `${nconf.get("url")}/category/${cid}`,
-			audience: cid !== -1 ? `${nconf.get("url")}/category/${cid}` : undefined,
+			attributedTo: `${nconf.get('url')}/category/${cid}`,
+			audience: cid !== -1 ? `${nconf.get('url')}/category/${cid}` : undefined,
 			...collection,
 		};
 
@@ -245,13 +245,13 @@ Actors.category = async function (req, res, next) {
 	const [exists, allowed] = await Promise.all([
 		categories.exists(req.params.cid),
 		privileges.categories.can(
-			"find",
+			'find',
 			req.params.cid,
 			activitypub._constants.uid,
 		),
 	]);
 	if (!exists || !allowed) {
-		return next("route");
+		return next('route');
 	}
 
 	const payload = await activitypub.mocks.actors.category(req.params.cid);
@@ -261,7 +261,7 @@ Actors.category = async function (req, res, next) {
 Actors.message = async function (req, res) {
 	// Handle requests for remote content
 	if (!utils.isNumber(req.params.mid)) {
-		return res.set("Location", req.params.mid).sendStatus(308);
+		return res.set('Location', req.params.mid).sendStatus(308);
 	}
 
 	const messageObj = await messaging.getMessageFields(req.params.mid, []);

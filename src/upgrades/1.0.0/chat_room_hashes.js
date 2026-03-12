@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const db = require("../../database");
+const async = require('async');
+const db = require('../../database');
 
 module.exports = {
-	name: "Chat room hashes",
+	name: 'Chat room hashes',
 	timestamp: Date.UTC(2015, 11, 23),
 	method: function (callback) {
-		db.getObjectField("global", "nextChatRoomId", (err, nextChatRoomId) => {
+		db.getObjectField('global', 'nextChatRoomId', (err, nextChatRoomId) => {
 			if (err) {
 				return callback(err);
 			}

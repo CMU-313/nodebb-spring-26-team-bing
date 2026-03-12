@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("categorySearch", ["alerts", "bootstrap", "api"], function (
+define('categorySearch', ['alerts', 'bootstrap', 'api'], function (
 	alerts,
 	bootstrap,
 	api,
@@ -10,14 +10,14 @@ define("categorySearch", ["alerts", "bootstrap", "api"], function (
 	categorySearch.init = function (el, options) {
 		let categoriesList = options.defaultCategories || null;
 		options = options || {};
-		options.privilege = options.privilege || "topics:read";
+		options.privilege = options.privilege || 'topics:read';
 		options.states = options.states || [
-			"watching",
-			"tracking",
-			"notwatching",
-			"ignoring",
+			'watching',
+			'tracking',
+			'notwatching',
+			'ignoring',
 		];
-		options.cacheList = options.hasOwnProperty("cacheList")
+		options.cacheList = options.hasOwnProperty('cacheList')
 			? options.cacheList
 			: true;
 
@@ -40,13 +40,13 @@ define("categorySearch", ["alerts", "bootstrap", "api"], function (
 			searchEl.parents('[component="category/dropdown"]').length > 0 ||
 			searchEl.parents('[component="category-selector"]').length > 0;
 
-		el.on("show.bs.dropdown", function () {
+		el.on('show.bs.dropdown', function () {
 			if (toggleVisibility) {
-				searchEl.removeClass("hidden");
+				searchEl.removeClass('hidden');
 			}
 
 			function doSearch() {
-				const val = searchEl.find("input").val();
+				const val = searchEl.find('input').val();
 				if (val.length > 1 || (!val && !categoriesList)) {
 					loadList(val, function (categories) {
 						categoriesList =
@@ -58,32 +58,32 @@ define("categorySearch", ["alerts", "bootstrap", "api"], function (
 				}
 			}
 
-			searchEl.on("click", function (ev) {
+			searchEl.on('click', function (ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
 			});
-			searchEl.find("input").val("").on("keyup", utils.debounce(doSearch, 300));
+			searchEl.find('input').val('').on('keyup', utils.debounce(doSearch, 300));
 			doSearch();
 		});
 
-		el.on("shown.bs.dropdown", function () {
-			if (!["xs", "sm"].includes(utils.findBootstrapEnvironment())) {
-				searchEl.find("input").focus();
+		el.on('shown.bs.dropdown', function () {
+			if (!['xs', 'sm'].includes(utils.findBootstrapEnvironment())) {
+				searchEl.find('input').focus();
 			}
 		});
 
-		el.on("hide.bs.dropdown", function () {
+		el.on('hide.bs.dropdown', function () {
 			if (toggleVisibility) {
-				searchEl.addClass("hidden");
+				searchEl.addClass('hidden');
 			}
 
-			searchEl.off("click");
-			searchEl.find("input").off("keyup");
+			searchEl.off('click');
+			searchEl.find('input').off('keyup');
 		});
 
 		function loadList(search, callback) {
 			api.get(
-				"/search/categories",
+				'/search/categories',
 				{
 					search: search,
 					query: utils.params(),
@@ -123,10 +123,10 @@ define("categorySearch", ["alerts", "bootstrap", "api"], function (
 					);
 					el.find(
 						'[component="category/list"] [component="category/no-matches"]',
-					).toggleClass("hidden", !!categories.length);
+					).toggleClass('hidden', !!categories.length);
 
 					const bsDropdown = bootstrap.Dropdown.getInstance(
-						el.find(".dropdown-toggle").get(0),
+						el.find('.dropdown-toggle').get(0),
 					);
 					if (bsDropdown) {
 						bsDropdown.update();

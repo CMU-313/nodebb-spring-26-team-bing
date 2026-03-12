@@ -19,39 +19,39 @@ body.page-user-chats {
     margin-bottom: 0 !important;
   }
   overflow: hidden;
-  [data-widget-area="footer"] {
+  [data-widget-area='footer'] {
     display: none;
   }
   height: 100%;
 }
 
-[component="chat/recent"] {
+[component='chat/recent'] {
   .active .chat-room-btn {
     background-color: var(--btn-ghost-hover-color);
   }
 }
 
-[component="chat/nav-wrapper"] {
+[component='chat/nav-wrapper'] {
   width: 300px;
-  [component="chat/public/room"].unread {
+  [component='chat/public/room'].unread {
     font-weight: $font-weight-bold;
   }
 }
 
-[component="chat/user/list"] [data-uid] {
-  [component="chat/user/list/username"] {
+[component='chat/user/list'] [data-uid] {
+  [component='chat/user/list/username'] {
     color: $text-muted;
   }
   &.online {
-    [component="chat/user/list/username"] {
+    [component='chat/user/list/username'] {
       color: initial;
       font-weight: $font-weight-semibold;
     }
   }
 }
 
-[component="chat/message/parent"] {
-  [component="chat/message/parent/content"] > p:last-child {
+[component='chat/message/parent'] {
+  [component='chat/message/parent/content'] > p:last-child {
     margin-bottom: 0;
   }
 }
@@ -67,11 +67,11 @@ body.page-user-chats {
         .controls {
           opacity: 0;
           transition: $transition-fade;
-          &:has([aria-expanded="true"]) {
+          &:has([aria-expanded='true']) {
             opacity: 1;
           }
-          [data-action="restore"],
-          [data-action="unpin"] {
+          [data-action='restore'],
+          [data-action='unpin'] {
             display: none;
           }
         }
@@ -89,17 +89,17 @@ body.page-user-chats {
           [data-action] {
             display: none;
           }
-          [data-action="restore"] {
+          [data-action='restore'] {
             display: block;
           }
         }
       }
       &.pinned {
         .message-body-wrapper .controls {
-          [data-action="pin"] {
+          [data-action='pin'] {
             display: none;
           }
-          [data-action="unpin"] {
+          [data-action='unpin'] {
             display: block;
           }
         }
@@ -119,7 +119,7 @@ body.page-user-chats {
   .page-user-chats.chat-loaded {
     padding-bottom: initial;
   }
-  [component="chat/nav-wrapper"] {
+  [component='chat/nav-wrapper'] {
     width: 100%;
   }
 
@@ -127,12 +127,12 @@ body.page-user-chats {
     display: none !important;
   }
 
-  [component="chat/nav-wrapper"][data-loaded="1"] {
+  [component='chat/nav-wrapper'][data-loaded='1'] {
     display: none !important;
   }
 
-  [component="chat/nav-wrapper"][data-loaded="0"]
-    + [component="chat/main-wrapper"] {
+  [component='chat/nav-wrapper'][data-loaded='0']
+    + [component='chat/main-wrapper'] {
     display: none !important;
   }
 }
@@ -144,8 +144,8 @@ body.page-user-chats {
   right: 2rem;
   width: auto !important;
   height: auto !important;
-  [component="chat/user/list/btn"],
-  [component="chat/pinned/messages/btn"] {
+  [component='chat/user/list/btn'],
+  [component='chat/pinned/messages/btn'] {
     display: none !important;
   }
 }

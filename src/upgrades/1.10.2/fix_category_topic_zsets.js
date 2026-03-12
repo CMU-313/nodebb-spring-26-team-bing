@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
-const batch = require("../../batch");
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Fix category topic zsets",
+	name: 'Fix category topic zsets',
 	timestamp: Date.UTC(2018, 9, 11),
 	method: async function () {
 		const { progress } = this;
 
-		const topics = require("../../topics");
-		progress.total = await db.sortedSetCard("topics:tid");
+		const topics = require('../../topics');
+		progress.total = await db.sortedSetCard('topics:tid');
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				progress.incr(tids.length);
 				const topicData = await db.getObjectFields(
 					tids.map((tid) => `topic:${tid}`),
-					["tid", "cid", "pinned", "postcount"],
+					['tid', 'cid', 'pinned', 'postcount'],
 				);
 				const bulkAdd = [];
 				topicData.forEach((topic) => {

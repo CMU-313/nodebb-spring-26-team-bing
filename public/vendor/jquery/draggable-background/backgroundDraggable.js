@@ -28,7 +28,7 @@
 
 	var getBackgroundImageDimensions = function ($el) {
 		var bgSrc = ($el
-			.css("background-image")
+			.css('background-image')
 			.match(/^url\(['"]?(.*?)['"]?\)$/i) || [])[1];
 		if (!bgSrc) return;
 
@@ -36,7 +36,7 @@
 			image = new Image();
 
 		image.onload = function () {
-			if ($el.css("background-size") == "cover") {
+			if ($el.css('background-size') == 'cover') {
 				var elementWidth = $el.innerWidth(),
 					elementHeight = $el.innerHeight(),
 					elementAspectRatio = elementWidth / elementHeight,
@@ -70,7 +70,7 @@
 
 	Plugin.prototype.init = function () {
 		var $el = $(this.element),
-			bgSrc = ($el.css("background-image").match(/^url\(['"]?(.*?)['"]?\)$/i) ||
+			bgSrc = ($el.css('background-image').match(/^url\(['"]?(.*?)['"]?\)$/i) ||
 				[])[1],
 			options = this.options;
 
@@ -78,17 +78,17 @@
 
 		// Get the image's width and height if bound
 		var imageDimensions = { width: 0, height: 0 };
-		if (options.bound || options.units == "percent") {
+		if (options.bound || options.units == 'percent') {
 			imageDimensions = getBackgroundImageDimensions($el);
 		}
 
-		$(window).on("keydown.dbg", (e) => {
+		$(window).on('keydown.dbg', (e) => {
 			var pos =
-				$el.css("background-position").match(/(-?\d+).*?\s(-?\d+)/) || [];
+				$el.css('background-position').match(/(-?\d+).*?\s(-?\d+)/) || [];
 			var xPos = parseInt(pos[1]) || 0;
 			var yPos = parseInt(pos[2]) || 0;
 			// We must convert percentage back to pixels
-			if (options.units == "percent") {
+			if (options.units == 'percent') {
 				xPos = Math.round((xPos / -200) * imageDimensions.width);
 				yPos = Math.round((yPos / -200) * imageDimensions.height);
 			}
@@ -108,27 +108,27 @@
 				// down
 				y = +5;
 			}
-			if (options.units === "percent") {
+			if (options.units === 'percent') {
 				xPos =
-					options.axis === "y"
+					options.axis === 'y'
 						? xPos
 						: limit(-imageDimensions.width / 2, 0, xPos + x, options.bound);
 				yPos =
-					options.axis === "x"
+					options.axis === 'x'
 						? yPos
 						: limit(-imageDimensions.height / 2, 0, yPos + y, options.bound);
 
 				// Convert pixels to percentage
 				$el.css(
-					"background-position",
+					'background-position',
 					(xPos / imageDimensions.width) * -200 +
-						"% " +
+						'% ' +
 						(yPos / imageDimensions.height) * -200 +
-						"%",
+						'%',
 				);
 			} else {
 				xPos =
-					options.axis === "y"
+					options.axis === 'y'
 						? xPos
 						: limit(
 								$el.innerWidth() - imageDimensions.width,
@@ -137,7 +137,7 @@
 								options.bound,
 							);
 				yPos =
-					options.axis === "x"
+					options.axis === 'x'
 						? yPos
 						: limit(
 								$el.innerHeight() - imageDimensions.height,
@@ -149,7 +149,7 @@
 			return [37, 38, 39, 40].includes(e.which) ? false : undefined;
 		});
 
-		$el.on("mousedown.dbg touchstart.dbg", function (e) {
+		$el.on('mousedown.dbg touchstart.dbg', function (e) {
 			if (e.target !== $el[0]) {
 				return;
 			}
@@ -163,17 +163,17 @@
 
 			var x0 = e.clientX,
 				y0 = e.clientY,
-				pos = $el.css("background-position").match(/(-?\d+).*?\s(-?\d+)/) || [],
+				pos = $el.css('background-position').match(/(-?\d+).*?\s(-?\d+)/) || [],
 				xPos = parseInt(pos[1]) || 0,
 				yPos = parseInt(pos[2]) || 0;
 
 			// We must convert percentage back to pixels
-			if (options.units == "percent") {
+			if (options.units == 'percent') {
 				xPos = Math.round((xPos / -200) * imageDimensions.width);
 				yPos = Math.round((yPos / -200) * imageDimensions.height);
 			}
 
-			$window.on("mousemove.dbg touchmove.dbg", function (e) {
+			$window.on('mousemove.dbg touchmove.dbg', function (e) {
 				e.preventDefault();
 
 				if (e.originalEvent.touches) {
@@ -183,9 +183,9 @@
 				var x = e.clientX,
 					y = e.clientY;
 
-				if (options.units == "percent") {
+				if (options.units == 'percent') {
 					xPos =
-						options.axis === "y"
+						options.axis === 'y'
 							? xPos
 							: limit(
 									-imageDimensions.width / 2,
@@ -194,7 +194,7 @@
 									options.bound,
 								);
 					yPos =
-						options.axis === "x"
+						options.axis === 'x'
 							? yPos
 							: limit(
 									-imageDimensions.height / 2,
@@ -205,15 +205,15 @@
 
 					// Convert pixels to percentage
 					$el.css(
-						"background-position",
+						'background-position',
 						(xPos / imageDimensions.width) * -200 +
-							"% " +
+							'% ' +
 							(yPos / imageDimensions.height) * -200 +
-							"%",
+							'%',
 					);
 				} else {
 					xPos =
-						options.axis === "y"
+						options.axis === 'y'
 							? xPos
 							: limit(
 									$el.innerWidth() - imageDimensions.width,
@@ -222,7 +222,7 @@
 									options.bound,
 								);
 					yPos =
-						options.axis === "x"
+						options.axis === 'x'
 							? yPos
 							: limit(
 									$el.innerHeight() - imageDimensions.height,
@@ -231,29 +231,29 @@
 									options.bound,
 								);
 
-					$el.css("background-position", xPos + "px " + yPos + "px");
+					$el.css('background-position', xPos + 'px ' + yPos + 'px');
 				}
 
 				x0 = x;
 				y0 = y;
 			});
 
-			$window.on("mouseup.dbg touchend.dbg mouseleave.dbg", function () {
+			$window.on('mouseup.dbg touchend.dbg mouseleave.dbg', function () {
 				if (options.done) {
 					options.done();
 				}
 
-				$window.off("mousemove.dbg touchmove.dbg");
-				$window.off("mouseup.dbg touchend.dbg mouseleave.dbg");
+				$window.off('mousemove.dbg touchmove.dbg');
+				$window.off('mouseup.dbg touchend.dbg mouseleave.dbg');
 			});
 		});
 	};
 
 	Plugin.prototype.disable = function () {
 		var $el = $(this.element);
-		$el.off("mousedown.dbg touchstart.dbg");
+		$el.off('mousedown.dbg touchstart.dbg');
 		$window.off(
-			"mousemove.dbg touchmove.dbg mouseup.dbg touchend.dbg mouseleave.dbg keydown.dbg",
+			'mousemove.dbg touchmove.dbg mouseup.dbg touchend.dbg mouseleave.dbg keydown.dbg',
 		);
 	};
 
@@ -263,12 +263,12 @@
 		return this.each(function () {
 			var $this = $(this);
 			var plugin;
-			if (typeof options == "undefined" || typeof options == "object") {
+			if (typeof options == 'undefined' || typeof options == 'object') {
 				options = $.extend({}, $.fn.backgroundDraggable.defaults, options);
 				plugin = new Plugin(this, options);
-				$this.data("dbg", plugin);
-			} else if (typeof options == "string" && $this.data("dbg")) {
-				plugin = $this.data("dbg");
+				$this.data('dbg', plugin);
+			} else if (typeof options == 'string' && $this.data('dbg')) {
+				plugin = $this.data('dbg');
 				Plugin.prototype[options].apply(plugin, args);
 			}
 		});
@@ -277,6 +277,6 @@
 	$.fn.backgroundDraggable.defaults = {
 		bound: true,
 		axis: undefined,
-		units: "pixels",
+		units: 'pixels',
 	};
 })(jQuery);

@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const privileges = require("../../privileges");
+const async = require('async');
+const privileges = require('../../privileges');
 
 module.exports = {
-	name: "Global view privileges",
+	name: 'Global view privileges',
 	timestamp: Date.UTC(2019, 0, 5),
 	method: function (callback) {
-		const meta = require("../../meta");
+		const meta = require('../../meta');
 
 		const tasks = [
 			async.apply(
 				privileges.global.give,
-				["groups:view:users", "groups:view:tags", "groups:view:groups"],
-				"registered-users",
+				['groups:view:users', 'groups:view:tags', 'groups:view:groups'],
+				'registered-users',
 			),
 		];
 
@@ -21,25 +21,25 @@ module.exports = {
 			tasks.push(
 				async.apply(
 					privileges.global.give,
-					["groups:view:users", "groups:view:groups"],
-					"guests",
+					['groups:view:users', 'groups:view:groups'],
+					'guests',
 				),
 			);
 			tasks.push(
 				async.apply(
 					privileges.global.give,
-					["groups:view:users", "groups:view:groups"],
-					"spiders",
+					['groups:view:users', 'groups:view:groups'],
+					'spiders',
 				),
 			);
 		}
 
 		if (parseInt(meta.config.privateTagListing, 10) !== 1) {
 			tasks.push(
-				async.apply(privileges.global.give, ["groups:view:tags"], "guests"),
+				async.apply(privileges.global.give, ['groups:view:tags'], 'guests'),
 			);
 			tasks.push(
-				async.apply(privileges.global.give, ["groups:view:tags"], "spiders"),
+				async.apply(privileges.global.give, ['groups:view:tags'], 'spiders'),
 			);
 		}
 

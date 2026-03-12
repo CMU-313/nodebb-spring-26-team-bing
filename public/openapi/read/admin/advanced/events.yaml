@@ -14,13 +14,13 @@ get:
       schema:
         type: string
       description: Start date to filter by
-      example: ""
+      example: ''
     - in: query
       name: end
       schema:
         type: string
       description: End date to filter by
-      example: ""
+      example: ''
     - in: query
       name: perPage
       schema:
@@ -28,8 +28,8 @@ get:
       description: Limit the number of events returned per page
       example: 20
   responses:
-    "200":
-      description: "A JSON object containing "
+    '200':
+      description: 'A JSON object containing '
       content:
         application/json:
           schema:

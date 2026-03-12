@@ -1,53 +1,53 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const semver = require("semver");
+const nconf = require('nconf');
+const semver = require('semver');
 
-const connection = require("./redis/connection");
+const connection = require('./redis/connection');
 
 const redisModule = module.exports;
 
 redisModule.questions = [
 	{
-		name: "redis:host",
-		description: "Host IP or address of your Redis instance",
+		name: 'redis:host',
+		description: 'Host IP or address of your Redis instance',
 		default:
-			nconf.get("redis:host") ||
-			nconf.get("defaults:redis:host") ||
-			"127.0.0.1",
+			nconf.get('redis:host') ||
+			nconf.get('defaults:redis:host') ||
+			'127.0.0.1',
 	},
 	{
-		name: "redis:port",
-		description: "Host port of your Redis instance",
+		name: 'redis:port',
+		description: 'Host port of your Redis instance',
 		default:
-			nconf.get("redis:port") || nconf.get("defaults:redis:port") || 6379,
+			nconf.get('redis:port') || nconf.get('defaults:redis:port') || 6379,
 	},
 	{
-		name: "redis:password",
-		description: "Password of your Redis database",
+		name: 'redis:password',
+		description: 'Password of your Redis database',
 		hidden: true,
 		default:
-			nconf.get("redis:password") || nconf.get("defaults:redis:password") || "",
+			nconf.get('redis:password') || nconf.get('defaults:redis:password') || '',
 		before: function (value) {
-			value = value || nconf.get("redis:password") || "";
+			value = value || nconf.get('redis:password') || '';
 			return value;
 		},
 	},
 	{
-		name: "redis:database",
-		description: "Which database to use (0..n)",
+		name: 'redis:database',
+		description: 'Which database to use (0..n)',
 		default:
-			nconf.get("redis:database") || nconf.get("defaults:redis:database") || 0,
+			nconf.get('redis:database') || nconf.get('defaults:redis:database') || 0,
 	},
 ];
 
 redisModule.init = async function (opts) {
-	redisModule.client = await connection.connect(opts || nconf.get("redis"));
+	redisModule.client = await connection.connect(opts || nconf.get('redis'));
 };
 
 redisModule.createSessionStore = async function (options) {
-	const meta = require("../meta");
-	const { RedisStore } = require("connect-redis");
+	const meta = require('../meta');
+	const { RedisStore } = require('connect-redis');
 	const client = await connection.connect(options);
 	const store = new RedisStore({
 		client: client,
@@ -62,10 +62,10 @@ redisModule.checkCompatibility = async function () {
 };
 
 redisModule.checkCompatibilityVersion = function (version, callback) {
-	if (semver.lt(version, "2.8.9")) {
+	if (semver.lt(version, '2.8.9')) {
 		callback(
 			new Error(
-				"Your Redis version is not new enough to support NodeBB, please upgrade Redis to v2.8.9 or higher.",
+				'Your Redis version is not new enough to support NodeBB, please upgrade Redis to v2.8.9 or higher.',
 			),
 		);
 	}
@@ -81,25 +81,25 @@ redisModule.close = async function () {
 
 redisModule.info = async function (cxn) {
 	if (!cxn) {
-		cxn = await connection.connect(nconf.get("redis"));
+		cxn = await connection.connect(nconf.get('redis'));
 	}
 	redisModule.client = redisModule.client || cxn;
 	const data = await cxn.info();
-	const lines = data.toString().split("\r\n").sort();
+	const lines = data.toString().split('\r\n').sort();
 	const redisData = {};
 	lines.forEach((line) => {
-		const parts = line.split(":");
+		const parts = line.split(':');
 		if (parts[1]) {
 			redisData[parts[0]] = parts[1];
 		}
 	});
 
-	const keyInfo = redisData[`db${nconf.get("redis:database")}`];
+	const keyInfo = redisData[`db${nconf.get('redis:database')}`];
 	if (keyInfo) {
-		const split = keyInfo.split(",");
-		redisData.keys = (split[0] || "").replace("keys=", "");
-		redisData.expires = (split[1] || "").replace("expires=", "");
-		redisData.avg_ttl = (split[2] || "").replace("avg_ttl=", "");
+		const split = keyInfo.split(',');
+		redisData.keys = (split[0] || '').replace('keys=', '');
+		redisData.expires = (split[1] || '').replace('expires=', '');
+		redisData.avg_ttl = (split[2] || '').replace('avg_ttl=', '');
 	}
 
 	redisData.instantaneous_input = (
@@ -128,22 +128,22 @@ redisModule.info = async function (cxn) {
 };
 
 redisModule.socketAdapter = async function () {
-	const redisAdapter = require("@socket.io/redis-adapter");
-	const redisConfig = nconf.get("redis");
+	const redisAdapter = require('@socket.io/redis-adapter');
+	const redisConfig = nconf.get('redis');
 	const [pub, sub] = await Promise.all([
 		connection.connect(redisConfig),
 		connection.connect(redisConfig),
 	]);
 	return redisAdapter(pub, sub, {
-		key: `db:${nconf.get("redis:database")}:adapter_key`,
+		key: `db:${nconf.get('redis:database')}:adapter_key`,
 	});
 };
 
-require("./redis/main")(redisModule);
-require("./redis/hash")(redisModule);
-require("./redis/sets")(redisModule);
-require("./redis/sorted")(redisModule);
-require("./redis/list")(redisModule);
-require("./redis/transaction")(redisModule);
+require('./redis/main')(redisModule);
+require('./redis/hash')(redisModule);
+require('./redis/sets')(redisModule);
+require('./redis/sorted')(redisModule);
+require('./redis/list')(redisModule);
+require('./redis/transaction')(redisModule);
 
-require("../promisify")(redisModule, ["client", "sessionStore"]);
+require('../promisify')(redisModule, ['client', 'sessionStore']);

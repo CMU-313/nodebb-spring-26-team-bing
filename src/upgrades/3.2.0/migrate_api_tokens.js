@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const winston = require("winston");
+const assert = require('assert');
+const winston = require('winston');
 
-const db = require("../../database");
-const meta = require("../../meta");
-const api = require("../../api");
+const db = require('../../database');
+const meta = require('../../meta');
+const api = require('../../api');
 
 module.exports = {
-	name: "Migrate tokens away from sorted-list implementation",
+	name: 'Migrate tokens away from sorted-list implementation',
 	timestamp: Date.UTC(2023, 4, 2),
 	method: async () => {
-		const { tokens = [] } = await meta.settings.get("core.api");
+		const { tokens = [] } = await meta.settings.get('core.api');
 
 		await Promise.all(
 			tokens.map(async (tokenObj) => {
@@ -22,22 +22,22 @@ module.exports = {
 
 		// Validate
 		const oldCount = await db.sortedSetCard(
-			"settings:core.api:sorted-list:tokens",
+			'settings:core.api:sorted-list:tokens',
 		);
-		const newCount = await db.sortedSetCard("tokens:createtime");
+		const newCount = await db.sortedSetCard('tokens:createtime');
 		try {
 			if (oldCount > 0) {
 				assert.strictEqual(oldCount, newCount);
 			}
 
 			// Delete old tokens
-			await meta.settings.set("core.api", {
+			await meta.settings.set('core.api', {
 				tokens: [],
 			});
-			await db.delete("settings:core.api:sorted-lists");
+			await db.delete('settings:core.api:sorted-lists');
 		} catch (e) {
 			winston.warn(
-				"Old token count does not match migrated tokens count, leaving old tokens behind.",
+				'Old token count does not match migrated tokens count, leaving old tokens behind.',
 			);
 		}
 	},

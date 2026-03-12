@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const semver = require("semver");
-const winston = require("winston");
-const _ = require("lodash");
-const validator = require("validator");
+const nconf = require('nconf');
+const semver = require('semver');
+const winston = require('winston');
+const _ = require('lodash');
+const validator = require('validator');
 
-const versions = require("../../admin/versions");
-const db = require("../../database");
-const meta = require("../../meta");
-const analytics = require("../../analytics");
-const plugins = require("../../plugins");
-const user = require("../../user");
-const topics = require("../../topics");
-const utils = require("../../utils");
-const emailer = require("../../emailer");
+const versions = require('../../admin/versions');
+const db = require('../../database');
+const meta = require('../../meta');
+const analytics = require('../../analytics');
+const plugins = require('../../plugins');
+const user = require('../../user');
+const topics = require('../../topics');
+const utils = require('../../utils');
+const emailer = require('../../emailer');
 
 const dashboardController = module.exports;
 
@@ -28,10 +28,10 @@ dashboardController.get = async function (req, res) {
 			user.isAdministrator(req.uid),
 			getPopularSearches(),
 		]);
-	const version = nconf.get("version");
+	const version = nconf.get('version');
 	const latestValidVersion = semver.valid(latestVersion);
 
-	res.render("admin/dashboard", {
+	res.render('admin/dashboard', {
 		version: version,
 		lookupFailed: latestValidVersion === null,
 		latestVersion: latestValidVersion,
@@ -52,33 +52,33 @@ async function getNotices() {
 	const notices = [
 		{
 			done: !meta.reloadRequired,
-			doneText: "[[admin/dashboard:restart-not-required]]",
-			notDoneText: "[[admin/dashboard:restart-required]]",
+			doneText: '[[admin/dashboard:restart-not-required]]',
+			notDoneText: '[[admin/dashboard:restart-required]]',
 		},
 		{
-			done: plugins.hooks.hasListeners("filter:search.query"),
-			doneText: "[[admin/dashboard:search-plugin-installed]]",
-			notDoneText: "[[admin/dashboard:search-plugin-not-installed]]",
-			tooltip: "[[admin/dashboard:search-plugin-tooltip]]",
-			link: "/admin/extend/plugins",
+			done: plugins.hooks.hasListeners('filter:search.query'),
+			doneText: '[[admin/dashboard:search-plugin-installed]]',
+			notDoneText: '[[admin/dashboard:search-plugin-not-installed]]',
+			tooltip: '[[admin/dashboard:search-plugin-tooltip]]',
+			link: '/admin/extend/plugins',
 		},
 	];
 
 	if (emailer.fallbackNotFound) {
 		notices.push({
 			done: false,
-			notDoneText: "[[admin/dashboard:fallback-emailer-not-found]]",
+			notDoneText: '[[admin/dashboard:fallback-emailer-not-found]]',
 		});
 	}
 
-	if (global.env !== "production") {
+	if (global.env !== 'production') {
 		notices.push({
 			done: false,
-			notDoneText: "[[admin/dashboard:running-in-development]]",
+			notDoneText: '[[admin/dashboard:running-in-development]]',
 		});
 	}
 
-	return await plugins.hooks.fire("filter:admin.notices", notices);
+	return await plugins.hooks.fire('filter:admin.notices', notices);
 }
 
 async function getLatestVersion() {
@@ -92,21 +92,21 @@ async function getLatestVersion() {
 
 dashboardController.getAnalytics = async (req, res, next) => {
 	// Basic validation
-	const validUnits = ["days", "hours"];
+	const validUnits = ['days', 'hours'];
 	const validSets = [
-		"uniquevisitors",
-		"pageviews",
-		"pageviews:registered",
-		"pageviews:bot",
-		"pageviews:guest",
-		"pageviews:ap",
+		'uniquevisitors',
+		'pageviews',
+		'pageviews:registered',
+		'pageviews:bot',
+		'pageviews:guest',
+		'pageviews:ap',
 	];
 	const until = req.query.until
 		? new Date(parseInt(req.query.until, 10))
 		: Date.now();
-	const count = req.query.count || (req.query.units === "hours" ? 24 : 30);
+	const count = req.query.count || (req.query.units === 'hours' ? 24 : 30);
 	if (isNaN(until) || !validUnits.includes(req.query.units)) {
-		return next(new Error("[[error:invalid-data]]"));
+		return next(new Error('[[error:invalid-data]]'));
 	}
 
 	// Filter out invalid sets, if no sets, assume all sets
@@ -119,7 +119,7 @@ dashboardController.getAnalytics = async (req, res, next) => {
 	}
 
 	const method =
-		req.query.units === "days"
+		req.query.units === 'days'
 			? analytics.getDailyStatsForSet
 			: analytics.getHourlyStatsForSet;
 	let payload = await Promise.all(
@@ -139,39 +139,39 @@ dashboardController.getAnalytics = async (req, res, next) => {
 };
 
 async function getStats() {
-	const cache = require("../../cache");
-	const cachedStats = cache.get("admin:stats");
+	const cache = require('../../cache');
+	const cachedStats = cache.get('admin:stats');
 	if (cachedStats !== undefined) {
 		return cachedStats;
 	}
 
 	let results = await Promise.all([
-		getStatsFromAnalytics("uniquevisitors", ""),
-		getStatsFromAnalytics("logins", "loginCount"),
-		getStatsForSet("users:joindate", "userCount"),
-		getStatsForSet("posts:pid", "postCount"),
-		getStatsForSet("topics:tid", "topicCount"),
+		getStatsFromAnalytics('uniquevisitors', ''),
+		getStatsFromAnalytics('logins', 'loginCount'),
+		getStatsForSet('users:joindate', 'userCount'),
+		getStatsForSet('posts:pid', 'postCount'),
+		getStatsForSet('topics:tid', 'topicCount'),
 	]);
 
-	results[0].name = "[[admin/dashboard:unique-visitors]]";
+	results[0].name = '[[admin/dashboard:unique-visitors]]';
 
-	results[1].name = "[[admin/dashboard:logins]]";
-	results[1].href = `${nconf.get("relative_path")}/admin/dashboard/logins`;
+	results[1].name = '[[admin/dashboard:logins]]';
+	results[1].href = `${nconf.get('relative_path')}/admin/dashboard/logins`;
 
-	results[2].name = "[[admin/dashboard:new-users]]";
-	results[2].href = `${nconf.get("relative_path")}/admin/dashboard/users`;
+	results[2].name = '[[admin/dashboard:new-users]]';
+	results[2].href = `${nconf.get('relative_path')}/admin/dashboard/users`;
 
-	results[3].name = "[[admin/dashboard:posts]]";
+	results[3].name = '[[admin/dashboard:posts]]';
 
-	results[4].name = "[[admin/dashboard:topics]]";
-	results[4].href = `${nconf.get("relative_path")}/admin/dashboard/topics`;
+	results[4].name = '[[admin/dashboard:topics]]';
+	results[4].href = `${nconf.get('relative_path')}/admin/dashboard/topics`;
 
-	({ results } = await plugins.hooks.fire("filter:admin.getStats", {
+	({ results } = await plugins.hooks.fire('filter:admin.getStats', {
 		results,
 		helpers: { getStatsForSet, getStatsFromAnalytics },
 	}));
 
-	cache.set("admin:stats", results, 600000);
+	cache.set('admin:stats', results, 600000);
 	return results;
 }
 
@@ -184,12 +184,12 @@ async function getStatsForSet(set, field) {
 
 	const now = Date.now();
 	const results = await utils.promiseParallel({
-		yesterday: db.sortedSetCount(set, now - terms.day * 2, "+inf"),
-		today: db.sortedSetCount(set, now - terms.day, "+inf"),
-		lastweek: db.sortedSetCount(set, now - terms.week * 2, "+inf"),
-		thisweek: db.sortedSetCount(set, now - terms.week, "+inf"),
-		lastmonth: db.sortedSetCount(set, now - terms.month * 2, "+inf"),
-		thismonth: db.sortedSetCount(set, now - terms.month, "+inf"),
+		yesterday: db.sortedSetCount(set, now - terms.day * 2, '+inf'),
+		today: db.sortedSetCount(set, now - terms.day, '+inf'),
+		lastweek: db.sortedSetCount(set, now - terms.week * 2, '+inf'),
+		thisweek: db.sortedSetCount(set, now - terms.week, '+inf'),
+		lastmonth: db.sortedSetCount(set, now - terms.month * 2, '+inf'),
+		thismonth: db.sortedSetCount(set, now - terms.month, '+inf'),
 		alltime: getGlobalField(field),
 	});
 
@@ -222,11 +222,11 @@ async function getStatsFromAnalytics(set, field) {
 function calculateDeltas(results) {
 	function textClass(num) {
 		if (num > 0) {
-			return "text-success";
+			return 'text-success';
 		} else if (num < 0) {
-			return "text-danger";
+			return 'text-danger';
 		}
-		return "text-warning";
+		return 'text-warning';
 	}
 
 	function increasePercent(last, now) {
@@ -250,12 +250,12 @@ function calculateDeltas(results) {
 
 async function getGlobalField(field) {
 	if (!field) return 0;
-	const count = await db.getObjectField("global", field);
+	const count = await db.getObjectField('global', field);
 	return parseInt(count, 10) || 0;
 }
 
 async function getLastRestart() {
-	const lastrestart = await db.getObject("lastrestart");
+	const lastrestart = await db.getObject('lastrestart');
 	if (!lastrestart) {
 		return null;
 	}
@@ -267,7 +267,7 @@ async function getLastRestart() {
 
 async function getPopularSearches() {
 	const searches = await db.getSortedSetRevRangeWithScores(
-		"searches:all",
+		'searches:all',
 		0,
 		9,
 	);
@@ -280,7 +280,7 @@ async function getPopularSearches() {
 dashboardController.getLogins = async (req, res) => {
 	let stats = await getStats();
 	stats = stats
-		.filter((stat) => stat.name === "[[admin/dashboard:logins]]")
+		.filter((stat) => stat.name === '[[admin/dashboard:logins]]')
 		.map(({ ...stat }) => {
 			delete stat.href;
 			return stat;
@@ -294,7 +294,7 @@ dashboardController.getLogins = async (req, res) => {
 	// List recent sessions
 	const start = Date.now() - 1000 * 60 * 60 * 24 * meta.config.loginDays;
 	const uids = await db.getSortedSetRangeByScore(
-		"users:online",
+		'users:online',
 		0,
 		500,
 		start,
@@ -313,9 +313,9 @@ dashboardController.getLogins = async (req, res) => {
 	);
 	sessions = _.flatten(sessions).sort((a, b) => b.datetime - a.datetime);
 
-	res.render("admin/dashboard/logins", {
-		set: "logins",
-		query: _.pick(req.query, ["units", "until", "count"]),
+	res.render('admin/dashboard/logins', {
+		set: 'logins',
+		query: _.pick(req.query, ['units', 'until', 'count']),
 		stats,
 		summary,
 		sessions,
@@ -326,7 +326,7 @@ dashboardController.getLogins = async (req, res) => {
 dashboardController.getUsers = async (req, res) => {
 	let stats = await getStats();
 	stats = stats
-		.filter((stat) => stat.name === "[[admin/dashboard:new-users]]")
+		.filter((stat) => stat.name === '[[admin/dashboard:new-users]]')
 		.map(({ ...stat }) => {
 			delete stat.href;
 			return stat;
@@ -344,10 +344,10 @@ dashboardController.getUsers = async (req, res) => {
 		1000 *
 			60 *
 			60 *
-			(req.query.units === "days" ? 24 : 1) *
-			(req.query.count || (req.query.units === "days" ? 30 : 24));
+			(req.query.units === 'days' ? 24 : 1) *
+			(req.query.count || (req.query.units === 'days' ? 30 : 24));
 	const uids = await db.getSortedSetRangeByScore(
-		"users:joindate",
+		'users:joindate',
 		0,
 		500,
 		start,
@@ -355,9 +355,9 @@ dashboardController.getUsers = async (req, res) => {
 	);
 	const users = await user.getUsersData(uids);
 
-	res.render("admin/dashboard/users", {
-		set: "registrations",
-		query: _.pick(req.query, ["units", "until", "count"]),
+	res.render('admin/dashboard/users', {
+		set: 'registrations',
+		query: _.pick(req.query, ['units', 'until', 'count']),
 		stats,
 		summary,
 		users,
@@ -367,7 +367,7 @@ dashboardController.getUsers = async (req, res) => {
 dashboardController.getTopics = async (req, res) => {
 	let stats = await getStats();
 	stats = stats
-		.filter((stat) => stat.name === "[[admin/dashboard:topics]]")
+		.filter((stat) => stat.name === '[[admin/dashboard:topics]]')
 		.map(({ ...stat }) => {
 			delete stat.href;
 			return stat;
@@ -385,10 +385,10 @@ dashboardController.getTopics = async (req, res) => {
 		1000 *
 			60 *
 			60 *
-			(req.query.units === "days" ? 24 : 1) *
-			(req.query.count || (req.query.units === "days" ? 30 : 24));
+			(req.query.units === 'days' ? 24 : 1) *
+			(req.query.count || (req.query.units === 'days' ? 30 : 24));
 	const tids = await db.getSortedSetRangeByScore(
-		"topics:tid",
+		'topics:tid',
 		0,
 		500,
 		start,
@@ -396,9 +396,9 @@ dashboardController.getTopics = async (req, res) => {
 	);
 	const topicData = await topics.getTopicsByTids(tids);
 
-	res.render("admin/dashboard/topics", {
-		set: "topics",
-		query: _.pick(req.query, ["units", "until", "count"]),
+	res.render('admin/dashboard/topics', {
+		set: 'topics',
+		query: _.pick(req.query, ['units', 'until', 'count']),
 		stats,
 		summary,
 		topics: topicData,
@@ -450,10 +450,10 @@ dashboardController.getSearches = async (req, res) => {
 			.map((key) => ({ value: key, score: map[key] }))
 			.sort((a, b) => b.score - a.score);
 	} else {
-		searches = await db.getSortedSetRevRangeWithScores("searches:all", 0, 99);
+		searches = await db.getSortedSetRevRangeWithScores('searches:all', 0, 99);
 	}
 
-	res.render("admin/dashboard/searches", {
+	res.render('admin/dashboard/searches', {
 		searches: searches.map((s) => ({
 			value: validator.escape(String(s.value)),
 			score: s.score,

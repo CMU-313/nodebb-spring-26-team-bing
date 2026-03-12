@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const winston = require("winston");
-const _ = require("lodash");
+const winston = require('winston');
+const _ = require('lodash');
 
-const db = require("../database");
-const meta = require("../meta");
-const notifications = require("../notifications");
-const privileges = require("../privileges");
-const plugins = require("../plugins");
-const translator = require("../translator");
-const topics = require("../topics");
-const user = require("./index");
+const db = require('../database');
+const meta = require('../meta');
+const notifications = require('../notifications');
+const privileges = require('../privileges');
+const plugins = require('../plugins');
+const translator = require('../translator');
+const topics = require('../topics');
+const user = require('./index');
 
 const UserNotifications = module.exports;
 
@@ -36,7 +36,7 @@ UserNotifications.get = async function (uid) {
 		);
 	}
 
-	return await plugins.hooks.fire("filter:user.notifications.get", {
+	return await plugins.hooks.fire('filter:user.notifications.get', {
 		uid,
 		read: read.filter(Boolean),
 		unread: unread,
@@ -48,7 +48,7 @@ async function filterNotifications(nids, filter) {
 		return nids;
 	}
 	const keys = nids.map((nid) => `notifications:${nid}`);
-	const notifications = await db.getObjectsFields(keys, ["nid", "type"]);
+	const notifications = await db.getObjectsFields(keys, ['nid', 'type']);
 	return notifications
 		.filter((n) => n && n.nid && n.type === filter)
 		.map((n) => n.nid);
@@ -62,7 +62,7 @@ UserNotifications.getAll = async function (uid, filter) {
 UserNotifications.getAllWithCounts = async function (uid, filter) {
 	const nids = await getAllNids(uid);
 	const keys = nids.map((nid) => `notifications:${nid}`);
-	let notifications = await db.getObjectsFields(keys, ["nid", "type"]);
+	let notifications = await db.getObjectsFields(keys, ['nid', 'type']);
 	const counts = {};
 	notifications.forEach((n) => {
 		if (n && n.type) {
@@ -85,7 +85,7 @@ async function getAllNids(uid) {
 		-1,
 	);
 	nids = _.uniq(nids);
-	const exists = await db.isSortedSetMembers("notifications", nids);
+	const exists = await db.isSortedSetMembers('notifications', nids);
 	const deleteNids = [];
 
 	nids = nids.filter((nid, index) => {
@@ -128,7 +128,7 @@ UserNotifications.getNotifications = async function (nids, uid) {
 		}
 		if (notification) {
 			notification.read = hasRead[index];
-			notification.readClass = !notification.read ? "unread" : "";
+			notification.readClass = !notification.read ? 'unread' : '';
 		}
 
 		return notification;
@@ -148,7 +148,7 @@ UserNotifications.getNotifications = async function (nids, uid) {
 	);
 
 	const result = await plugins.hooks.fire(
-		"filter:user.notifications.getNotifications",
+		'filter:user.notifications.getNotifications',
 		{
 			uid: uid,
 			notifications: notificationData,
@@ -172,14 +172,14 @@ UserNotifications.getUnreadInterval = async function (uid, interval) {
 		`uid:${uid}:notifications:unread`,
 		0,
 		20,
-		"+inf",
+		'+inf',
 		min,
 	);
 	return await UserNotifications.getNotifications(nids, uid);
 };
 
 UserNotifications.getDailyUnread = async function (uid) {
-	return await UserNotifications.getUnreadInterval(uid, "day");
+	return await UserNotifications.getUnreadInterval(uid, 'day');
 };
 
 UserNotifications.getUnreadCount = async function (uid) {
@@ -193,7 +193,7 @@ UserNotifications.getUnreadCount = async function (uid) {
 	);
 	nids = await notifications.filterExists(nids);
 	const keys = nids.map((nid) => `notifications:${nid}`);
-	const notifData = await db.getObjectsFields(keys, ["mergeId"]);
+	const notifData = await db.getObjectsFields(keys, ['mergeId']);
 	const mergeIds = notifData.map((n) => n.mergeId);
 
 	// Collapse any notifications with identical mergeIds
@@ -206,7 +206,7 @@ UserNotifications.getUnreadCount = async function (uid) {
 		return count;
 	}, 0);
 
-	({ count } = await plugins.hooks.fire("filter:user.notifications.getCount", {
+	({ count } = await plugins.hooks.fire('filter:user.notifications.getCount', {
 		uid,
 		count,
 	}));
@@ -223,7 +223,7 @@ UserNotifications.getUnreadByField = async function (uid, field, values) {
 		return [];
 	}
 	const keys = nids.map((nid) => `notifications:${nid}`);
-	const notifData = await db.getObjectsFields(keys, ["nid", field]);
+	const notifData = await db.getObjectsFields(keys, ['nid', field]);
 	const valuesSet = new Set(values.map((value) => String(value)));
 	return notifData
 		.filter((n) => n && n[field] && valuesSet.has(String(n[field])))
@@ -248,10 +248,10 @@ UserNotifications.sendTopicNotificationToFollowers = async function (
 	try {
 		const [allFollowers, title] = await Promise.all([
 			db.getSortedSetRange(`followers:${uid}`, 0, -1),
-			topics.getTopicField(topicData.tid, "title"),
+			topics.getTopicField(topicData.tid, 'title'),
 		]);
 		const followers = await privileges.categories.filterUids(
-			"read",
+			'read',
 			topicData.cid,
 			allFollowers,
 		);
@@ -260,9 +260,9 @@ UserNotifications.sendTopicNotificationToFollowers = async function (
 		}
 
 		const notifObj = await notifications.create({
-			type: "new-topic",
+			type: 'new-topic',
 			bodyShort: translator.compile(
-				"notifications:user-posted-topic",
+				'notifications:user-posted-topic',
 				postData.user.displayname,
 				title,
 			),
@@ -285,7 +285,7 @@ UserNotifications.sendWelcomeNotification = async function (uid) {
 		return;
 	}
 
-	const path = meta.config.welcomeLink ? meta.config.welcomeLink : "#";
+	const path = meta.config.welcomeLink ? meta.config.welcomeLink : '#';
 	const notifObj = await notifications.create({
 		bodyShort: meta.config.welcomeNotification,
 		path: path,
@@ -299,7 +299,7 @@ UserNotifications.sendWelcomeNotification = async function (uid) {
 UserNotifications.sendNameChangeNotification = async function (uid, username) {
 	const notifObj = await notifications.create({
 		bodyShort: `[[user:username-taken-workaround, ${username}]]`,
-		image: "brand:logo",
+		image: 'brand:logo',
 		nid: `username_taken:${uid}`,
 		datetime: Date.now(),
 	});
@@ -308,7 +308,7 @@ UserNotifications.sendNameChangeNotification = async function (uid, username) {
 };
 
 UserNotifications.pushCount = async function (uid) {
-	const websockets = require("../socket.io");
+	const websockets = require('../socket.io');
 	const count = await UserNotifications.getUnreadCount(uid);
-	websockets.in(`uid_${uid}`).emit("event:notifications.updateCount", count);
+	websockets.in(`uid_${uid}`).emit('event:notifications.updateCount', count);
 };

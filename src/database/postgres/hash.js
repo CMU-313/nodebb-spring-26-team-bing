@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const helpers = require("./helpers");
+	const helpers = require('./helpers');
 
 	module.setObject = async function (key, data) {
 		if (!key || !data) {
 			return;
 		}
 
-		if (data.hasOwnProperty("")) {
-			delete data[""];
+		if (data.hasOwnProperty('')) {
+			delete data[''];
 		}
 		if (!Object.keys(data).length) {
 			return;
@@ -18,9 +18,9 @@ module.exports = function (module) {
 			const dataString = JSON.stringify(data);
 
 			if (Array.isArray(key)) {
-				await helpers.ensureLegacyObjectsType(client, key, "hash");
+				await helpers.ensureLegacyObjectsType(client, key, 'hash');
 				await client.query({
-					name: "setObjectKeys",
+					name: 'setObjectKeys',
 					text: `
 	INSERT INTO "legacy_hash" ("_key", "data")
 	SELECT k, $2::TEXT::JSONB
@@ -30,9 +30,9 @@ module.exports = function (module) {
 					values: [key, dataString],
 				});
 			} else {
-				await helpers.ensureLegacyObjectType(client, key, "hash");
+				await helpers.ensureLegacyObjectType(client, key, 'hash');
 				await client.query({
-					name: "setObject",
+					name: 'setObject',
 					text: `
 	INSERT INTO "legacy_hash" ("_key", "data")
 	VALUES ($1::TEXT, $2::TEXT::JSONB)
@@ -51,15 +51,15 @@ module.exports = function (module) {
 		}
 		if (Array.isArray(args[1])) {
 			console.warn(
-				"[deprecated] db.setObjectBulk(keys, data) usage is deprecated, please use db.setObjectBulk(data)",
+				'[deprecated] db.setObjectBulk(keys, data) usage is deprecated, please use db.setObjectBulk(data)',
 			);
 			// conver old format to new format for backwards compatibility
 			data = args[0].map((key, i) => [key, args[1][i]]);
 		}
 		await module.transaction(async (client) => {
 			data = data.filter((item) => {
-				if (item[1].hasOwnProperty("")) {
-					delete item[1][""];
+				if (item[1].hasOwnProperty('')) {
+					delete item[1][''];
 				}
 				return !!Object.keys(item[1]).length;
 			});
@@ -68,10 +68,10 @@ module.exports = function (module) {
 				return;
 			}
 
-			await helpers.ensureLegacyObjectsType(client, keys, "hash");
+			await helpers.ensureLegacyObjectsType(client, keys, 'hash');
 			const dataStrings = data.map((item) => JSON.stringify(item[1]));
 			await client.query({
-				name: "setObjectBulk",
+				name: 'setObjectBulk',
 				text: `
 			INSERT INTO "legacy_hash" ("_key", "data")
 			SELECT k, d
@@ -93,9 +93,9 @@ module.exports = function (module) {
 			if (Array.isArray(key)) {
 				await module.setObject(key, { [field]: value });
 			} else {
-				await helpers.ensureLegacyObjectType(client, key, "hash");
+				await helpers.ensureLegacyObjectType(client, key, 'hash');
 				await client.query({
-					name: "setObjectField",
+					name: 'setObjectField',
 					text: `
 	INSERT INTO "legacy_hash" ("_key", "data")
 	VALUES ($1::TEXT, jsonb_build_object($2::TEXT, $3::TEXT::JSONB))
@@ -115,7 +115,7 @@ module.exports = function (module) {
 			return await module.getObjectFields(key, fields);
 		}
 		const res = await module.pool.query({
-			name: "getObject",
+			name: 'getObject',
 			text: `
 SELECT h."data"
   FROM "legacy_object_live" o
@@ -138,7 +138,7 @@ SELECT h."data"
 			return await module.getObjectsFields(keys, fields);
 		}
 		const res = await module.pool.query({
-			name: "getObjects",
+			name: 'getObjects',
 			text: `
 SELECT h."data"
   FROM UNNEST($1::TEXT[]) WITH ORDINALITY k("_key", i)
@@ -160,7 +160,7 @@ SELECT h."data"
 		}
 
 		const res = await module.pool.query({
-			name: "getObjectField",
+			name: 'getObjectField',
 			text: `
 SELECT h."data"->>$2::TEXT f
   FROM "legacy_object_live" o
@@ -183,7 +183,7 @@ SELECT h."data"->>$2::TEXT f
 			return await module.getObject(key);
 		}
 		const res = await module.pool.query({
-			name: "getObjectFields",
+			name: 'getObjectFields',
 			text: `
 SELECT (SELECT jsonb_object_agg(f, d."value")
           FROM UNNEST($2::TEXT[]) f
@@ -218,7 +218,7 @@ SELECT (SELECT jsonb_object_agg(f, d."value")
 			return await module.getObjects(keys);
 		}
 		const res = await module.pool.query({
-			name: "getObjectsFields",
+			name: 'getObjectsFields',
 			text: `
 SELECT (SELECT jsonb_object_agg(f, d."value")
           FROM UNNEST($2::TEXT[]) f
@@ -243,7 +243,7 @@ SELECT (SELECT jsonb_object_agg(f, d."value")
 		}
 
 		const res = await module.pool.query({
-			name: "getObjectKeys",
+			name: 'getObjectKeys',
 			text: `
 SELECT ARRAY(SELECT jsonb_object_keys(h."data")) k
   FROM "legacy_object_live" o
@@ -269,7 +269,7 @@ SELECT ARRAY(SELECT jsonb_object_keys(h."data")) k
 		}
 
 		const res = await module.pool.query({
-			name: "isObjectField",
+			name: 'isObjectField',
 			text: `
 SELECT (h."data" ? $2::TEXT AND h."data"->>$2::TEXT IS NOT NULL) b
   FROM "legacy_object_live" o
@@ -317,7 +317,7 @@ SELECT (h."data" ? $2::TEXT AND h."data"->>$2::TEXT IS NOT NULL) b
 
 		if (Array.isArray(key)) {
 			await module.pool.query({
-				name: "deleteObjectFieldsKeys",
+				name: 'deleteObjectFieldsKeys',
 				text: `
 	UPDATE "legacy_hash"
 	   SET "data" = COALESCE((SELECT jsonb_object_agg("key", "value")
@@ -328,7 +328,7 @@ SELECT (h."data" ? $2::TEXT AND h."data"->>$2::TEXT IS NOT NULL) b
 			});
 		} else {
 			await module.pool.query({
-				name: "deleteObjectFields",
+				name: 'deleteObjectFields',
 				text: `
 	UPDATE "legacy_hash"
 	   SET "data" = COALESCE((SELECT jsonb_object_agg("key", "value")
@@ -357,15 +357,15 @@ SELECT (h."data" ? $2::TEXT AND h."data"->>$2::TEXT IS NOT NULL) b
 
 		return await module.transaction(async (client) => {
 			if (Array.isArray(key)) {
-				await helpers.ensureLegacyObjectsType(client, key, "hash");
+				await helpers.ensureLegacyObjectsType(client, key, 'hash');
 			} else {
-				await helpers.ensureLegacyObjectType(client, key, "hash");
+				await helpers.ensureLegacyObjectType(client, key, 'hash');
 			}
 
 			const res = await client.query(
 				Array.isArray(key)
 					? {
-							name: "incrObjectFieldByMulti",
+							name: 'incrObjectFieldByMulti',
 							text: `
 INSERT INTO "legacy_hash" ("_key", "data")
 SELECT UNNEST($1::TEXT[]), jsonb_build_object($2::TEXT, $3::NUMERIC)
@@ -375,7 +375,7 @@ RETURNING ("data"->>$2::TEXT)::NUMERIC v`,
 							values: [key, field, value],
 						}
 					: {
-							name: "incrObjectFieldBy",
+							name: 'incrObjectFieldBy',
 							text: `
 INSERT INTO "legacy_hash" ("_key", "data")
 VALUES ($1::TEXT, jsonb_build_object($2::TEXT, $3::NUMERIC))
@@ -400,14 +400,14 @@ RETURNING ("data"->>$2::TEXT)::NUMERIC v`,
 			await helpers.ensureLegacyObjectsType(
 				client,
 				data.map((item) => item[0]),
-				"hash",
+				'hash',
 			);
 
 			const keys = data.map((item) => item[0]);
 			const dataStrings = data.map((item) => JSON.stringify(item[1]));
 
 			await client.query({
-				name: "incrObjectFieldByBulk",
+				name: 'incrObjectFieldByBulk',
 				text: `
 INSERT INTO "legacy_hash" ("_key", "data")
 SELECT k, d

@@ -29,7 +29,7 @@ get:
         This parameter is supeceded by `start`, and will stop working in NodeBB v4.
       example: 1
   responses:
-    "200":
+    '200':
       description: chat rooms successfully listed
       content:
         application/json:
@@ -95,7 +95,7 @@ get:
                                   value is used in conjunction with
                                   `icon:text` for the user's
                                   auto-generated icon
-                                example: "#f44336"
+                                example: '#f44336'
                               lastonlineISO:
                                 type: string
                       users:
@@ -137,7 +137,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's
                                 auto-generated icon
-                              example: "#f44336"
+                              example: '#f44336'
                             lastonlineISO:
                               type: string
                       lastUser:
@@ -177,7 +177,7 @@ get:
                               value is used in conjunction with
                               `icon:text` for the user's
                               auto-generated icon
-                            example: "#f44336"
+                            example: '#f44336'
                           lastonlineISO:
                             type: string
                       usernames:
@@ -200,7 +200,7 @@ post:
           required:
             - uids
   responses:
-    "200":
+    '200':
       description: chat room successfully created
       content:
         application/json:

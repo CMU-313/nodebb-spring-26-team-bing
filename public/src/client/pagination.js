@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-define("forum/pagination", ["bootbox"], function (bootbox) {
+define('forum/pagination', ['bootbox'], function (bootbox) {
 	const pagination = {};
 
 	pagination.init = function () {
-		$("body").on("click", '[component="pagination/select-page"]', function () {
-			bootbox.prompt("[[global:enter-page-number]]", function (pageNum) {
+		$('body').on('click', '[component="pagination/select-page"]', function () {
+			bootbox.prompt('[[global:enter-page-number]]', function (pageNum) {
 				pagination.loadPage(pageNum);
 			});
 			return false;
@@ -26,7 +26,7 @@ define("forum/pagination", ["bootbox"], function (bootbox) {
 		const query = utils.params();
 		query.page = page;
 
-		const url = window.location.pathname + "?" + $.param(query);
+		const url = window.location.pathname + '?' + $.param(query);
 		ajaxify.go(url, callback);
 	};
 

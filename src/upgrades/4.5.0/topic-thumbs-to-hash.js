@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Move topic:<tid>:thumbs to topic hash",
+	name: 'Move topic:<tid>:thumbs to topic hash',
 	timestamp: Date.UTC(2025, 6, 5),
 	method: async function () {
 		const { progress } = this;
 
-		const topicCount = await db.sortedSetCard("topics:tid");
+		const topicCount = await db.sortedSetCard('topics:tid');
 		progress.total = topicCount;
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const keys = tids.map((tid) => `topic:${tid}:thumbs`);
 

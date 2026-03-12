@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const helpers = require("../helpers");
-const pagination = require("../../pagination");
-const user = require("../../user");
-const plugins = require("../../plugins");
+const helpers = require('../helpers');
+const pagination = require('../../pagination');
+const user = require('../../user');
+const plugins = require('../../plugins');
 
 const blocksController = module.exports;
 
@@ -16,7 +16,7 @@ blocksController.getBlocks = async function (req, res) {
 	const { uid, username, userslug, blocksCount } = payload;
 
 	const uids = await user.blocks.list(uid);
-	const data = await plugins.hooks.fire("filter:user.getBlocks", {
+	const data = await plugins.hooks.fire('filter:user.getBlocks', {
 		uids: uids,
 		uid: uid,
 		start: start,
@@ -32,8 +32,8 @@ blocksController.getBlocks = async function (req, res) {
 
 	payload.breadcrumbs = helpers.buildBreadcrumbs([
 		{ text: username, url: `/user/${userslug}` },
-		{ text: "[[user:blocks]]" },
+		{ text: '[[user:blocks]]' },
 	]);
 
-	res.render("account/blocks", payload);
+	res.render('account/blocks', payload);
 };

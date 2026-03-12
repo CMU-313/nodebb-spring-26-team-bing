@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("composer/controls", ["composer/preview"], function (preview) {
+define('composer/controls', ['composer/preview'], function (preview) {
 	var controls = {};
 
 	/** ********************************************** */
@@ -13,7 +13,7 @@ define("composer/controls", ["composer/preview"], function (preview) {
 			value: value,
 			preventDefault: false,
 		};
-		$(window).trigger("action:composer.insertIntoTextarea", payload);
+		$(window).trigger('action:composer.insertIntoTextarea', payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -40,7 +40,7 @@ define("composer/controls", ["composer/preview"], function (preview) {
 			preventDefault: false,
 		};
 		$(window).trigger(
-			"action:composer.replaceSelectionInTextareaWith",
+			'action:composer.replaceSelectionInTextareaWith',
 			payload,
 		);
 
@@ -73,7 +73,7 @@ define("composer/controls", ["composer/preview"], function (preview) {
 			trailing: trailing,
 			preventDefault: false,
 		};
-		$(window).trigger("action:composer.wrapSelectionInTextareaWith", payload);
+		$(window).trigger('action:composer.wrapSelectionInTextareaWith', payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -94,9 +94,9 @@ define("composer/controls", ["composer/preview"], function (preview) {
 			// selection is entirely whitespace
 			matches = [
 				null,
-				"",
+				'',
 				currentVal.slice(textarea.selectionStart, textarea.selectionEnd),
-				"",
+				'',
 			];
 		}
 
@@ -121,7 +121,7 @@ define("composer/controls", ["composer/preview"], function (preview) {
 			end: end,
 			preventDefault: false,
 		};
-		$(window).trigger("action:composer.updateTextareaSelection", payload);
+		$(window).trigger('action:composer.updateTextareaSelection', payload);
 
 		if (payload.preventDefault) {
 			return;
@@ -134,14 +134,14 @@ define("composer/controls", ["composer/preview"], function (preview) {
 	controls.getBlockData = function (textareaEl, query, selectionStart) {
 		// Determines whether the cursor is sitting inside a block-type element (bold, italic, etc.)
 		var value = textareaEl.value;
-		query = query.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
-		var regex = new RegExp(query, "g");
+		query = query.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+		var regex = new RegExp(query, 'g');
 		var match;
 		var matchIndices = [];
 		var payload;
 
 		// Isolate the line the cursor is on
-		value = value.split("\n").reduce(function (memo, line) {
+		value = value.split('\n').reduce(function (memo, line) {
 			if (memo !== null) {
 				return memo;
 			}

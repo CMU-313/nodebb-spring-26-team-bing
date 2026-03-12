@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const user = require("../user");
+const db = require('../database');
+const user = require('../user');
 
 module.exports = function (Groups) {
 	Groups.getUsersFromSet = async function (set, fields = []) {
@@ -11,7 +11,7 @@ module.exports = function (Groups) {
 	};
 
 	Groups.getUserGroups = async function (uids) {
-		return await Groups.getUserGroupsFromSet("groups:visible:createtime", uids);
+		return await Groups.getUserGroupsFromSet('groups:visible:createtime', uids);
 	};
 
 	Groups.getUserGroupsFromSet = async function (set, uids) {
@@ -35,7 +35,7 @@ module.exports = function (Groups) {
 
 	Groups.getUserInviteGroups = async function (uid) {
 		let allGroups = await Groups.getNonPrivilegeGroups(
-			"groups:createtime",
+			'groups:createtime',
 			0,
 			-1,
 		);
@@ -48,8 +48,8 @@ module.exports = function (Groups) {
 				group.hidden === 0 && group.system === 0 && group.private === 0,
 		);
 		const adminModGroups = [
-			{ name: "administrators", displayName: "administrators" },
-			{ name: "Global Moderators", displayName: "Global Moderators" },
+			{ name: 'administrators', displayName: 'administrators' },
+			{ name: 'Global Moderators', displayName: 'Global Moderators' },
 		];
 		// Private (but not hidden)
 		const privateGroups = allGroups.filter(

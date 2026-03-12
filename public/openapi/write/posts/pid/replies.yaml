@@ -12,7 +12,7 @@ get:
       description: a valid post id
       example: 2
   responses:
-    "200":
+    '200':
       description: Post replies successfully retrieved.
       content:
         application/json:
@@ -125,7 +125,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
-                              example: "#f44336"
+                              example: '#f44336'
                             lastonlineISO:
                               type: string
                             banned_until:
@@ -201,7 +201,7 @@ get:
                                       value is used in conjunction with
                                       `icon:text` for the user's auto-generated
                                       icon
-                                    example: "#f44336"
+                                    example: '#f44336'
                                   administrator:
                                     type: boolean
                             text:

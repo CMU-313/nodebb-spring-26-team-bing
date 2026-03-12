@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const meta = require("../meta");
-const db = require("../database");
-const plugins = require("../plugins");
-const user = require("../user");
-const topics = require("../topics");
-const categories = require("../categories");
-const groups = require("../groups");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const meta = require('../meta');
+const db = require('../database');
+const plugins = require('../plugins');
+const user = require('../user');
+const topics = require('../topics');
+const categories = require('../categories');
+const groups = require('../groups');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 module.exports = function (Posts) {
 	Posts.create = async function (data) {
@@ -20,7 +20,7 @@ module.exports = function (Posts) {
 		let hasAttachment = false;
 
 		if (!uid && parseInt(uid, 10) !== 0) {
-			throw new Error("[[error:invalid-uid]]");
+			throw new Error('[[error:invalid-uid]]');
 		}
 
 		if (
@@ -28,10 +28,10 @@ module.exports = function (Posts) {
 			!utils.isNumber(data.toPid) &&
 			!activitypub.helpers.isUri(data.toPid)
 		) {
-			throw new Error("[[error:invalid-pid]]");
+			throw new Error('[[error:invalid-pid]]');
 		}
 
-		const pid = data.pid || (await db.incrObjectField("global", "nextPid"));
+		const pid = data.pid || (await db.incrObjectField('global', 'nextPid'));
 		let postData = { pid, uid, tid, content, sourceContent, timestamp };
 		postData.anonymous = data.anonymous || false;
 
@@ -57,22 +57,22 @@ module.exports = function (Posts) {
 				_activitypub.tag
 					.filter(
 						(tag) =>
-							tag.type === "Emoji" && tag.icon && tag.icon.type === "Image",
+							tag.type === 'Emoji' && tag.icon && tag.icon.type === 'Image',
 					)
 					.forEach((tag) => {
-						if (!tag.name.startsWith(":")) {
+						if (!tag.name.startsWith(':')) {
 							tag.name = `:${tag.name}`;
 						}
-						if (!tag.name.endsWith(":")) {
+						if (!tag.name.endsWith(':')) {
 							tag.name = `${tag.name}:`;
 						}
 
 						const property =
 							postData.sourceContent && !postData.content
-								? "sourceContent"
-								: "content";
+								? 'sourceContent'
+								: 'content';
 						postData[property] = postData[property].replace(
-							new RegExp(tag.name, "g"),
+							new RegExp(tag.name, 'g'),
 							`<img class="not-responsive emoji" src="${tag.icon.url}" title="${tag.name}" />`,
 						);
 					});
@@ -84,18 +84,18 @@ module.exports = function (Posts) {
 				_activitypub.attachment.length;
 		}
 
-		({ post: postData } = await plugins.hooks.fire("filter:post.create", {
+		({ post: postData } = await plugins.hooks.fire('filter:post.create', {
 			post: postData,
 			data: data,
 		}));
 		await db.setObject(`post:${postData.pid}`, postData);
 
-		const topicData = await topics.getTopicFields(tid, ["cid", "pinned"]);
+		const topicData = await topics.getTopicFields(tid, ['cid', 'pinned']);
 		postData.cid = topicData.cid;
 
 		await Promise.all([
-			db.sortedSetAdd("posts:pid", timestamp, postData.pid),
-			utils.isNumber(pid) ? db.incrObjectField("global", "postCount") : null,
+			db.sortedSetAdd('posts:pid', timestamp, postData.pid),
+			utils.isNumber(pid) ? db.incrObjectField('global', 'postCount') : null,
 			user.onNewPostMade(postData),
 			topics.onNewPostMade(postData),
 			categories.onNewPostMade(topicData.cid, topicData.pinned, postData),
@@ -107,12 +107,12 @@ module.exports = function (Posts) {
 				: null,
 		]);
 
-		const result = await plugins.hooks.fire("filter:post.get", {
+		const result = await plugins.hooks.fire('filter:post.get', {
 			post: postData,
 			uid: data.uid,
 		});
 		result.post.isMain = isMain;
-		plugins.hooks.fire("action:post.save", {
+		plugins.hooks.fire('action:post.save', {
 			post: { ...result.post, _activitypub },
 		});
 		return result.post;
@@ -124,7 +124,7 @@ module.exports = function (Posts) {
 		}
 		await Promise.all([
 			db.sortedSetAdd(`pid:${postData.toPid}:replies`, timestamp, postData.pid),
-			db.incrObjectField(`post:${postData.toPid}`, "replies"),
+			db.incrObjectField(`post:${postData.toPid}`, 'replies'),
 		]);
 	}
 };

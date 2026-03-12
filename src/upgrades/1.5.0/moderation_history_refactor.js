@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const db = require("../../database");
-const batch = require("../../batch");
+const async = require('async');
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Update moderation notes to zset",
+	name: 'Update moderation notes to zset',
 	timestamp: Date.UTC(2017, 2, 22),
 	method: function (callback) {
 		const { progress } = this;
 
 		batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			(ids, next) => {
 				async.each(
 					ids,
 					(uid, next) => {
 						db.getObjectField(
 							`user:${uid}`,
-							"moderationNote",
+							'moderationNote',
 							(err, moderationNote) => {
 								if (err || !moderationNote) {
 									progress.incr();

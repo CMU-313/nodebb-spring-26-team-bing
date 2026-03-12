@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const router = require("express").Router();
-const middleware = require("../../middleware");
-const controllers = require("../../controllers");
-const routeHelpers = require("../helpers");
+const router = require('express').Router();
+const middleware = require('../../middleware');
+const controllers = require('../../controllers');
+const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
@@ -12,225 +12,225 @@ module.exports = function () {
 
 	setupApiRoute(
 		router,
-		"post",
-		"/",
-		[middleware.checkRequired.bind(null, ["cid", "title", "content"])],
+		'post',
+		'/',
+		[middleware.checkRequired.bind(null, ['cid', 'title', 'content'])],
 		controllers.write.topics.create,
 	);
-	setupApiRoute(router, "get", "/:tid", [], controllers.write.topics.get);
+	setupApiRoute(router, 'get', '/:tid', [], controllers.write.topics.get);
 	setupApiRoute(
 		router,
-		"post",
-		"/:tid",
-		[middleware.checkRequired.bind(null, ["content"]), middleware.assert.topic],
+		'post',
+		'/:tid',
+		[middleware.checkRequired.bind(null, ['content']), middleware.assert.topic],
 		controllers.write.topics.reply,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid",
+		'delete',
+		'/:tid',
 		[...middlewares],
 		controllers.write.topics.purge,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/state",
+		'put',
+		'/:tid/state',
 		[...middlewares],
 		controllers.write.topics.restore,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/state",
+		'delete',
+		'/:tid/state',
 		[...middlewares],
 		controllers.write.topics.delete,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/pin",
+		'put',
+		'/:tid/pin',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.pin,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/pin",
+		'delete',
+		'/:tid/pin',
 		[...middlewares],
 		controllers.write.topics.unpin,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/lock",
+		'put',
+		'/:tid/lock',
 		[...middlewares],
 		controllers.write.topics.lock,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/lock",
+		'delete',
+		'/:tid/lock',
 		[...middlewares],
 		controllers.write.topics.unlock,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/follow",
+		'put',
+		'/:tid/follow',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.follow,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/follow",
+		'delete',
+		'/:tid/follow',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.unfollow,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/ignore",
+		'put',
+		'/:tid/ignore',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.ignore,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/ignore",
+		'delete',
+		'/:tid/ignore',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.unfollow,
 	); // intentional, unignore == unfollow
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/tags",
+		'put',
+		'/:tid/tags',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["tags"]),
+			middleware.checkRequired.bind(null, ['tags']),
 			middleware.assert.topic,
 		],
 		controllers.write.topics.updateTags,
 	);
 	setupApiRoute(
 		router,
-		"patch",
-		"/:tid/tags",
+		'patch',
+		'/:tid/tags',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["tags"]),
+			middleware.checkRequired.bind(null, ['tags']),
 			middleware.assert.topic,
 		],
 		controllers.write.topics.addTags,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/tags",
+		'delete',
+		'/:tid/tags',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.deleteTags,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:tid/thumbs",
+		'get',
+		'/:tid/thumbs',
 		[],
 		controllers.write.topics.getThumbs,
 	);
 
 	setupApiRoute(
 		router,
-		"post",
-		"/:tid/thumbs",
+		'post',
+		'/:tid/thumbs',
 		[middleware.validateFiles, middleware.uploads.ratelimit, ...middlewares],
 		controllers.write.topics.addThumb,
 	);
 
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/thumbs",
-		[...middlewares, middleware.checkRequired.bind(null, ["path"])],
+		'delete',
+		'/:tid/thumbs',
+		[...middlewares, middleware.checkRequired.bind(null, ['path'])],
 		controllers.write.topics.deleteThumb,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/thumbs/order",
-		[...middlewares, middleware.checkRequired.bind(null, ["path", "order"])],
+		'put',
+		'/:tid/thumbs/order',
+		[...middlewares, middleware.checkRequired.bind(null, ['path', 'order'])],
 		controllers.write.topics.reorderThumbs,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:tid/events",
+		'get',
+		'/:tid/events',
 		[middleware.assert.topic],
 		controllers.write.topics.getEvents,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/events/:eventId",
+		'delete',
+		'/:tid/events/:eventId',
 		[middleware.assert.topic],
 		controllers.write.topics.deleteEvent,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/read",
+		'put',
+		'/:tid/read',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.markRead,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/read",
+		'delete',
+		'/:tid/read',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.markUnread,
 	);
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/bump",
+		'put',
+		'/:tid/bump',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.bump,
 	);
 
 	setupApiRoute(
 		router,
-		"put",
-		"/:tid/move",
+		'put',
+		'/:tid/move',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.move,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/:tid/crossposts",
+		'get',
+		'/:tid/crossposts',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.getCrossposts,
 	);
 	setupApiRoute(
 		router,
-		"post",
-		"/:tid/crossposts",
+		'post',
+		'/:tid/crossposts',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.crosspost,
 	);
 	setupApiRoute(
 		router,
-		"delete",
-		"/:tid/crossposts",
+		'delete',
+		'/:tid/crossposts',
 		[...middlewares, middleware.assert.topic],
 		controllers.write.topics.uncrosspost,
 	);

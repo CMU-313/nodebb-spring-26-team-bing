@@ -1,17 +1,17 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Update chat messages to add roomId field",
+	name: 'Update chat messages to add roomId field',
 	timestamp: Date.UTC(2023, 6, 2),
 	method: async function () {
 		const { progress } = this;
 
-		const nextChatRoomId = await db.getObjectField("global", "nextChatRoomId");
+		const nextChatRoomId = await db.getObjectField('global', 'nextChatRoomId');
 		const allRoomIds = [];
 		for (let i = 1; i <= nextChatRoomId; i++) {
 			allRoomIds.push(i);
@@ -110,7 +110,7 @@ module.exports = {
 
 						await db.setObjectField(
 							`chat:room:${roomId}`,
-							"userCount",
+							'userCount',
 							uids.length,
 						);
 					}

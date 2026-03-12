@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const crypto = require("crypto");
-const nconf = require("nconf");
-const batch = require("../../batch");
-const db = require("../../database");
+const async = require('async');
+const crypto = require('crypto');
+const nconf = require('nconf');
+const batch = require('../../batch');
+const db = require('../../database');
 
 module.exports = {
-	name: "Hash all IP addresses stored in Recent IPs zset",
+	name: 'Hash all IP addresses stored in Recent IPs zset',
 	timestamp: Date.UTC(2018, 5, 22),
 	method: function (callback) {
 		const { progress } = this;
@@ -15,7 +15,7 @@ module.exports = {
 		let hash;
 
 		batch.processSortedSet(
-			"ip:recent",
+			'ip:recent',
 			(ips, next) => {
 				async.each(
 					ips,
@@ -27,14 +27,14 @@ module.exports = {
 						}
 
 						hash = crypto
-							.createHash("sha1")
-							.update(set.value + nconf.get("secret"))
-							.digest("hex");
+							.createHash('sha1')
+							.update(set.value + nconf.get('secret'))
+							.digest('hex');
 
 						async.series(
 							[
-								async.apply(db.sortedSetAdd, "ip:recent", set.score, hash),
-								async.apply(db.sortedSetRemove, "ip:recent", set.value),
+								async.apply(db.sortedSetAdd, 'ip:recent', set.score, hash),
+								async.apply(db.sortedSetRemove, 'ip:recent', set.value),
 							],
 							(err) => {
 								progress.incr();

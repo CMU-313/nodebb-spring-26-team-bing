@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Reformatting post diffs to be stored in lists and hash instead of single zset",
+	name: 'Reformatting post diffs to be stored in lists and hash instead of single zset',
 	timestamp: Date.UTC(2018, 2, 15),
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.sortedSetCard("posts:pid");
+		progress.total = await db.sortedSetCard('posts:pid');
 
 		await batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			async (pids) => {
 				const postDiffs = await db.getSortedSetsMembersWithScores(
 					pids.map((pid) => `post:${pid}:diffs`),

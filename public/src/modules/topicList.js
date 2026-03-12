@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-define("topicList", [
-	"forum/infinitescroll",
-	"handleBack",
-	"topicSelect",
-	"categoryFilter",
-	"tagFilter",
-	"forum/category/tools",
-	"hooks",
+define('topicList', [
+	'forum/infinitescroll',
+	'handleBack',
+	'topicSelect',
+	'categoryFilter',
+	'tagFilter',
+	'forum/category/tools',
+	'hooks',
 ], function (
 	infinitescroll,
 	handleBack,
@@ -18,7 +18,7 @@ define("topicList", [
 	hooks,
 ) {
 	const TopicList = {};
-	let templateName = "";
+	let templateName = '';
 
 	let newTopicCount = 0;
 	let newPostCount = 0;
@@ -28,7 +28,7 @@ define("topicList", [
 
 	const scheduledTopics = [];
 
-	$(window).on("action:ajaxify.start", function () {
+	$(window).on('action:ajaxify.start', function () {
 		TopicList.removeListeners();
 		categoryTools.removeListeners();
 	});
@@ -42,14 +42,14 @@ define("topicList", [
 		categoryTools.init();
 
 		TopicList.watchForNewPosts();
-		const states = ["watching", "tracking"];
+		const states = ['watching', 'tracking'];
 		if (
 			ajaxify.data.selectedFilter &&
-			ajaxify.data.selectedFilter.filter === "watched"
+			ajaxify.data.selectedFilter.filter === 'watched'
 		) {
-			states.push("notwatching", "ignoring");
-		} else if (template !== "unread") {
-			states.push("notwatching");
+			states.push('notwatching', 'ignoring');
+		} else if (template !== 'unread') {
+			states.push('notwatching');
 		}
 
 		categoryFilter.init($('[component="category/dropdown"]'), {
@@ -78,22 +78,22 @@ define("topicList", [
 		});
 
 		if (
-			$("body").height() <= $(window).height() &&
+			$('body').height() <= $(window).height() &&
 			topicListEl.children().length >= 20
 		) {
-			$("#load-more-btn").show();
+			$('#load-more-btn').show();
 		}
 
-		$("#load-more-btn").on("click", function () {
+		$('#load-more-btn').on('click', function () {
 			TopicList.loadMoreTopics(1);
 		});
 
-		hooks.fire("action:topics.loaded", { topics: ajaxify.data.topics });
+		hooks.fire('action:topics.loaded', { topics: ajaxify.data.topics });
 	};
 
 	function findTopicListElement() {
 		return $('[component="category"]').filter(function (i, e) {
-			return !$(e).parents("[widget-area],[data-widget-area]").length;
+			return !$(e).parents('[widget-area],[data-widget-area]').length;
 		});
 	}
 
@@ -101,13 +101,13 @@ define("topicList", [
 		newPostCount = 0;
 		newTopicCount = 0;
 		TopicList.removeListeners();
-		socket.on("event:new_topic", onNewTopic);
-		socket.on("event:new_post", onNewPost);
+		socket.on('event:new_topic', onNewTopic);
+		socket.on('event:new_post', onNewPost);
 	};
 
 	TopicList.removeListeners = function () {
-		socket.removeListener("event:new_topic", onNewTopic);
-		socket.removeListener("event:new_post", onNewPost);
+		socket.removeListener('event:new_topic', onNewTopic);
+		socket.removeListener('event:new_post', onNewPost);
 	};
 
 	function onNewTopic(data) {
@@ -118,7 +118,7 @@ define("topicList", [
 			d.selectedCids.length &&
 			d.selectedCids.indexOf(parseInt(data.cid, 10)) === -1;
 		const filterWatched =
-			d.selectedFilter && d.selectedFilter.filter === "watched";
+			d.selectedFilter && d.selectedFilter.filter === 'watched';
 		const category =
 			d.template.category && parseInt(d.cid, 10) !== parseInt(data.cid, 10);
 
@@ -129,7 +129,7 @@ define("topicList", [
 			scheduledTopics.includes(data.tid)
 		);
 		hooks
-			.fire("filter:topicList.onNewTopic", { topic: data, preventAlert })
+			.fire('filter:topicList.onNewTopic', { topic: data, preventAlert })
 			.then((result) => {
 				if (result.preventAlert) {
 					return;
@@ -156,10 +156,10 @@ define("topicList", [
 			d.selectedCids &&
 			d.selectedCids.length &&
 			d.selectedCids.indexOf(parseInt(post.topic.cid, 10)) === -1;
-		const filterNew = d.selectedFilter && d.selectedFilter.filter === "new";
+		const filterNew = d.selectedFilter && d.selectedFilter.filter === 'new';
 		const filterWatched =
 			d.selectedFilter &&
-			d.selectedFilter.filter === "watched" &&
+			d.selectedFilter.filter === 'watched' &&
 			!post.topic.isFollowing;
 		const category =
 			d.template.category &&
@@ -173,7 +173,7 @@ define("topicList", [
 			category
 		);
 		hooks
-			.fire("filter:topicList.onNewPost", { post, preventAlert })
+			.fire('filter:topicList.onNewPost', { post, preventAlert })
 			.then((result) => {
 				if (result.preventAlert) {
 					return;
@@ -186,8 +186,8 @@ define("topicList", [
 
 	function updateAlertText() {
 		if (newTopicCount > 0 || newPostCount > 0) {
-			$("#new-topics-alert").removeClass("hide").fadeIn("slow");
-			$("#category-no-topics").addClass("hide");
+			$('#new-topics-alert').removeClass('hide').fadeIn('slow');
+			$('#category-no-topics').addClass('hide');
 		}
 	}
 
@@ -198,7 +198,7 @@ define("topicList", [
 		const topics = topicListEl.find('[component="category/topic"]');
 		const afterEl = direction > 0 ? topics.last() : topics.first();
 		const after =
-			(parseInt(afterEl.attr("data-index"), 10) || 0) + (direction > 0 ? 1 : 0);
+			(parseInt(afterEl.attr('data-index'), 10) || 0) + (direction > 0 ? 1 : 0);
 
 		if (
 			!utils.isNumber(after) ||
@@ -241,13 +241,13 @@ define("topicList", [
 	function onTopicsLoaded(templateName, data, showSelect, direction, callback) {
 		let { topics } = data;
 		if (!topics || !topics.length) {
-			$("#load-more-btn").hide();
+			$('#load-more-btn').hide();
 			return callback();
 		}
 		topics = filterTopicsOnDom(topics);
 
 		if (!topics.length) {
-			$("#load-more-btn").hide();
+			$('#load-more-btn').hide();
 			return callback();
 		}
 
@@ -264,7 +264,7 @@ define("topicList", [
 		const tplData = {
 			topics: topics,
 			showSelect: showSelect,
-			"reputation:disabled": data["reputation:disabled"],
+			'reputation:disabled': data['reputation:disabled'],
 			template: {
 				name: templateName,
 				[templateName]: true,
@@ -274,15 +274,15 @@ define("topicList", [
 			tplData.cid = ajaxify.data.cid;
 		}
 
-		hooks.fire("action:topics.loading", {
+		hooks.fire('action:topics.loading', {
 			topics: topics,
 			after: after,
 			before: before,
 		});
 
-		app.parseAndTranslate(templateName, "topics", tplData, function (html) {
-			topicListEl.removeClass("hidden");
-			$("#category-no-topics").remove();
+		app.parseAndTranslate(templateName, 'topics', tplData, function (html) {
+			topicListEl.removeClass('hidden');
+			$('#category-no-topics').remove();
 
 			if (after && after.length) {
 				html.insertAfter(after);
@@ -305,8 +305,8 @@ define("topicList", [
 				);
 			}
 
-			html.find(".timeago").timeago();
-			hooks.fire("action:topics.loaded", {
+			html.find('.timeago').timeago();
+			hooks.fire('action:topics.loaded', {
 				topics: topics,
 				template: templateName,
 			});

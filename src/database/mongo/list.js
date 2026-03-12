@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const helpers = require("./helpers");
+	const helpers = require('./helpers');
 
 	module.listPrepend = async function (key, value) {
 		if (!key) {
@@ -9,7 +9,7 @@ module.exports = function (module) {
 		}
 		value = Array.isArray(value) ? value : [value];
 		value.reverse();
-		const exists = await module.isObjectField(key, "array");
+		const exists = await module.isObjectField(key, 'array');
 		if (exists) {
 			await listPush(key, value, { $position: 0 });
 		} else {
@@ -27,7 +27,7 @@ module.exports = function (module) {
 
 	async function listPush(key, values, position) {
 		values = values.map(helpers.valueToString);
-		await module.client.collection("objects").updateOne(
+		await module.client.collection('objects').updateOne(
 			{
 				_key: key,
 			},
@@ -51,7 +51,7 @@ module.exports = function (module) {
 		}
 		const value = await module.getListRange(key, -1, -1);
 		module.client
-			.collection("objects")
+			.collection('objects')
 			.updateOne({ _key: key }, { $pop: { array: 1 } });
 		return value && value.length ? value[0] : null;
 	};
@@ -67,7 +67,7 @@ module.exports = function (module) {
 			value = helpers.valueToString(value);
 		}
 
-		await module.client.collection("objects").updateOne(
+		await module.client.collection('objects').updateOne(
 			{
 				_key: key,
 			},
@@ -83,7 +83,7 @@ module.exports = function (module) {
 		}
 		const value = await module.getListRange(key, start, stop);
 		await module.client
-			.collection("objects")
+			.collection('objects')
 			.updateOne({ _key: key }, { $set: { array: value } });
 	};
 
@@ -93,7 +93,7 @@ module.exports = function (module) {
 		}
 
 		const data = await module.client
-			.collection("objects")
+			.collection('objects')
 			.findOne({ _key: key }, { array: 1 });
 		if (!(data && data.array)) {
 			return [];
@@ -104,10 +104,10 @@ module.exports = function (module) {
 
 	module.listLength = async function (key) {
 		const result = await module.client
-			.collection("objects")
+			.collection('objects')
 			.aggregate([
 				{ $match: { _key: key } },
-				{ $project: { count: { $size: "$array" } } },
+				{ $project: { count: { $size: '$array' } } },
 			])
 			.toArray();
 		return Array.isArray(result) && result.length && result[0].count;

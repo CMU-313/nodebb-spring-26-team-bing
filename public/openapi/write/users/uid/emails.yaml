@@ -14,7 +14,7 @@ get:
       description: A valid user id
       example: 1
   responses:
-    "200":
+    '200':
       description: user emails successfully listed
       content:
         application/json:
@@ -65,7 +65,7 @@ post:
           required:
             - email
   responses:
-    "200":
+    '200':
       description: email successfully added to user account
       content:
         application/json:
@@ -82,5 +82,5 @@ post:
                     items:
                       type: string
                       description: An email address
-    "400":
+    '400':
       description: error occured (aka email taken)

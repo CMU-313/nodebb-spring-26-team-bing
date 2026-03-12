@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("forum/chats/user-search", ["components", "api", "alerts"], function (
+define('forum/chats/user-search', ['components', 'api', 'alerts'], function (
 	components,
 	api,
 	alerts,
@@ -11,12 +11,12 @@ define("forum/chats/user-search", ["components", "api", "alerts"], function (
 	userSearch.init = function (options) {
 		options = options || {};
 		users.length = 0;
-		components.get("chat/search").on("keyup", utils.debounce(doSearch, 250));
+		components.get('chat/search').on('keyup', utils.debounce(doSearch, 250));
 		const chatsListEl = $('[component="chat/search/list"]');
-		chatsListEl.on("click", "[data-uid]", function () {
+		chatsListEl.on('click', '[data-uid]', function () {
 			if (options.onSelect) {
 				options.onSelect(
-					users.find((u) => String(u.uid) === String($(this).attr("data-uid"))),
+					users.find((u) => String(u.uid) === String($(this).attr('data-uid'))),
 				);
 			}
 			clearInputAndResults(chatsListEl);
@@ -24,27 +24,27 @@ define("forum/chats/user-search", ["components", "api", "alerts"], function (
 	};
 
 	function clearInputAndResults(chatsListEl) {
-		components.get("chat/search").val("");
+		components.get('chat/search').val('');
 		removeResults(chatsListEl);
-		chatsListEl.find('[component="chat/search/no-users"]').addClass("hidden");
+		chatsListEl.find('[component="chat/search/no-users"]').addClass('hidden');
 		chatsListEl
 			.find('[component="chat/search/start-typing"]')
-			.removeClass("hidden");
+			.removeClass('hidden');
 	}
 
 	function doSearch() {
 		const chatsListEl = $('[component="chat/search/list"]');
-		const username = components.get("chat/search").val();
+		const username = components.get('chat/search').val();
 		if (!username) {
 			return clearInputAndResults(chatsListEl);
 		}
 		chatsListEl
 			.find('[component="chat/search/start-typing"]')
-			.addClass("hidden");
+			.addClass('hidden');
 		api
-			.get("/api/users", {
+			.get('/api/users', {
 				query: username,
-				searchBy: "username",
+				searchBy: 'username',
 				paginate: false,
 			})
 			.then(displayResults)
@@ -53,7 +53,7 @@ define("forum/chats/user-search", ["components", "api", "alerts"], function (
 
 	function removeResults(chatsListEl) {
 		users.length = 0;
-		chatsListEl.find("[data-uid]").remove();
+		chatsListEl.find('[data-uid]').remove();
 	}
 
 	async function displayResults(data) {
@@ -66,16 +66,16 @@ define("forum/chats/user-search", ["components", "api", "alerts"], function (
 		if (!data.users.length) {
 			return chatsListEl
 				.find('[component="chat/search/no-users"]')
-				.removeClass("hidden");
+				.removeClass('hidden');
 		}
-		chatsListEl.find('[component="chat/search/no-users"]').addClass("hidden");
+		chatsListEl.find('[component="chat/search/no-users"]').addClass('hidden');
 		const html = await app.parseAndTranslate(
-			"modals/create-room",
-			"searchUsers",
+			'modals/create-room',
+			'searchUsers',
 			{ searchUsers: data.users },
 		);
 		chatsListEl.append(html);
-		chatsListEl.parent().toggleClass("show", true);
+		chatsListEl.parent().toggleClass('show', true);
 	}
 
 	return userSearch;

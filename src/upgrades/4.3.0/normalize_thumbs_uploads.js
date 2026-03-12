@@ -1,38 +1,38 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
-const crypto = require("crypto");
+const db = require('../../database');
+const batch = require('../../batch');
+const crypto = require('crypto');
 
 module.exports = {
-	name: "Normalize topic thumbnails, post & user uploads to same format",
+	name: 'Normalize topic thumbnails, post & user uploads to same format',
 	timestamp: Date.UTC(2025, 3, 4),
 	method: async function () {
 		const { progress } = this;
 
 		const [topicCount, postCount, userCount] = await db.sortedSetsCard([
-			"topics:tid",
-			"posts:pid",
-			"users:joindate",
+			'topics:tid',
+			'posts:pid',
+			'users:joindate',
 		]);
 		progress.total = topicCount + postCount + userCount;
 
 		function normalizePath(path) {
-			if (path.startsWith("http")) {
+			if (path.startsWith('http')) {
 				return path;
 			}
-			path = path.replace(/\\/g, "/");
-			if (!path.startsWith("/")) {
+			path = path.replace(/\\/g, '/');
+			if (!path.startsWith('/')) {
 				path = `/${path}`;
 			}
 			return path;
 		}
 
 		const md5 = (filename) =>
-			crypto.createHash("md5").update(filename).digest("hex");
+			crypto.createHash('md5').update(filename).digest('hex');
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const keys = tids.map((tid) => `topic:${tid}:thumbs`);
 
@@ -68,7 +68,7 @@ module.exports = {
 		);
 
 		await batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			async (pids) => {
 				const keys = pids.map((pid) => `post:${pid}:uploads`);
 
@@ -110,7 +110,7 @@ module.exports = {
 		);
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				const keys = uids.map((uid) => `uid:${uid}:uploads`);
 
@@ -137,7 +137,7 @@ module.exports = {
 											promises.push(
 												db.setObjectField(
 													`upload:${md5(normalizedPath)}`,
-													"uid",
+													'uid',
 													uid,
 												),
 											);

@@ -1,4 +1,4 @@
-.skin-noskin [component="pagination"] {
+.skin-noskin [component='pagination'] {
   .page-item.active:not(.disabled) .page-link {
     color: $body-color;
     background-color: $gray-300;
@@ -10,7 +10,7 @@
   }
 }
 
-[component="pagination"] {
+[component='pagination'] {
   .page-item.active:not(.disabled) .page-link {
     color: $pagination-active-color;
   }

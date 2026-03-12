@@ -7,7 +7,7 @@ $btn-ghost-active-color-dark: lighten($btn-ghost-hover-color-dark, 5%) !default;
   --btn-ghost-hover-color: #{$btn-ghost-hover-color};
   --btn-ghost-active-color: #{$btn-ghost-active-color};
 }
-[data-bs-theme="dark"] {
+[data-bs-theme='dark'] {
   --btn-ghost-hover-color: #{$btn-ghost-hover-color-dark};
   --btn-ghost-active-color: #{$btn-ghost-active-color-dark};
 }

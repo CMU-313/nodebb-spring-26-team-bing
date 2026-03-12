@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const user = require("../../user");
-const helpers = require("../helpers");
-const pagination = require("../../pagination");
+const db = require('../../database');
+const user = require('../../user');
+const helpers = require('../helpers');
+const pagination = require('../../pagination');
 
 const infoController = module.exports;
 
@@ -40,13 +40,13 @@ infoController.get = async function (req, res) {
 		const pageCount = Math.ceil(notes.count / itemsPerPage);
 		payload.pagination = pagination.create(page, pageCount, req.query);
 	}
-	payload.title = "[[pages:account/info]]";
+	payload.title = '[[pages:account/info]]';
 	payload.breadcrumbs = helpers.buildBreadcrumbs([
 		{ text: username, url: `/user/${userslug}` },
-		{ text: "[[user:account-info]]" },
+		{ text: '[[user:account-info]]' },
 	]);
 
-	res.render("account/info", payload);
+	res.render('account/info', payload);
 };
 
 async function getNotes({ uid, isPrivileged }, start, stop) {

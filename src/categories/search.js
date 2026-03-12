@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const privileges = require("../privileges");
-const activitypub = require("../activitypub");
-const plugins = require("../plugins");
-const db = require("../database");
-const utils = require("../utils");
+const privileges = require('../privileges');
+const activitypub = require('../activitypub');
+const plugins = require('../plugins');
+const db = require('../database');
+const utils = require('../utils');
 
 module.exports = function (Categories) {
 	Categories.search = async function (data) {
-		const query = data.query || "";
+		const query = data.query || '';
 		const page = data.page || 1;
 		const uid = data.uid || 0;
 		const localOnly = data.localOnly || false;
-		const paginate = data.hasOwnProperty("paginate") ? data.paginate : true;
+		const paginate = data.hasOwnProperty('paginate') ? data.paginate : true;
 
 		const startTime = process.hrtime();
 
@@ -27,12 +27,12 @@ module.exports = function (Categories) {
 			cids = cids.filter((cid) => utils.isNumber(cid));
 		}
 
-		const result = await plugins.hooks.fire("filter:categories.search", {
+		const result = await plugins.hooks.fire('filter:categories.search', {
 			data: data,
 			cids: cids,
 			uid: uid,
 		});
-		cids = await privileges.categories.filterCids("find", result.cids, uid);
+		cids = await privileges.categories.filterCids('find', result.cids, uid);
 
 		const searchResult = {
 			matchCount: cids.length,
@@ -85,14 +85,14 @@ module.exports = function (Categories) {
 			return [];
 		}
 		const data = await db.getSortedSetScan({
-			key: "categories:name",
+			key: 'categories:name',
 			match: `*${String(query).toLowerCase()}*`,
 			limit: hardCap || 500,
 		});
 		return data.map((data) => {
-			const split = data.split(":");
+			const split = data.split(':');
 			split.shift();
-			const cid = split.join(":");
+			const cid = split.join(':');
 			return cid;
 		});
 	}
@@ -102,7 +102,7 @@ module.exports = function (Categories) {
 			cids.map((cid) => Categories.getChildrenCids(cid)),
 		);
 		return await privileges.categories.filterCids(
-			"find",
+			'find',
 			_.flatten(childrenCids),
 			uid,
 		);

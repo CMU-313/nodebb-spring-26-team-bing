@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-define("composer/categoryList", [
-	"categorySelector",
-	"taskbar",
-	"api",
+define('composer/categoryList', [
+	'categorySelector',
+	'taskbar',
+	'api',
 ], function (categorySelector, taskbar, api) {
 	var categoryList = {};
 
 	var selector;
 
 	categoryList.init = function (postContainer, postData) {
-		var listContainer = postContainer.find(".category-list-container");
+		var listContainer = postContainer.find('.category-list-container');
 		if (!listContainer.length) {
 			return;
 		}
 
-		postContainer.on("action:composer.resize", function () {
+		postContainer.on('action:composer.resize', function () {
 			toggleDropDirection(postContainer);
 		});
 
@@ -24,10 +24,10 @@ define("composer/categoryList", [
 		selector = categorySelector.init(
 			listContainer.find('[component="category-selector"]'),
 			{
-				privilege: "topics:create",
-				states: ["watching", "tracking", "notwatching", "ignoring"],
+				privilege: 'topics:create',
+				states: ['watching', 'tracking', 'notwatching', 'ignoring'],
 				onSelect: function (selectedCategory) {
-					if (postData.hasOwnProperty("cid")) {
+					if (postData.hasOwnProperty('cid')) {
 						changeCategory(postContainer, postData, selectedCategory);
 					}
 				},
@@ -51,22 +51,22 @@ define("composer/categoryList", [
 
 		// this is the mobile category selector
 		postContainer
-			.find(".category-name")
+			.find('.category-name')
 			.translateHtml(
 				selector.selectedCategory
 					? selector.selectedCategory.name
-					: "[[modules:composer.select-category]]",
+					: '[[modules:composer.select-category]]',
 			)
-			.on("click", function () {
+			.on('click', function () {
 				categorySelector.modal({
-					privilege: "topics:create",
-					states: ["watching", "tracking", "notwatching", "ignoring"],
+					privilege: 'topics:create',
+					states: ['watching', 'tracking', 'notwatching', 'ignoring'],
 					openOnLoad: true,
 					showLinks: false,
 					onSubmit: function (selectedCategory) {
-						postContainer.find(".category-name").text(selectedCategory.name);
+						postContainer.find('.category-name').text(selectedCategory.name);
 						selector.selectCategory(selectedCategory.cid);
-						if (postData.hasOwnProperty("cid")) {
+						if (postData.hasOwnProperty('cid')) {
 							changeCategory(postContainer, postData, selectedCategory);
 						}
 					},
@@ -80,7 +80,7 @@ define("composer/categoryList", [
 		postContainer
 			.find('.category-list-container [component="category-selector"]')
 			.toggleClass(
-				"dropup",
+				'dropup',
 				postContainer.outerHeight() < $(window).height() / 2,
 			);
 	}
@@ -103,18 +103,18 @@ define("composer/categoryList", [
 
 	function updateTaskbarByCategory(postContainer, category) {
 		if (category) {
-			var uuid = postContainer.attr("data-uuid");
-			taskbar.update("composer", uuid, {
+			var uuid = postContainer.attr('data-uuid');
+			taskbar.update('composer', uuid, {
 				image: category.backgroundImage,
 				color: category.color,
-				"background-color": category.bgColor,
+				'background-color': category.bgColor,
 				icon: category.icon && category.icon.slice(3),
 			});
 		}
 	}
 
 	function updateTopicTemplate(postContainer, category, previousCategory) {
-		const currentText = postContainer.find("textarea.write").val();
+		const currentText = postContainer.find('textarea.write').val();
 		const previousTopicTemplate =
 			previousCategory && previousCategory.topicTemplate;
 		if (
@@ -123,9 +123,9 @@ define("composer/categoryList", [
 			currentText !== category.topicTemplate
 		) {
 			postContainer
-				.find("textarea.write")
+				.find('textarea.write')
 				.val(category.topicTemplate)
-				.trigger("input");
+				.trigger('input');
 		}
 	}
 
@@ -142,9 +142,9 @@ define("composer/categoryList", [
 		updateTopicTemplate(postContainer, categoryData, previousCategory);
 
 		require([
-			"composer/scheduler",
-			"composer/tags",
-			"composer/post-queue",
+			'composer/scheduler',
+			'composer/tags',
+			'composer/post-queue',
 		], function (scheduler, tags, postQueue) {
 			scheduler.onChangeCategory(categoryData);
 			tags.onChangeCategory(
@@ -155,7 +155,7 @@ define("composer/categoryList", [
 			);
 			postQueue.onChangeCategory(postContainer, postData);
 
-			$(window).trigger("action:composer.changeCategory", {
+			$(window).trigger('action:composer.changeCategory', {
 				postContainer: postContainer,
 				postData: postData,
 				selectedCategory: selectedCategory,

@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const topics = require("../topics");
-const user = require("../user");
-const utils = require("../utils");
+const topics = require('../topics');
+const user = require('../user');
+const utils = require('../utils');
 
 module.exports = function (Posts) {
 	Posts.getPostsFromSet = async function (set, start, stop, uid, reverse) {
@@ -14,10 +14,10 @@ module.exports = function (Posts) {
 	Posts.isMain = async function (pids) {
 		const isArray = Array.isArray(pids);
 		pids = isArray ? pids : [pids];
-		const postData = await Posts.getPostsFields(pids, ["tid"]);
+		const postData = await Posts.getPostsFields(pids, ['tid']);
 		const topicData = await topics.getTopicsFields(
 			postData.map((t) => t.tid),
-			["mainPid"],
+			['mainPid'],
 		);
 		const result = pids.map(
 			(pid, i) => String(pid) === String(topicData[i].mainPid),
@@ -26,7 +26,7 @@ module.exports = function (Posts) {
 	};
 
 	Posts.getTopicFields = async function (pid, fields) {
-		const tid = await Posts.getPostField(pid, "tid");
+		const tid = await Posts.getPostField(pid, 'tid');
 		return await topics.getTopicFields(tid, fields);
 	};
 
@@ -36,11 +36,11 @@ module.exports = function (Posts) {
 	};
 
 	Posts.generatePostPaths = async function (pids, uid) {
-		const postData = await Posts.getPostsFields(pids, ["pid", "tid"]);
+		const postData = await Posts.getPostsFields(pids, ['pid', 'tid']);
 		const tids = postData.map((post) => post && post.tid);
 		const [indices, topicData] = await Promise.all([
 			Posts.getPostIndices(postData, uid),
-			topics.getTopicsFields(tids, ["slug"]),
+			topics.getTopicsFields(tids, ['slug']),
 		]);
 
 		const paths = pids.map((pid, index) => {
@@ -50,7 +50,7 @@ module.exports = function (Posts) {
 				: null;
 
 			if (slug && postIndex) {
-				const index = postIndex === 1 ? "" : `/${postIndex}`;
+				const index = postIndex === 1 ? '' : `/${postIndex}`;
 				return `/topic/${slug}${index}`;
 			}
 			return null;

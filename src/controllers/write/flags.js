@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const user = require("../../user");
-const api = require("../../api");
-const helpers = require("../helpers");
+const user = require('../../user');
+const api = require('../../api');
+const helpers = require('../helpers');
 
 const Flags = module.exports;
 

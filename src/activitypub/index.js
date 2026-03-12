@@ -1,35 +1,35 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const winston = require("winston");
-const { createHash, createSign, createVerify, getHashes } = require("crypto");
-const { CronJob } = require("cron");
+const nconf = require('nconf');
+const winston = require('winston');
+const { createHash, createSign, createVerify, getHashes } = require('crypto');
+const { CronJob } = require('cron');
 
-const request = require("../request");
-const db = require("../database");
-const meta = require("../meta");
-const categories = require("../categories");
-const posts = require("../posts");
-const messaging = require("../messaging");
-const user = require("../user");
-const utils = require("../utils");
-const ttl = require("../cache/ttl");
-const batch = require("../batch");
-const analytics = require("../analytics");
-const crypto = require("crypto");
+const request = require('../request');
+const db = require('../database');
+const meta = require('../meta');
+const categories = require('../categories');
+const posts = require('../posts');
+const messaging = require('../messaging');
+const user = require('../user');
+const utils = require('../utils');
+const ttl = require('../cache/ttl');
+const batch = require('../batch');
+const analytics = require('../analytics');
+const crypto = require('crypto');
 
 const requestCache = ttl({
-	name: "ap-request-cache",
+	name: 'ap-request-cache',
 	max: 5000,
 	ttl: 1000 * 60 * 5, // 5 minutes
 });
 const probeCache = ttl({
-	name: "ap-probe-cache",
+	name: 'ap-probe-cache',
 	max: 500,
 	ttl: 1000 * 60 * 60, // 1 hour
 });
 const probeRateLimit = ttl({
-	name: "ap-probe-rate-limit-cache",
+	name: 'ap-probe-rate-limit-cache',
 	ttl: 1000 * 3, // 3 seconds
 });
 
@@ -37,53 +37,53 @@ const ActivityPub = module.exports;
 
 ActivityPub._constants = Object.freeze({
 	uid: -2,
-	publicAddress: "https://www.w3.org/ns/activitystreams#Public",
+	publicAddress: 'https://www.w3.org/ns/activitystreams#Public',
 	acceptablePublicAddresses: [
-		"https://www.w3.org/ns/activitystreams#Public",
-		"as:Public",
-		"Public",
+		'https://www.w3.org/ns/activitystreams#Public',
+		'as:Public',
+		'Public',
 	],
 	acceptableTypes: [
-		"application/activity+json",
+		'application/activity+json',
 		'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 	],
-	acceptedPostTypes: ["Note", "Page", "Article", "Question", "Video"],
+	acceptedPostTypes: ['Note', 'Page', 'Article', 'Question', 'Video'],
 	acceptableActorTypes: new Set([
-		"Application",
-		"Organization",
-		"Person",
-		"Service",
+		'Application',
+		'Organization',
+		'Person',
+		'Service',
 	]),
-	acceptableGroupTypes: new Set(["Group"]),
-	requiredActorProps: ["inbox"],
-	acceptedProtocols: ["https", ...(process.env.CI === "true" ? ["http"] : [])],
+	acceptableGroupTypes: new Set(['Group']),
+	requiredActorProps: ['inbox'],
+	acceptedProtocols: ['https', ...(process.env.CI === 'true' ? ['http'] : [])],
 	acceptable: {
-		customFields: new Set(["PropertyValue", "Link", "Note"]),
+		customFields: new Set(['PropertyValue', 'Link', 'Note']),
 		contextTypes: new Set([
-			"Collection",
-			"CollectionPage",
-			"OrderedCollection",
-			"OrderedCollectionPage",
+			'Collection',
+			'CollectionPage',
+			'OrderedCollection',
+			'OrderedCollectionPage',
 		]),
 	},
 });
 ActivityPub._cache = requestCache;
 ActivityPub._sent = new Map(); // used only in local tests
 
-ActivityPub.helpers = require("./helpers");
-ActivityPub.inbox = require("./inbox");
-ActivityPub.mocks = require("./mocks");
-ActivityPub.notes = require("./notes");
-ActivityPub.contexts = require("./contexts");
-ActivityPub.actors = require("./actors");
-ActivityPub.instances = require("./instances");
-ActivityPub.feps = require("./feps");
-ActivityPub.rules = require("./rules");
-ActivityPub.relays = require("./relays");
-ActivityPub.out = require("./out");
+ActivityPub.helpers = require('./helpers');
+ActivityPub.inbox = require('./inbox');
+ActivityPub.mocks = require('./mocks');
+ActivityPub.notes = require('./notes');
+ActivityPub.contexts = require('./contexts');
+ActivityPub.actors = require('./actors');
+ActivityPub.instances = require('./instances');
+ActivityPub.feps = require('./feps');
+ActivityPub.rules = require('./rules');
+ActivityPub.relays = require('./relays');
+ActivityPub.out = require('./out');
 
 ActivityPub.startJobs = () => {
-	ActivityPub.helpers.log("[activitypub/jobs] Registering jobs.");
+	ActivityPub.helpers.log('[activitypub/jobs] Registering jobs.');
 	async function tryCronJob(method) {
 		if (!meta.config.activitypubEnabled) {
 			return;
@@ -95,13 +95,13 @@ ActivityPub.startJobs = () => {
 		}
 	}
 	new CronJob(
-		"0 0 * * *",
+		'0 0 * * *',
 		async () => {
 			await tryCronJob(async () => {
 				await ActivityPub.notes.prune();
 				await db.sortedSetsRemoveRangeByScore(
-					["activities:datetime"],
-					"-inf",
+					['activities:datetime'],
+					'-inf',
 					Date.now() - 604800000,
 				);
 			});
@@ -114,7 +114,7 @@ ActivityPub.startJobs = () => {
 	); // change last argument to true for debugging
 
 	new CronJob(
-		"*/30 * * * *",
+		'*/30 * * * *',
 		async () => {
 			await tryCronJob(ActivityPub.actors.prune);
 		},
@@ -126,7 +126,7 @@ ActivityPub.startJobs = () => {
 	); // change last argument to true for debugging
 
 	new CronJob(
-		"0 * * * * *",
+		'0 * * * * *',
 		async () => {
 			await tryCronJob(retryFailedMessages);
 		},
@@ -141,7 +141,7 @@ ActivityPub.startJobs = () => {
 ActivityPub.resolveId = async (uid, id) => {
 	try {
 		const query = new URL(id);
-		({ id } = await ActivityPub.get("uid", uid, id));
+		({ id } = await ActivityPub.get('uid', uid, id));
 		const response = new URL(id);
 
 		if (query.host !== response.host) {
@@ -164,7 +164,7 @@ ActivityPub.resolveInboxes = async (ids) => {
 		ids = ids.filter((id) => {
 			try {
 				const { hostname } = new URL(id);
-				return hostname !== nconf.get("url_parsed").hostname;
+				return hostname !== nconf.get('url_parsed').hostname;
 			} catch (err) {
 				winston.error(`[activitypub/resolveInboxes] Invalid id: ${id}`);
 				return false;
@@ -175,7 +175,7 @@ ActivityPub.resolveInboxes = async (ids) => {
 	await ActivityPub.actors.assert(ids);
 
 	// Remove non-asserted targets
-	const exists = await db.isSortedSetMembers("usersRemote:lastCrawled", ids);
+	const exists = await db.isSortedSetMembers('usersRemote:lastCrawled', ids);
 	ids = ids.filter((_, idx) => exists[idx]);
 
 	await batch.processArray(
@@ -193,12 +193,12 @@ ActivityPub.resolveInboxes = async (ids) => {
 				[[], []],
 			);
 			const categoryData = await categories.getCategoriesFields(cids, [
-				"inbox",
-				"sharedInbox",
+				'inbox',
+				'sharedInbox',
 			]);
 			const userData = await user.getUsersFields(uids, [
-				"inbox",
-				"sharedInbox",
+				'inbox',
+				'sharedInbox',
 			]);
 			currentIds.forEach((id) => {
 				if (cids.includes(id)) {
@@ -229,7 +229,7 @@ ActivityPub.resolveInboxes = async (ids) => {
 	});
 	if (blocked.length) {
 		ActivityPub.helpers.log(
-			`[activitypub/resolveInboxes] Not delivering to blocked instances: ${blocked.join(", ")}`,
+			`[activitypub/resolveInboxes] Not delivering to blocked instances: ${blocked.join(', ')}`,
 		);
 	}
 
@@ -251,11 +251,11 @@ ActivityPub.getPublicKey = async (type, id) => {
 ActivityPub.getPrivateKey = async (type, id) => {
 	// Sanity checking
 	if (
-		!["cid", "uid"].includes(type) ||
+		!['cid', 'uid'].includes(type) ||
 		!utils.isNumber(id) ||
 		parseInt(id, 10) < 0
 	) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	id = parseInt(id, 10);
 	let privateKey;
@@ -267,10 +267,10 @@ ActivityPub.getPrivateKey = async (type, id) => {
 	}
 
 	let keyId;
-	if (type === "uid") {
-		keyId = `${nconf.get("url")}${id > 0 ? `/uid/${id}` : "/actor"}#key`;
+	if (type === 'uid') {
+		keyId = `${nconf.get('url')}${id > 0 ? `/uid/${id}` : '/actor'}#key`;
 	} else {
-		keyId = `${nconf.get("url")}${id > 0 ? `/category/${id}` : "/actor"}#key`;
+		keyId = `${nconf.get('url')}${id > 0 ? `/category/${id}` : '/actor'}#key`;
 	}
 
 	return { key: privateKey, keyId };
@@ -278,10 +278,10 @@ ActivityPub.getPrivateKey = async (type, id) => {
 
 ActivityPub.fetchPublicKey = async (uri) => {
 	// Used for retrieving the public key from the passed-in keyId uri
-	const body = await ActivityPub.get("uid", 0, uri);
+	const body = await ActivityPub.get('uid', 0, uri);
 
-	if (!body.hasOwnProperty("publicKey")) {
-		throw new Error("[[error:activitypub.pubKey-not-found]]");
+	if (!body.hasOwnProperty('publicKey')) {
+		throw new Error('[[error:activitypub.pubKey-not-found]]');
 	}
 
 	return body.publicKey;
@@ -293,23 +293,23 @@ ActivityPub.sign = async ({ key, keyId }, url, payload) => {
 	const date = new Date().toUTCString();
 	let digest = null;
 
-	let headers = "(request-target) host date";
-	let signed_string = `(request-target): ${payload ? "post" : "get"} ${pathname}\nhost: ${host}\ndate: ${date}`;
+	let headers = '(request-target) host date';
+	let signed_string = `(request-target): ${payload ? 'post' : 'get'} ${pathname}\nhost: ${host}\ndate: ${date}`;
 
 	// Calculate payload hash if payload present
 	if (payload) {
-		const payloadHash = createHash("sha256");
+		const payloadHash = createHash('sha256');
 		payloadHash.update(JSON.stringify(payload));
-		digest = `SHA-256=${payloadHash.digest("base64")}`;
-		headers += " digest";
+		digest = `SHA-256=${payloadHash.digest('base64')}`;
+		headers += ' digest';
 		signed_string += `\ndigest: ${digest}`;
 	}
 
 	// Sign string using private key
-	let signature = createSign("sha256");
+	let signature = createSign('sha256');
 	signature.update(signed_string);
 	signature.end();
-	signature = signature.sign(key, "base64");
+	signature = signature.sign(key, 'base64');
 
 	// Construct signature header
 	return {
@@ -321,11 +321,11 @@ ActivityPub.sign = async ({ key, keyId }, url, payload) => {
 
 ActivityPub.verify = async (req) => {
 	ActivityPub.helpers.log(
-		"[activitypub/verify] Starting signature verification...",
+		'[activitypub/verify] Starting signature verification...',
 	);
-	if (!req.headers.hasOwnProperty("signature")) {
+	if (!req.headers.hasOwnProperty('signature')) {
 		ActivityPub.helpers.log(
-			"[activitypub/verify]   Failed, no signature header.",
+			'[activitypub/verify]   Failed, no signature header.',
 		);
 		return false;
 	}
@@ -334,7 +334,7 @@ ActivityPub.verify = async (req) => {
 	try {
 		// Break the signature apart
 		let { keyId, headers, signature, algorithm, created, expires } =
-			req.headers.signature.split(",").reduce((memo, cur) => {
+			req.headers.signature.split(',').reduce((memo, cur) => {
 				const split = cur.split('="');
 				const key = split.shift();
 				const value = split.join('="');
@@ -343,28 +343,28 @@ ActivityPub.verify = async (req) => {
 			}, {});
 
 		const acceptableHashes = getHashes();
-		if (algorithm === "hs2019" || !acceptableHashes.includes(algorithm)) {
-			algorithm = "sha256";
+		if (algorithm === 'hs2019' || !acceptableHashes.includes(algorithm)) {
+			algorithm = 'sha256';
 		}
 
 		// Re-construct signature string
 		const signed_string = headers
-			.split(" ")
+			.split(' ')
 			.reduce((memo, cur) => {
 				switch (cur) {
-					case "(request-target)": {
+					case '(request-target)': {
 						memo.push(
 							`${cur}: ${String(req.method).toLowerCase()} ${req.baseUrl}${req.path}`,
 						);
 						break;
 					}
 
-					case "(created)": {
+					case '(created)': {
 						memo.push(`${cur}: ${created}`);
 						break;
 					}
 
-					case "(expires)": {
+					case '(expires)': {
 						memo.push(`${cur}: ${expires}`);
 						break;
 					}
@@ -377,7 +377,7 @@ ActivityPub.verify = async (req) => {
 
 				return memo;
 			}, [])
-			.join("\n");
+			.join('\n');
 
 		// Retrieve public key from remote instance
 		ActivityPub.helpers.log(
@@ -385,17 +385,17 @@ ActivityPub.verify = async (req) => {
 		);
 		const { publicKeyPem } = await ActivityPub.fetchPublicKey(keyId);
 
-		const verify = createVerify("sha256");
+		const verify = createVerify('sha256');
 		verify.update(signed_string);
 		verify.end();
 		ActivityPub.helpers.log(
-			"[activitypub/verify] Attempting signed string verification",
+			'[activitypub/verify] Attempting signed string verification',
 		);
-		const verified = verify.verify(publicKeyPem, signature, "base64");
+		const verified = verify.verify(publicKeyPem, signature, 'base64');
 		return verified;
 	} catch (e) {
 		ActivityPub.helpers.log(
-			"[activitypub/verify]   Failed, key retrieval or verification failure.",
+			'[activitypub/verify]   Failed, key retrieval or verification failure.',
 		);
 		return false;
 	}
@@ -403,7 +403,7 @@ ActivityPub.verify = async (req) => {
 
 ActivityPub.get = async (type, id, uri, options) => {
 	if (!meta.config.activitypubEnabled) {
-		throw new Error("[[error:activitypub.not-enabled]]");
+		throw new Error('[[error:activitypub.not-enabled]]');
 	}
 
 	const { hostname } = new URL(uri);
@@ -421,7 +421,7 @@ ActivityPub.get = async (type, id, uri, options) => {
 		cache: true,
 		...options,
 	};
-	const cacheKey = [id, uri].join(";");
+	const cacheKey = [id, uri].join(';');
 	const cached = requestCache.get(cacheKey);
 	if (options.cache && cached !== undefined) {
 		return cached;
@@ -441,11 +441,11 @@ ActivityPub.get = async (type, id, uri, options) => {
 			timeout: 5000,
 		});
 
-		if (!String(response.statusCode).startsWith("2")) {
+		if (!String(response.statusCode).startsWith('2')) {
 			winston.verbose(
 				`[activitypub/get] Received ${response.statusCode} when querying ${uri}`,
 			);
-			if (body.hasOwnProperty("error")) {
+			if (body.hasOwnProperty('error')) {
 				winston.verbose(`[activitypub/get] Error received: ${body.error}`);
 			}
 
@@ -457,7 +457,7 @@ ActivityPub.get = async (type, id, uri, options) => {
 		requestCache.set(cacheKey, body);
 		return body;
 	} catch (e) {
-		if (String(e.code).startsWith("ap_get_")) {
+		if (String(e.code).startsWith('ap_get_')) {
 			throw e;
 		}
 
@@ -475,20 +475,20 @@ async function sendMessage(uri, id, type, payload) {
 		const { response, body } = await request.post(uri, {
 			headers: {
 				...headers,
-				"content-type":
+				'content-type':
 					'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 			},
 			body: payload,
 			timeout: 10000, // configurable?
 		});
 
-		if (String(response.statusCode).startsWith("2")) {
+		if (String(response.statusCode).startsWith('2')) {
 			ActivityPub.helpers.log(
 				`[activitypub/send] Successfully sent ${payload.type} to ${uri}`,
 			);
 			return true;
 		}
-		if (typeof body === "object") {
+		if (typeof body === 'object') {
 			throw new Error(JSON.stringify(body));
 		}
 		throw new Error(String(body));
@@ -503,7 +503,7 @@ async function sendMessage(uri, id, type, payload) {
 ActivityPub.send = async (type, id, targets, payload) => {
 	if (!meta.config.activitypubEnabled) {
 		return ActivityPub.helpers.log(
-			"[activitypub/send] Federation not enabled; not sending.",
+			'[activitypub/send] Federation not enabled; not sending.',
 		);
 	}
 
@@ -513,7 +513,7 @@ ActivityPub.send = async (type, id, targets, payload) => {
 		targets = [targets];
 	}
 
-	if (process.env.hasOwnProperty("CI")) {
+	if (process.env.hasOwnProperty('CI')) {
 		ActivityPub._sent.set(payload.id, { payload, targets });
 		return;
 	}
@@ -523,7 +523,7 @@ ActivityPub.send = async (type, id, targets, payload) => {
 	const actor = ActivityPub.helpers.resolveActor(type, id);
 
 	payload = {
-		"@context": "https://www.w3.org/ns/activitystreams",
+		'@context': 'https://www.w3.org/ns/activitystreams',
 		actor,
 		...payload,
 	};
@@ -541,11 +541,11 @@ ActivityPub.send = async (type, id, targets, payload) => {
 						const ok = await sendMessage(uri, id, type, payload);
 						if (!ok) {
 							const queueId = crypto
-								.createHash("sha256")
+								.createHash('sha256')
 								.update(`${type}:${id}:${uri}`)
-								.digest("hex");
+								.digest('hex');
 							const nextTryOn = Date.now() + oneMinute;
-							retryQueueAdd.push(["ap:retry:queue", nextTryOn, queueId]);
+							retryQueueAdd.push(['ap:retry:queue', nextTryOn, queueId]);
 							retryQueuedSet.push([
 								`ap:retry:queue:${queueId}`,
 								{
@@ -579,10 +579,10 @@ ActivityPub.send = async (type, id, targets, payload) => {
 
 async function retryFailedMessages() {
 	const queueIds = await db.getSortedSetRangeByScore(
-		"ap:retry:queue",
+		'ap:retry:queue',
 		0,
 		50,
-		"-inf",
+		'-inf',
 		Date.now(),
 	);
 	const queuedData = await db.getObjects(
@@ -621,7 +621,7 @@ async function retryFailedMessages() {
 				const nextAttempt = (parseInt(attempts, 10) || 0) + 1;
 				const timeout = 2 ** nextAttempt * oneMinute; // exponential backoff
 				const nextTryOn = Date.now() + timeout;
-				retryQueueAdd.push(["ap:retry:queue", nextTryOn, queueId]);
+				retryQueueAdd.push(['ap:retry:queue', nextTryOn, queueId]);
 				retryQueuedSet.push([
 					`ap:retry:queue:${queueId}`,
 					{
@@ -636,7 +636,7 @@ async function retryFailedMessages() {
 	await Promise.all([
 		db.sortedSetAddBulk(retryQueueAdd),
 		db.setObjectBulk(retryQueuedSet),
-		db.sortedSetRemove("ap:retry:queue", queueIdsToRemove),
+		db.sortedSetRemove('ap:retry:queue', queueIdsToRemove),
 		db.deleteAll(queueIdsToRemove.map((id) => `ap:retry:queue:${id}`)),
 	]);
 }
@@ -649,7 +649,7 @@ ActivityPub.record = async ({ id, type, actor }) => {
 		db.sortedSetAdd(`activities:datetime`, now, id),
 		ActivityPub.instances.log(hostname),
 		analytics.increment([
-			"activities",
+			'activities',
 			`activities:byType:${type}`,
 			`activities:byHost:${hostname}`,
 		]),
@@ -672,7 +672,7 @@ ActivityPub.buildRecipients = async function (object, { pid, uid, cid }) {
 	let followers = [];
 	if (uid) {
 		followers = await db.getSortedSetMembers(`followersRemote:${uid}`);
-		const followersUrl = `${nconf.get("url")}/uid/${uid}/followers`;
+		const followersUrl = `${nconf.get('url')}/uid/${uid}/followers`;
 		if (!to.has(followersUrl)) {
 			cc.add(followersUrl);
 		}
@@ -684,7 +684,7 @@ ActivityPub.buildRecipients = async function (object, { pid, uid, cid }) {
 			cid.map(async (cid) => {
 				const cidFollowers = await ActivityPub.notes.getCategoryFollowers(cid);
 				followers = followers.concat(cidFollowers);
-				const followersUrl = `${nconf.get("url")}/category/${cid}/followers`;
+				const followersUrl = `${nconf.get('url')}/category/${cid}/followers`;
 				if (!to.has(followersUrl)) {
 					cc.add(followersUrl);
 				}
@@ -695,7 +695,7 @@ ActivityPub.buildRecipients = async function (object, { pid, uid, cid }) {
 	const targets = new Set([...followers, ...to, ...cc]);
 
 	// Remove any ids that aren't asserted actors
-	const exists = await db.isSortedSetMembers("usersRemote:lastCrawled", [
+	const exists = await db.isSortedSetMembers('usersRemote:lastCrawled', [
 		...targets,
 	]);
 	Array.from(targets).forEach((uri, idx) => {
@@ -706,7 +706,7 @@ ActivityPub.buildRecipients = async function (object, { pid, uid, cid }) {
 
 	// Topic posters, post announcers and their followers
 	if (pid) {
-		const tid = await posts.getPostField(pid, "tid");
+		const tid = await posts.getPostField(pid, 'tid');
 		const participants = (
 			await db.getSortedSetMembers(`tid:${tid}:posters`)
 		).filter((uid) => !utils.isNumber(uid)); // remote users only
@@ -715,9 +715,9 @@ ActivityPub.buildRecipients = async function (object, { pid, uid, cid }) {
 		);
 		const auxiliaries = Array.from(new Set([...participants, ...announcers]));
 		const auxiliaryFollowers = (
-			await user.getUsersFields(auxiliaries, ["followersUrl"])
+			await user.getUsersFields(auxiliaries, ['followersUrl'])
 		)
-			.filter((o) => o.hasOwnProperty("followersUrl"))
+			.filter((o) => o.hasOwnProperty('followersUrl'))
 			.map(({ followersUrl }) => followersUrl);
 		[...auxiliaries].forEach((uri) => uri && targets.add(uri));
 		[...auxiliaries, ...auxiliaryFollowers].forEach(
@@ -745,11 +745,11 @@ ActivityPub.checkHeader = async (url, timeout) => {
 		// headers.link =
 		if (headers && headers.link) {
 			// Multiple link headers could be combined
-			const links = headers.link.split(",");
+			const links = headers.link.split(',');
 			let apLink = false;
 
 			links.forEach((link) => {
-				let parts = link.split(";");
+				let parts = link.split(';');
 				const url = parts.shift().match(/<(.+)>/)[1];
 				if (!url || apLink) {
 					return;
@@ -758,17 +758,17 @@ ActivityPub.checkHeader = async (url, timeout) => {
 				parts = parts
 					.map((p) => p.trim())
 					.reduce((memo, cur) => {
-						cur = cur.split("=");
+						cur = cur.split('=');
 						if (cur.length < 2) {
-							cur.push("");
+							cur.push('');
 						}
 						memo[cur[0]] = cur[1].slice(1, -1);
 						return memo;
 					}, {});
 
 				if (
-					parts.rel === "alternate" &&
-					parts.type === "application/activity+json"
+					parts.rel === 'alternate' &&
+					parts.type === 'application/activity+json'
 				) {
 					apLink = url;
 				}
@@ -805,8 +805,8 @@ ActivityPub.probe = async ({ uid, url }) => {
 	const { protocol, host } = new URL(url);
 	if (
 		!activitypubProbe ||
-		protocol !== "https:" ||
-		host === nconf.get("url_parsed").host
+		protocol !== 'https:' ||
+		host === nconf.get('url_parsed').host
 	) {
 		return false;
 	}
@@ -815,8 +815,8 @@ ActivityPub.probe = async ({ uid, url }) => {
 	const [isNote, isMessage, isActor, isActorUrl] = await Promise.all([
 		posts.exists(url),
 		messaging.messageExists(url),
-		db.isSortedSetMember("usersRemote:lastCrawled", url), // if url is same as id
-		db.isObjectField("remoteUrl:uid", url),
+		db.isSortedSetMember('usersRemote:lastCrawled', url), // if url is same as id
+		db.isObjectField('remoteUrl:uid', url),
 	]);
 	switch (true) {
 		case isNote: {
@@ -825,7 +825,7 @@ ActivityPub.probe = async ({ uid, url }) => {
 
 		case isMessage: {
 			if (uid) {
-				const { roomId } = await messaging.getMessageFields(url, ["roomId"]);
+				const { roomId } = await messaging.getMessageFields(url, ['roomId']);
 				const canView = await messaging.canViewMessage(url, roomId, uid);
 				if (canView) {
 					return `/message/${encodeURIComponent(url)}`;
@@ -835,13 +835,13 @@ ActivityPub.probe = async ({ uid, url }) => {
 		}
 
 		case isActor: {
-			const slug = await user.getUserField(url, "userslug");
+			const slug = await user.getUserField(url, 'userslug');
 			return `/user/${slug}`;
 		}
 
 		case isActorUrl: {
-			const uid = await db.getObjectField("remoteUrl:uid", url);
-			const slug = await user.getUserField(uid, "userslug");
+			const uid = await db.getObjectField('remoteUrl:uid', url);
+			const slug = await user.getUserField(uid, 'userslug');
 			return `/user/${slug}`;
 		}
 	}
@@ -872,7 +872,7 @@ ActivityPub.probe = async ({ uid, url }) => {
 
 		return !!probe;
 	} catch (e) {
-		if (e.name === "TimeoutError") {
+		if (e.name === 'TimeoutError') {
 			// Return early but retry for caching purposes
 			ActivityPub.checkHeader(url, 1000 * 60)
 				.then((result) => {

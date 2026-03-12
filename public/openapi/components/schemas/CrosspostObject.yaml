@@ -49,4 +49,4 @@ CrosspostsArray:
   type: array
   description: A list of crosspost objects
   items:
-    $ref: "#/CrosspostObject"
+    $ref: '#/CrosspostObject'

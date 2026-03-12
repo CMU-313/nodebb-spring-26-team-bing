@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
-const plugins = require("../../plugins");
+const validator = require('validator');
+const plugins = require('../../plugins');
 
 const hooksController = module.exports;
 
@@ -21,7 +21,7 @@ hooksController.get = function (req, res) {
 				priority: hookData.priority,
 				method: hookData.method
 					? validator.escape(hookData.method.toString())
-					: "No plugin function!",
+					: 'No plugin function!',
 				index: `hook-${hookIndex}-code-${methodIndex}`,
 			});
 		});
@@ -30,5 +30,5 @@ hooksController.get = function (req, res) {
 
 	hooks.sort((a, b) => b.count - a.count);
 
-	res.render("admin/advanced/hooks", { hooks: hooks });
+	res.render('admin/advanced/hooks', { hooks: hooks });
 };

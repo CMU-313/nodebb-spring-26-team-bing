@@ -1,24 +1,24 @@
-"use strict";
+'use strict';
 
-const path = require("path");
-const nconf = require("nconf");
-const winston = require("winston");
-const crypto = require("crypto");
+const path = require('path');
+const nconf = require('nconf');
+const winston = require('winston');
+const crypto = require('crypto');
 
-const db = require("../database");
-const posts = require("../posts");
-const file = require("../file");
-const batch = require("../batch");
+const db = require('../database');
+const posts = require('../posts');
+const file = require('../file');
+const batch = require('../batch');
 
 const md5 = (filename) =>
-	crypto.createHash("md5").update(filename).digest("hex");
+	crypto.createHash('md5').update(filename).digest('hex');
 
-const pathPrefix = path.join(nconf.get("upload_path"));
+const pathPrefix = path.join(nconf.get('upload_path'));
 
 const _getFullPath = (relativePath) => path.join(pathPrefix, relativePath);
 
 const _validatePath = async (relativePaths) => {
-	if (typeof relativePaths === "string") {
+	if (typeof relativePaths === 'string') {
 		relativePaths = [relativePaths];
 	} else if (!Array.isArray(relativePaths)) {
 		throw new Error(
@@ -33,11 +33,11 @@ const _validatePath = async (relativePaths) => {
 
 	if (
 		!fullPaths.every((fullPath) =>
-			fullPath.startsWith(nconf.get("upload_path")),
+			fullPath.startsWith(nconf.get('upload_path')),
 		) ||
 		!exists.every(Boolean)
 	) {
-		throw new Error("[[error:invalid-path]]");
+		throw new Error('[[error:invalid-path]]');
 	}
 };
 
@@ -46,12 +46,12 @@ module.exports = function (User) {
 		await _validatePath(relativePath);
 		await Promise.all([
 			db.sortedSetAdd(`uid:${uid}:uploads`, Date.now(), relativePath),
-			db.setObjectField(`upload:${md5(relativePath)}`, "uid", uid),
+			db.setObjectField(`upload:${md5(relativePath)}`, 'uid', uid),
 		]);
 	};
 
 	User.deleteUpload = async function (callerUid, uid, uploadNames) {
-		if (typeof uploadNames === "string") {
+		if (typeof uploadNames === 'string') {
 			uploadNames = [uploadNames];
 		} else if (!Array.isArray(uploadNames)) {
 			throw new Error(
@@ -66,7 +66,7 @@ module.exports = function (User) {
 			User.isAdminOrGlobalMod(callerUid),
 		]);
 		if (!isAdminOrGlobalMod && !isUsersUpload.every(Boolean)) {
-			throw new Error("[[error:no-privileges]]");
+			throw new Error('[[error:no-privileges]]');
 		}
 
 		await batch.processArray(
@@ -79,7 +79,7 @@ module.exports = function (User) {
 						winston.verbose(`[user/deleteUpload] Deleting ${uploadNames[idx]}`);
 						await Promise.all([
 							file.delete(fullPath),
-							file.delete(file.appendToFileName(fullPath, "-resized")),
+							file.delete(file.appendToFileName(fullPath, '-resized')),
 						]);
 						await Promise.all([
 							db.sortedSetRemove(`uid:${uid}:uploads`, uploadNames[idx]),

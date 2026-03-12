@@ -5,11 +5,11 @@ import {
   RedisStyleMatchString,
   RedisStyleRangeString,
   ValueAndScore,
-} from "./index";
+} from './index';
 
 export type SortedSetTheoryOperation = {
   sets: string[];
-  sort?: "ASC" | "DESC";
+  sort?: 'ASC' | 'DESC';
   start?: number;
   stop?: number;
   weights?: number[];
@@ -43,8 +43,8 @@ export interface SortedSet {
 
   getSortedSetRangeByLex(
     key: string | string[],
-    min: RedisStyleRangeString | "-",
-    max: RedisStyleRangeString | "+",
+    min: RedisStyleRangeString | '-',
+    max: RedisStyleRangeString | '+',
     start?: number,
     count?: number,
   ): Promise<string[]>;
@@ -87,8 +87,8 @@ export interface SortedSet {
 
   getSortedSetRevRangeByLex(
     key: string,
-    max: RedisStyleRangeString | "+",
-    min: RedisStyleRangeString | "-",
+    max: RedisStyleRangeString | '+',
+    min: RedisStyleRangeString | '-',
     start?: number,
     count?: number,
   ): Promise<string[]>;
@@ -97,8 +97,8 @@ export interface SortedSet {
     key: string,
     start: number,
     count: number,
-    max: NumberTowardsMaxima | "+",
-    min: NumberTowardsMinima | "-",
+    max: NumberTowardsMaxima | '+',
+    min: NumberTowardsMinima | '-',
   ): Promise<string[]>;
 
   getSortedSetRevRangeByScoreWithScores(
@@ -207,8 +207,8 @@ export interface SortedSet {
 
   sortedSetRemoveRangeByLex(
     key: string,
-    min: RedisStyleRangeString | "-",
-    max: RedisStyleRangeString | "+",
+    min: RedisStyleRangeString | '-',
+    max: RedisStyleRangeString | '+',
   ): Promise<void>;
 
   sortedSetRevRank(key: string, value: string): Promise<number>;

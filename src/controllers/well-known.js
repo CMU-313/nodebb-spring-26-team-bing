@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
-const meta = require("../meta");
-const user = require("../user");
-const categories = require("../categories");
-const privileges = require("../privileges");
+const meta = require('../meta');
+const user = require('../user');
+const categories = require('../categories');
+const privileges = require('../privileges');
 
 const Controller = module.exports;
 
 Controller.webfinger = async (req, res) => {
 	const { resource } = req.query;
-	const { host, hostname } = nconf.get("url_parsed");
+	const { host, hostname } = nconf.get('url_parsed');
 
-	if (!resource || !resource.startsWith("acct:") || !resource.endsWith(host)) {
+	if (!resource || !resource.startsWith('acct:') || !resource.endsWith(host)) {
 		return res.sendStatus(400);
 	}
 
@@ -45,14 +45,14 @@ Controller.webfinger = async (req, res) => {
 };
 
 function application(response) {
-	response.aliases = [nconf.get("url")];
+	response.aliases = [nconf.get('url')];
 	response.links = [];
 
 	if (meta.config.activitypubEnabled) {
 		response.links.push({
-			rel: "self",
-			type: "application/activity+json",
-			href: `${nconf.get("url")}/actor`, // actor
+			rel: 'self',
+			type: 'application/activity+json',
+			href: `${nconf.get('url')}/actor`, // actor
 		});
 	}
 
@@ -60,30 +60,30 @@ function application(response) {
 }
 
 async function profile(uid, response) {
-	const canView = await privileges.global.can("view:users", -2);
+	const canView = await privileges.global.can('view:users', -2);
 	if (!canView) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
-	const slug = await user.getUserField(uid, "userslug");
+	const slug = await user.getUserField(uid, 'userslug');
 
 	response.aliases = [
-		`${nconf.get("url")}/uid/${uid}`,
-		`${nconf.get("url")}/user/${slug}`,
+		`${nconf.get('url')}/uid/${uid}`,
+		`${nconf.get('url')}/user/${slug}`,
 	];
 
 	response.links = [
 		{
-			rel: "http://webfinger.net/rel/profile-page",
-			type: "text/html",
-			href: `${nconf.get("url")}/user/${slug}`,
+			rel: 'http://webfinger.net/rel/profile-page',
+			type: 'text/html',
+			href: `${nconf.get('url')}/user/${slug}`,
 		},
 	];
 
 	if (meta.config.activitypubEnabled) {
 		response.links.push({
-			rel: "self",
-			type: "application/activity+json",
-			href: `${nconf.get("url")}/uid/${uid}`, // actor
+			rel: 'self',
+			type: 'application/activity+json',
+			href: `${nconf.get('url')}/uid/${uid}`, // actor
 		});
 	}
 
@@ -91,20 +91,20 @@ async function profile(uid, response) {
 }
 
 async function category(cid, response) {
-	const canFind = await privileges.categories.can("find", cid, -2);
+	const canFind = await privileges.categories.can('find', cid, -2);
 	if (!canFind) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
-	const slug = await categories.getCategoryField(cid, "slug");
+	const slug = await categories.getCategoryField(cid, 'slug');
 
-	response.aliases = [`${nconf.get("url")}/category/${slug}`];
+	response.aliases = [`${nconf.get('url')}/category/${slug}`];
 	response.links = [];
 
 	if (meta.config.activitypubEnabled) {
 		response.links.push({
-			rel: "self",
-			type: "application/activity+json",
-			href: `${nconf.get("url")}/category/${cid}`, // actor
+			rel: 'self',
+			type: 'application/activity+json',
+			href: `${nconf.get('url')}/category/${cid}`, // actor
 		});
 	}
 

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * This method deals unilaterally with federating activities outward.
@@ -8,18 +8,18 @@
  * YMMV.
  */
 
-const winston = require("winston");
-const nconf = require("nconf");
+const winston = require('winston');
+const nconf = require('nconf');
 
-const db = require("../database");
-const user = require("../user");
-const categories = require("../categories");
-const meta = require("../meta");
-const privileges = require("../privileges");
-const topics = require("../topics");
-const posts = require("../posts");
-const messaging = require("../messaging");
-const utils = require("../utils");
+const db = require('../database');
+const user = require('../user');
+const categories = require('../categories');
+const meta = require('../meta');
+const privileges = require('../privileges');
+const topics = require('../topics');
+const posts = require('../posts');
+const messaging = require('../messaging');
+const utils = require('../utils');
 const activitypub = module.parent.exports;
 
 const Out = module.exports;
@@ -38,17 +38,17 @@ function enabledCheck(next) {
 
 Out.follow = enabledCheck(async (type, id, actor) => {
 	// Privilege checks should be done upstream
-	const acceptedTypes = ["uid", "cid"];
+	const acceptedTypes = ['uid', 'cid'];
 	const assertion = await activitypub.actors.assert(actor);
 	if (
 		!acceptedTypes.includes(type) ||
 		!assertion ||
 		(Array.isArray(assertion) && assertion.length)
 	) {
-		throw new Error("[[error:activitypub.invalid-id]]");
+		throw new Error('[[error:activitypub.invalid-id]]');
 	}
 
-	if (actor.includes("@")) {
+	if (actor.includes('@')) {
 		const [uid, cid] = await Promise.all([
 			user.getUidByUserslug(actor),
 			categories.getCidByHandle(actor),
@@ -58,7 +58,7 @@ Out.follow = enabledCheck(async (type, id, actor) => {
 	}
 
 	const isFollowing = await db.isSortedSetMember(
-		type === "uid" ? `followingRemote:${id}` : `cid:${id}:following`,
+		type === 'uid' ? `followingRemote:${id}` : `cid:${id}:following`,
 		actor,
 	);
 	if (isFollowing) {
@@ -71,8 +71,8 @@ Out.follow = enabledCheck(async (type, id, actor) => {
 	await db.sortedSetAdd(`followRequests:${type}.${id}`, timestamp, actor);
 	try {
 		await activitypub.send(type, id, [actor], {
-			id: `${nconf.get("url")}/${type}/${id}#activity/follow/${encodeURIComponent(actor)}/${timestamp}`,
-			type: "Follow",
+			id: `${nconf.get('url')}/${type}/${id}#activity/follow/${encodeURIComponent(actor)}/${timestamp}`,
+			type: 'Follow',
 			object: actor,
 		});
 	} catch (e) {
@@ -94,7 +94,7 @@ Out.create.note = enabledCheck(async (uid, post) => {
 	}
 	const { pid } = post;
 	const allowed = await privileges.posts.can(
-		"topics:read",
+		'topics:read',
 		pid,
 		activitypub._constants.uid,
 	);
@@ -112,7 +112,7 @@ Out.create.note = enabledCheck(async (uid, post) => {
 	);
 
 	await Promise.all([
-		activitypub.send("uid", uid, Array.from(targets), activity),
+		activitypub.send('uid', uid, Array.from(targets), activity),
 		activitypub.feps.announce(pid, activity),
 		// utils.isNumber(post.cid) ? activitypubApi.add(caller, { pid }) : undefined,
 	]);
@@ -127,13 +127,13 @@ Out.create.privateNote = enabledCheck(async (messageObj) => {
 
 	const payload = {
 		id: `${object.id}#activity/create/${Date.now()}`,
-		type: "Create",
+		type: 'Create',
 		actor: object.attributedTo,
 		to: object.to,
 		object,
 	};
 
-	await activitypub.send("uid", messageObj.fromuid, targets, payload);
+	await activitypub.send('uid', messageObj.fromuid, targets, payload);
 });
 
 Out.update = {};
@@ -149,9 +149,9 @@ Out.update.profile = enabledCheck(async (uid, actorUid) => {
 		db.getSortedSetMembers(`followersRemote:${uid}`),
 	]);
 
-	await activitypub.send("uid", actorUid || uid, targets, {
+	await activitypub.send('uid', actorUid || uid, targets, {
 		id: `${object.id}#activity/update/${Date.now()}`,
-		type: "Update",
+		type: 'Update',
 		actor: object.id,
 		to: [activitypub._constants.publicAddress],
 		cc: [],
@@ -170,9 +170,9 @@ Out.update.category = enabledCheck(async (cid) => {
 		activitypub.notes.getCategoryFollowers(cid),
 	]);
 
-	await activitypub.send("cid", cid, targets, {
+	await activitypub.send('cid', cid, targets, {
 		id: `${object.id}#activity/update/${Date.now()}`,
-		type: "Update",
+		type: 'Update',
 		actor: object.id,
 		to: [activitypub._constants.publicAddress],
 		cc: [],
@@ -195,7 +195,7 @@ Out.update.note = enabledCheck(async (uid, post) => {
 	object.cc = cc;
 
 	const allowed = await privileges.posts.can(
-		"topics:read",
+		'topics:read',
 		post.pid,
 		activitypub._constants.uid,
 	);
@@ -208,7 +208,7 @@ Out.update.note = enabledCheck(async (uid, post) => {
 
 	const payload = {
 		id: `${object.id}#activity/update/${post.edited || Date.now()}`,
-		type: "Update",
+		type: 'Update',
 		actor: object.attributedTo,
 		to,
 		cc,
@@ -216,7 +216,7 @@ Out.update.note = enabledCheck(async (uid, post) => {
 	};
 
 	await Promise.all([
-		activitypub.send("uid", uid, Array.from(targets), payload),
+		activitypub.send('uid', uid, Array.from(targets), payload),
 		activitypub.feps.announce(post.pid, payload),
 	]);
 });
@@ -230,7 +230,7 @@ Out.update.privateNote = enabledCheck(async (uid, messageObj) => {
 	let uids = await messaging.getUidsInRoom(roomId, 0, -1);
 	uids = uids.filter((uid) => String(uid) !== String(messageObj.fromuid)); // no author
 	const to = uids.map((uid) =>
-		utils.isNumber(uid) ? `${nconf.get("url")}/uid/${uid}` : uid,
+		utils.isNumber(uid) ? `${nconf.get('url')}/uid/${uid}` : uid,
 	);
 	const targets = uids.filter((uid) => !utils.isNumber(uid)); // remote uids only
 
@@ -238,13 +238,13 @@ Out.update.privateNote = enabledCheck(async (uid, messageObj) => {
 
 	const payload = {
 		id: `${object.id}#activity/create/${Date.now()}`,
-		type: "Update",
+		type: 'Update',
 		actor: object.attributedTo,
 		to,
 		object,
 	};
 
-	await activitypub.send("uid", uid, targets, payload);
+	await activitypub.send('uid', uid, targets, payload);
 });
 
 Out.delete = {};
@@ -255,7 +255,7 @@ Out.delete.note = enabledCheck(async (uid, pid) => {
 		return;
 	}
 
-	const id = `${nconf.get("url")}/post/${pid}`;
+	const id = `${nconf.get('url')}/post/${pid}`;
 	const post = (
 		await posts.getPostSummaryByPids([pid], uid, { stripTags: false })
 	).pop();
@@ -266,7 +266,7 @@ Out.delete.note = enabledCheck(async (uid, pid) => {
 	});
 
 	const allowed = await privileges.posts.can(
-		"topics:read",
+		'topics:read',
 		pid,
 		activitypub._constants.uid,
 	);
@@ -279,7 +279,7 @@ Out.delete.note = enabledCheck(async (uid, pid) => {
 
 	const payload = {
 		id: `${id}#activity/delete/${Date.now()}`,
-		type: "Delete",
+		type: 'Delete',
 		actor: object.attributedTo,
 		to,
 		cc,
@@ -288,7 +288,7 @@ Out.delete.note = enabledCheck(async (uid, pid) => {
 	};
 
 	await Promise.all([
-		activitypub.send("uid", uid, Array.from(targets), payload),
+		activitypub.send('uid', uid, Array.from(targets), payload),
 		activitypub.feps.announce(pid, payload),
 	]);
 });
@@ -297,10 +297,10 @@ Out.like = {};
 
 Out.like.note = enabledCheck(async (uid, pid) => {
 	const payload = {
-		id: `${nconf.get("url")}/uid/${uid}#activity/like/${encodeURIComponent(pid)}`,
-		type: "Like",
-		actor: `${nconf.get("url")}/uid/${uid}`,
-		object: utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+		id: `${nconf.get('url')}/uid/${uid}#activity/like/${encodeURIComponent(pid)}`,
+		type: 'Like',
+		actor: `${nconf.get('url')}/uid/${uid}`,
+		object: utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 	};
 
 	if (!activitypub.helpers.isUri(pid)) {
@@ -309,13 +309,13 @@ Out.like.note = enabledCheck(async (uid, pid) => {
 		return;
 	}
 
-	const recipient = await posts.getPostField(pid, "uid");
+	const recipient = await posts.getPostField(pid, 'uid');
 	if (!activitypub.helpers.isUri(recipient)) {
 		return;
 	}
 
 	await Promise.all([
-		activitypub.send("uid", uid, [recipient], payload),
+		activitypub.send('uid', uid, [recipient], payload),
 		activitypub.feps.announce(pid, payload),
 	]);
 });
@@ -324,10 +324,10 @@ Out.dislike = {};
 
 Out.dislike.note = enabledCheck(async (uid, pid) => {
 	const payload = {
-		id: `${nconf.get("url")}/uid/${uid}#activity/dislike/${encodeURIComponent(pid)}`,
-		type: "Dislike",
-		actor: `${nconf.get("url")}/uid/${uid}`,
-		object: utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+		id: `${nconf.get('url')}/uid/${uid}#activity/dislike/${encodeURIComponent(pid)}`,
+		type: 'Dislike',
+		actor: `${nconf.get('url')}/uid/${uid}`,
+		object: utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 	};
 
 	if (!activitypub.helpers.isUri(pid)) {
@@ -336,13 +336,13 @@ Out.dislike.note = enabledCheck(async (uid, pid) => {
 		return;
 	}
 
-	const recipient = await posts.getPostField(pid, "uid");
+	const recipient = await posts.getPostField(pid, 'uid');
 	if (!activitypub.helpers.isUri(recipient)) {
 		return;
 	}
 
 	await Promise.all([
-		activitypub.send("uid", uid, [recipient], payload),
+		activitypub.send('uid', uid, [recipient], payload),
 		activitypub.feps.announce(pid, payload),
 	]);
 });
@@ -351,8 +351,8 @@ Out.announce = {};
 
 Out.announce.topic = enabledCheck(async (tid, uid) => {
 	const { mainPid: pid, cid } = await topics.getTopicFields(tid, [
-		"mainPid",
-		"cid",
+		'mainPid',
+		'cid',
 	]);
 
 	if (uid) {
@@ -367,9 +367,9 @@ Out.announce.topic = enabledCheck(async (tid, uid) => {
 		}
 	}
 
-	const authorUid = await posts.getPostField(pid, "uid"); // author
+	const authorUid = await posts.getPostField(pid, 'uid'); // author
 	const allowed = await privileges.posts.can(
-		"topics:read",
+		'topics:read',
 		pid,
 		activitypub._constants.uid,
 	);
@@ -394,20 +394,20 @@ Out.announce.topic = enabledCheck(async (tid, uid) => {
 
 	const payload = uid
 		? {
-				id: `${nconf.get("url")}/post/${encodeURIComponent(pid)}#activity/announce/uid/${uid}`,
-				type: "Announce",
-				actor: `${nconf.get("url")}/uid/${uid}`,
+				id: `${nconf.get('url')}/post/${encodeURIComponent(pid)}#activity/announce/uid/${uid}`,
+				type: 'Announce',
+				actor: `${nconf.get('url')}/uid/${uid}`,
 			}
 		: {
-				id: `${nconf.get("url")}/post/${encodeURIComponent(pid)}#activity/announce/cid/${cid}`,
-				type: "Announce",
-				actor: `${nconf.get("url")}/category/${cid}`,
+				id: `${nconf.get('url')}/post/${encodeURIComponent(pid)}#activity/announce/cid/${cid}`,
+				type: 'Announce',
+				actor: `${nconf.get('url')}/category/${cid}`,
 			};
-	await activitypub.send(uid ? "uid" : "cid", uid || cid, Array.from(targets), {
+	await activitypub.send(uid ? 'uid' : 'cid', uid || cid, Array.from(targets), {
 		...payload,
 		to,
 		cc,
-		object: utils.isNumber(pid) ? `${nconf.get("url")}/post/${pid}` : pid,
+		object: utils.isNumber(pid) ? `${nconf.get('url')}/post/${pid}` : pid,
 	});
 });
 
@@ -416,7 +416,7 @@ Out.flag = enabledCheck(async (uid, flag) => {
 		return;
 	}
 	const reportedIds = [flag.targetId];
-	if (flag.type === "post" && activitypub.helpers.isUri(flag.targetUid)) {
+	if (flag.type === 'post' && activitypub.helpers.isUri(flag.targetUid)) {
 		reportedIds.push(flag.targetUid);
 	}
 	const reason =
@@ -424,10 +424,10 @@ Out.flag = enabledCheck(async (uid, flag) => {
 		(flag.reports &&
 			flag.reports.filter((report) => report.reporter.uid === uid).at(-1)
 				.value);
-	await activitypub.send("uid", uid, reportedIds, {
-		id: `${nconf.get("url")}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/flag/${uid}`,
-		type: "Flag",
-		actor: `${nconf.get("url")}/uid/${uid}`,
+	await activitypub.send('uid', uid, reportedIds, {
+		id: `${nconf.get('url')}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/flag/${uid}`,
+		type: 'Flag',
+		actor: `${nconf.get('url')}/uid/${uid}`,
 		object: reportedIds,
 		content: reason,
 	});
@@ -439,7 +439,7 @@ Out.remove = {};
 Out.remove.context = enabledCheck(async (uid, tid) => {
 	// Federates Remove(Context); where Context is the tid
 	const now = new Date();
-	const cid = await topics.getTopicField(tid, "oldCid");
+	const cid = await topics.getTopicField(tid, 'oldCid');
 
 	// Only local categories
 	if (!utils.isNumber(cid) || parseInt(cid, 10) < 1) {
@@ -447,7 +447,7 @@ Out.remove.context = enabledCheck(async (uid, tid) => {
 	}
 
 	const allowed = await privileges.categories.can(
-		"topics:read",
+		'topics:read',
 		cid,
 		activitypub._constants.uid,
 	);
@@ -466,14 +466,14 @@ Out.remove.context = enabledCheck(async (uid, tid) => {
 		{ cid },
 	);
 
-	await activitypub.send("uid", uid, Array.from(targets), {
-		id: `${nconf.get("url")}/topic/${tid}#activity/remove/${now.getTime()}`,
-		type: "Remove",
-		actor: `${nconf.get("url")}/uid/${uid}`,
+	await activitypub.send('uid', uid, Array.from(targets), {
+		id: `${nconf.get('url')}/topic/${tid}#activity/remove/${now.getTime()}`,
+		type: 'Remove',
+		actor: `${nconf.get('url')}/uid/${uid}`,
 		to,
 		cc,
-		object: `${nconf.get("url")}/topic/${tid}`,
-		target: `${nconf.get("url")}/category/${cid}`,
+		object: `${nconf.get('url')}/topic/${tid}`,
+		target: `${nconf.get('url')}/category/${cid}`,
 	});
 });
 
@@ -482,7 +482,7 @@ Out.move = {};
 Out.move.context = enabledCheck(async (uid, tid) => {
 	// Federates Move(Context); where Context is the tid
 	const now = new Date();
-	const { cid, oldCid } = await topics.getTopicFields(tid, ["cid", "oldCid"]);
+	const { cid, oldCid } = await topics.getTopicFields(tid, ['cid', 'oldCid']);
 
 	// This check may be revised if inter-community moderation becomes real.
 	const isLocal = (id) => utils.isNumber(id) && parseInt(id, 10) > 0;
@@ -497,7 +497,7 @@ Out.move.context = enabledCheck(async (uid, tid) => {
 	}
 
 	const allowed = await privileges.categories.can(
-		"topics:read",
+		'topics:read',
 		cid,
 		activitypub._constants.uid,
 	);
@@ -516,28 +516,28 @@ Out.move.context = enabledCheck(async (uid, tid) => {
 		{ cid: [cid, oldCid] },
 	);
 
-	await activitypub.send("uid", uid, Array.from(targets), {
-		id: `${nconf.get("url")}/topic/${tid}#activity/move/${now.getTime()}`,
-		type: "Move",
-		actor: `${nconf.get("url")}/uid/${uid}`,
+	await activitypub.send('uid', uid, Array.from(targets), {
+		id: `${nconf.get('url')}/topic/${tid}#activity/move/${now.getTime()}`,
+		type: 'Move',
+		actor: `${nconf.get('url')}/uid/${uid}`,
 		to,
 		cc,
-		object: `${nconf.get("url")}/topic/${tid}`,
-		origin: `${nconf.get("url")}/category/${oldCid}`,
-		target: `${nconf.get("url")}/category/${cid}`,
+		object: `${nconf.get('url')}/topic/${tid}`,
+		origin: `${nconf.get('url')}/category/${oldCid}`,
+		target: `${nconf.get('url')}/category/${cid}`,
 	});
 });
 
 Out.undo = {};
 
 Out.undo.follow = enabledCheck(async (type, id, actor) => {
-	const acceptedTypes = ["uid", "cid"];
+	const acceptedTypes = ['uid', 'cid'];
 	const assertion = await activitypub.actors.assert(actor);
 	if (!acceptedTypes.includes(type) || !assertion) {
-		throw new Error("[[error:activitypub.invalid-id]]");
+		throw new Error('[[error:activitypub.invalid-id]]');
 	}
 
-	if (actor.includes("@")) {
+	if (actor.includes('@')) {
 		const [uid, cid] = await Promise.all([
 			user.getUidByUserslug(actor),
 			categories.getCidByHandle(actor),
@@ -548,11 +548,11 @@ Out.undo.follow = enabledCheck(async (type, id, actor) => {
 
 	const [isFollowing, isPending] = await Promise.all([
 		db.isSortedSetMember(
-			type === "uid" ? `followingRemote:${id}` : `cid:${id}:following`,
+			type === 'uid' ? `followingRemote:${id}` : `cid:${id}:following`,
 			actor,
 		),
 		db.isSortedSetMember(
-			`followRequests:${type === "uid" ? "uid" : "cid"}.${id}`,
+			`followRequests:${type === 'uid' ? 'uid' : 'cid'}.${id}`,
 			actor,
 		),
 	]);
@@ -565,38 +565,38 @@ Out.undo.follow = enabledCheck(async (type, id, actor) => {
 	const timestamps = await db.sortedSetsScore(
 		[
 			`followRequests:${type}.${id}`,
-			type === "uid" ? `followingRemote:${id}` : `cid:${id}:following`,
+			type === 'uid' ? `followingRemote:${id}` : `cid:${id}:following`,
 		],
 		actor,
 	);
 	const timestamp = timestamps[0] || timestamps[1];
 
 	const object = {
-		id: `${nconf.get("url")}/${type}/${id}#activity/follow/${encodeURIComponent(actor)}/${timestamp}`,
-		type: "Follow",
+		id: `${nconf.get('url')}/${type}/${id}#activity/follow/${encodeURIComponent(actor)}/${timestamp}`,
+		type: 'Follow',
 		object: actor,
 	};
-	if (type === "uid") {
-		object.actor = `${nconf.get("url")}/uid/${id}`;
-	} else if (type === "cid") {
-		object.actor = `${nconf.get("url")}/category/${id}`;
+	if (type === 'uid') {
+		object.actor = `${nconf.get('url')}/uid/${id}`;
+	} else if (type === 'cid') {
+		object.actor = `${nconf.get('url')}/category/${id}`;
 	}
 
 	await activitypub.send(type, id, [actor], {
-		id: `${nconf.get("url")}/${type}/${id}#activity/undo:follow/${encodeURIComponent(actor)}/${timestamp}`,
-		type: "Undo",
+		id: `${nconf.get('url')}/${type}/${id}#activity/undo:follow/${encodeURIComponent(actor)}/${timestamp}`,
+		type: 'Undo',
 		actor: object.actor,
 		object,
 	});
 
-	if (type === "uid") {
+	if (type === 'uid') {
 		await Promise.all([
 			db.sortedSetRemove(`followingRemote:${id}`, actor),
 			db.sortedSetRemove(`followRequests:uid.${id}`, actor),
 			db.sortedSetRemove(`followersRemote:${actor}`, id),
-			db.decrObjectField(`user:${id}`, "followingRemoteCount"),
+			db.decrObjectField(`user:${id}`, 'followingRemoteCount'),
 		]);
-	} else if (type === "cid") {
+	} else if (type === 'cid') {
 		await Promise.all([
 			db.sortedSetRemove(`cid:${id}:following`, actor),
 			db.sortedSetRemove(`followRequests:cid.${id}`, actor),
@@ -610,25 +610,25 @@ Out.undo.like = enabledCheck(async (uid, pid) => {
 		return;
 	}
 
-	const author = await posts.getPostField(pid, "uid");
+	const author = await posts.getPostField(pid, 'uid');
 	if (!activitypub.helpers.isUri(author)) {
 		return;
 	}
 
 	const payload = {
-		id: `${nconf.get("url")}/uid/${uid}#activity/undo:like/${encodeURIComponent(pid)}/${Date.now()}`,
-		type: "Undo",
-		actor: `${nconf.get("url")}/uid/${uid}`,
+		id: `${nconf.get('url')}/uid/${uid}#activity/undo:like/${encodeURIComponent(pid)}/${Date.now()}`,
+		type: 'Undo',
+		actor: `${nconf.get('url')}/uid/${uid}`,
 		object: {
-			actor: `${nconf.get("url")}/uid/${uid}`,
-			id: `${nconf.get("url")}/uid/${uid}#activity/like/${encodeURIComponent(pid)}`,
-			type: "Like",
+			actor: `${nconf.get('url')}/uid/${uid}`,
+			id: `${nconf.get('url')}/uid/${uid}#activity/like/${encodeURIComponent(pid)}`,
+			type: 'Like',
 			object: pid,
 		},
 	};
 
 	await Promise.all([
-		activitypub.send("uid", uid, [author], payload),
+		activitypub.send('uid', uid, [author], payload),
 		activitypub.feps.announce(pid, payload),
 	]);
 });
@@ -638,7 +638,7 @@ Out.undo.flag = enabledCheck(async (uid, flag) => {
 		return;
 	}
 	const reportedIds = [flag.targetId];
-	if (flag.type === "post" && activitypub.helpers.isUri(flag.targetUid)) {
+	if (flag.type === 'post' && activitypub.helpers.isUri(flag.targetUid)) {
 		reportedIds.push(flag.targetUid);
 	}
 	const reason =
@@ -646,14 +646,14 @@ Out.undo.flag = enabledCheck(async (uid, flag) => {
 		(flag.reports &&
 			flag.reports.filter((report) => report.reporter.uid === uid).at(-1)
 				.value);
-	await activitypub.send("uid", uid, reportedIds, {
-		id: `${nconf.get("url")}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/undo:flag/${uid}/${Date.now()}`,
-		type: "Undo",
-		actor: `${nconf.get("url")}/uid/${uid}`,
+	await activitypub.send('uid', uid, reportedIds, {
+		id: `${nconf.get('url')}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/undo:flag/${uid}/${Date.now()}`,
+		type: 'Undo',
+		actor: `${nconf.get('url')}/uid/${uid}`,
 		object: {
-			id: `${nconf.get("url")}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/flag/${uid}`,
-			actor: `${nconf.get("url")}/uid/${uid}`,
-			type: "Flag",
+			id: `${nconf.get('url')}/${flag.type}/${encodeURIComponent(flag.targetId)}#activity/flag/${uid}`,
+			actor: `${nconf.get('url')}/uid/${uid}`,
+			type: 'Flag',
 			object: reportedIds,
 			content: reason,
 		},
@@ -662,25 +662,25 @@ Out.undo.flag = enabledCheck(async (uid, flag) => {
 });
 
 Out.undo.announce = enabledCheck(async (type, id, tid) => {
-	if (!utils.isNumber(id) || !["uid", "cid"].includes(type)) {
-		throw new Error("[[error:invalid-data]]");
+	if (!utils.isNumber(id) || !['uid', 'cid'].includes(type)) {
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	const exists = await Promise.all([
 		topics.exists(tid),
-		type === "uid" ? user.exists(id) : categories.exists(id),
+		type === 'uid' ? user.exists(id) : categories.exists(id),
 	]);
 	if (!exists.every(Boolean)) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
-	const baseUrl = `${nconf.get("url")}/${type === "uid" ? "uid" : "category"}/${id}`;
+	const baseUrl = `${nconf.get('url')}/${type === 'uid' ? 'uid' : 'category'}/${id}`;
 	const { uid, mainPid: pid } = await topics.getTopicFields(tid, [
-		"uid",
-		"mainPid",
+		'uid',
+		'mainPid',
 	]);
 	const allowed = await privileges.topics.can(
-		"topics:read",
+		'topics:read',
 		tid,
 		activitypub._constants.uid,
 	);
@@ -698,21 +698,21 @@ Out.undo.announce = enabledCheck(async (type, id, tid) => {
 			cc: [`${baseUrl}/followers`, uid],
 		},
 		{
-			uid: type === "uid" && id,
-			cid: type === "cid" && id,
+			uid: type === 'uid' && id,
+			cid: type === 'cid' && id,
 		},
 	);
 
 	// Just undo the announce.
 	await activitypub.send(type, id, Array.from(targets), {
-		id: `${nconf.get("url")}/post/${encodeURIComponent(pid)}#activity/undo:announce/${type}/${id}`,
-		type: "Undo",
+		id: `${nconf.get('url')}/post/${encodeURIComponent(pid)}#activity/undo:announce/${type}/${id}`,
+		type: 'Undo',
 		actor: baseUrl,
 		to,
 		cc,
 		object: {
-			id: `${nconf.get("url")}/post/${encodeURIComponent(pid)}#activity/announce/${type}/${id}`,
-			type: "Announce",
+			id: `${nconf.get('url')}/post/${encodeURIComponent(pid)}#activity/announce/${type}/${id}`,
+			type: 'Announce',
 			actor: baseUrl,
 			to,
 			cc,

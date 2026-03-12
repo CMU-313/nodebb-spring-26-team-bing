@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const helpers = module.exports;
 
@@ -20,7 +20,7 @@ helpers.removeDuplicateValues = function (values, ...others) {
 
 helpers.ensureLegacyObjectType = async function (db, key, type) {
 	await db.query({
-		name: "ensureLegacyObjectTypeBefore",
+		name: 'ensureLegacyObjectTypeBefore',
 		text: `
 DELETE FROM "legacy_object"
  WHERE "expireAt" IS NOT NULL
@@ -28,7 +28,7 @@ DELETE FROM "legacy_object"
 	});
 
 	await db.query({
-		name: "ensureLegacyObjectType1",
+		name: 'ensureLegacyObjectType1',
 		text: `
 INSERT INTO "legacy_object" ("_key", "type")
 VALUES ($1::TEXT, $2::TEXT::LEGACY_OBJECT_TYPE)
@@ -38,7 +38,7 @@ VALUES ($1::TEXT, $2::TEXT::LEGACY_OBJECT_TYPE)
 	});
 
 	const res = await db.query({
-		name: "ensureLegacyObjectType2",
+		name: 'ensureLegacyObjectType2',
 		text: `
 SELECT "type"
   FROM "legacy_object_live"
@@ -55,7 +55,7 @@ SELECT "type"
 
 helpers.ensureLegacyObjectsType = async function (db, keys, type) {
 	await db.query({
-		name: "ensureLegacyObjectTypeBefore",
+		name: 'ensureLegacyObjectTypeBefore',
 		text: `
 DELETE FROM "legacy_object"
  WHERE "expireAt" IS NOT NULL
@@ -63,7 +63,7 @@ DELETE FROM "legacy_object"
 	});
 
 	await db.query({
-		name: "ensureLegacyObjectsType1",
+		name: 'ensureLegacyObjectsType1',
 		text: `
 INSERT INTO "legacy_object" ("_key", "type")
 SELECT k, $2::TEXT::LEGACY_OBJECT_TYPE
@@ -74,7 +74,7 @@ SELECT k, $2::TEXT::LEGACY_OBJECT_TYPE
 	});
 
 	const res = await db.query({
-		name: "ensureLegacyObjectsType2",
+		name: 'ensureLegacyObjectsType2',
 		text: `
 SELECT "_key", "type"
   FROM "legacy_object_live"
@@ -87,7 +87,7 @@ SELECT "_key", "type"
 	if (invalid.length) {
 		const parts = invalid.map((r) => `${JSON.stringify(r._key)} is ${r.type}`);
 		throw new Error(
-			`database: cannot insert multiple objects as ${type} because they already exist: ${parts.join(", ")}`,
+			`database: cannot insert multiple objects as ${type} because they already exist: ${parts.join(', ')}`,
 		);
 	}
 

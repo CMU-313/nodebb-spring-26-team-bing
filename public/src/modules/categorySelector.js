@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-define("categorySelector", [
-	"categorySearch",
-	"bootbox",
-	"hooks",
-	"translator",
+define('categorySelector', [
+	'categorySearch',
+	'bootbox',
+	'hooks',
+	'translator',
 ], function (categorySearch, bootbox, hooks, translator) {
 	const categorySelector = {};
 
@@ -16,14 +16,14 @@ define("categorySelector", [
 		const onSelect = options.onSelect || function () {};
 
 		options.states = options.states || [
-			"watching",
-			"tracking",
-			"notwatching",
-			"ignoring",
+			'watching',
+			'tracking',
+			'notwatching',
+			'ignoring',
 		];
 		options.template =
-			options.template || "partials/category/selector-dropdown-left";
-		hooks.fire("action:category.selector.options", {
+			options.template || 'partials/category/selector-dropdown-left';
+		hooks.fire('action:category.selector.options', {
 			el: el,
 			options: options,
 		});
@@ -35,12 +35,12 @@ define("categorySelector", [
 			selectedCategory: null,
 		};
 
-		el.on("click", "[data-cid]", function () {
+		el.on('click', '[data-cid]', function () {
 			const categoryEl = $(this);
-			if (categoryEl.hasClass("disabled")) {
+			if (categoryEl.hasClass('disabled')) {
 				return false;
 			}
-			selector.selectCategory(categoryEl.attr("data-cid"));
+			selector.selectCategory(categoryEl.attr('data-cid'));
 			return onSelect(selector.selectedCategory);
 		});
 
@@ -55,7 +55,7 @@ define("categorySelector", [
 			const categoryEl = selector.el.find('[data-cid="' + cid + '"]');
 			selector.selectedCategory = {
 				cid: cid,
-				name: categoryEl.attr("data-name"),
+				name: categoryEl.attr('data-name'),
 			};
 
 			if (categoryEl.length) {
@@ -75,7 +75,7 @@ define("categorySelector", [
 			return selector.selectedCategory ? selector.selectedCategory.cid : 0;
 		};
 
-		if (options.hasOwnProperty("selectedCategory")) {
+		if (options.hasOwnProperty('selectedCategory')) {
 			app.parseAndTranslate(
 				options.template,
 				{ selectedCategory: options.selectedCategory },
@@ -94,16 +94,16 @@ define("categorySelector", [
 		options.onSelect = options.onSelect || function () {};
 		options.onSubmit = options.onSubmit || function () {};
 		app.parseAndTranslate(
-			"admin/partials/categories/select-category",
+			'admin/partials/categories/select-category',
 			{ message: options.message },
 			function (html) {
 				const modal = bootbox.dialog({
-					title: options.title || "[[modules:composer.select-category]]",
+					title: options.title || '[[modules:composer.select-category]]',
 					message: html,
 					buttons: {
 						save: {
-							label: "[[global:select]]",
-							className: "btn-primary",
+							label: '[[global:select]]',
+							className: 'btn-primary',
 							callback: submit,
 						},
 					},
@@ -117,16 +117,16 @@ define("categorySelector", [
 					ev.preventDefault();
 					if (selector.selectedCategory) {
 						options.onSubmit(selector.selectedCategory);
-						modal.modal("hide");
+						modal.modal('hide');
 					}
 					return false;
 				}
 				if (options.openOnLoad) {
-					modal.on("shown.bs.modal", function () {
-						modal.find(".dropdown-toggle").dropdown("toggle");
+					modal.on('shown.bs.modal', function () {
+						modal.find('.dropdown-toggle').dropdown('toggle');
 					});
 				}
-				modal.find("form").on("submit", submit);
+				modal.find('form').on('submit', submit);
 			},
 		);
 	};

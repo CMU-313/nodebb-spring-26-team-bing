@@ -1,90 +1,90 @@
-"use strict";
+'use strict';
 
-const express = require("express");
+const express = require('express');
 
-const uploadsController = require("../controllers/uploads");
-const helpers = require("./helpers");
+const uploadsController = require('../controllers/uploads');
+const helpers = require('./helpers');
 
 module.exports = function (app, middleware, controllers) {
 	const middlewares = [middleware.autoLocale, middleware.authenticateRequest];
 	const router = express.Router();
-	app.use("/api", router);
+	app.use('/api', router);
 
 	router.get(
-		"/config",
+		'/config',
 		[...middlewares, middleware.applyCSRF],
 		helpers.tryRoute(controllers.api.getConfig),
 	);
 
 	router.get(
-		"/self",
+		'/self',
 		[...middlewares],
 		helpers.tryRoute(controllers.user.getCurrentUser),
 	);
 	router.get(
-		"/user/uid/:uid",
+		'/user/uid/:uid',
 		[...middlewares, middleware.canViewUsers],
 		helpers.tryRoute(controllers.user.getUserByUID),
 	);
 	router.get(
-		"/user/username/:username",
+		'/user/username/:username',
 		[...middlewares, middleware.canViewUsers],
 		helpers.tryRoute(controllers.user.getUserByUsername),
 	);
 	router.get(
-		"/user/email/:email",
+		'/user/email/:email',
 		[...middlewares, middleware.canViewUsers],
 		helpers.tryRoute(controllers.user.getUserByEmail),
 	);
 
 	router.get(
-		"/categories/:cid/moderators",
+		'/categories/:cid/moderators',
 		[...middlewares],
 		helpers.tryRoute(controllers.api.getModerators),
 	);
 	router.get(
-		"/recent/posts/:term?",
+		'/recent/posts/:term?',
 		[...middlewares],
 		helpers.tryRoute(controllers.posts.getRecentPosts),
 	);
 	router.get(
-		"/unread/total",
+		'/unread/total',
 		[...middlewares, middleware.ensureLoggedIn],
 		helpers.tryRoute(controllers.unread.unreadTotal),
 	);
 	router.get(
-		"/topic/teaser/:topic_id",
+		'/topic/teaser/:topic_id',
 		[...middlewares],
 		helpers.tryRoute(controllers.topics.teaser),
 	);
 	router.get(
-		"/topic/pagination/:topic_id",
+		'/topic/pagination/:topic_id',
 		[...middlewares],
 		helpers.tryRoute(controllers.topics.pagination),
 	);
 
-	const upload = require("../middleware/multer");
+	const upload = require('../middleware/multer');
 
 	const postMiddlewares = [
 		middleware.maintenanceMode,
-		upload.array("files[]", 20),
+		upload.array('files[]', 20),
 		middleware.validateFiles,
 		middleware.uploads.ratelimit,
 		middleware.applyCSRF,
 	];
 
 	router.post(
-		"/post/upload",
+		'/post/upload',
 		postMiddlewares,
 		helpers.tryRoute(uploadsController.uploadPost),
 	);
 	router.post(
-		"/topic/thumb/upload",
+		'/topic/thumb/upload',
 		postMiddlewares,
 		helpers.tryRoute(uploadsController.uploadThumb),
 	);
 	router.post(
-		"/user/:userslug/uploadpicture",
+		'/user/:userslug/uploadpicture',
 		[
 			...middlewares,
 			...postMiddlewares,

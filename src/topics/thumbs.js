@@ -1,29 +1,29 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const nconf = require("nconf");
-const path = require("path");
-const mime = require("mime");
-const plugins = require("../plugins");
-const posts = require("../posts");
-const meta = require("../meta");
+const _ = require('lodash');
+const nconf = require('nconf');
+const path = require('path');
+const mime = require('mime');
+const plugins = require('../plugins');
+const posts = require('../posts');
+const meta = require('../meta');
 
 const topics = module.parent.exports;
 const Thumbs = module.exports;
 
-const upload_url = nconf.get("relative_path") + nconf.get("upload_url");
-const upload_path = nconf.get("upload_path");
+const upload_url = nconf.get('relative_path') + nconf.get('upload_url');
+const upload_path = nconf.get('upload_path');
 
 Thumbs.exists = async function (tid, path) {
-	const thumbs = await topics.getTopicField(tid, "thumbs");
+	const thumbs = await topics.getTopicField(tid, 'thumbs');
 	return thumbs.includes(path);
 };
 
 Thumbs.load = async function (topicData) {
 	const mainPids = topicData.filter(Boolean).map((t) => t.mainPid);
 	const mainPostData = await posts.getPostsFields(mainPids, [
-		"attachments",
-		"uploads",
+		'attachments',
+		'uploads',
 	]);
 	const hasUploads = mainPostData.map(
 		(p) => Array.isArray(p.uploads) && p.uploads.length > 0,
@@ -36,7 +36,7 @@ Thumbs.load = async function (topicData) {
 				!!(hashes[idx] && hashes[idx].length) ||
 				hasUploads[idx]),
 	);
-	({ hasThumbs } = await plugins.hooks.fire("filter:topics.hasThumbs", {
+	({ hasThumbs } = await plugins.hooks.fire('filter:topics.hasThumbs', {
 		topicData,
 		hasThumbs,
 	}));
@@ -69,7 +69,7 @@ async function loadFromTopicData(topicData, options = {}) {
 			uploads = uploads.filter((upload) => {
 				const type = mime.getType(upload);
 				return (
-					!thumbs[idx].includes(upload) && type && type.startsWith("image/")
+					!thumbs[idx].includes(upload) && type && type.startsWith('image/')
 				);
 			});
 
@@ -84,7 +84,7 @@ async function loadFromTopicData(topicData, options = {}) {
 				(attachment) =>
 					!thumbs[idx].includes(attachment.url) &&
 					attachment.mediaType &&
-					attachment.mediaType.startsWith("image/"),
+					attachment.mediaType.startsWith('image/'),
 			);
 
 			if (attachments.length) {
@@ -103,13 +103,13 @@ async function loadFromTopicData(topicData, options = {}) {
 				return hasTimestampPrefix.test(name) ? name.slice(14) : name;
 			})(),
 			path: thumb,
-			url: thumb.startsWith("http")
+			url: thumb.startsWith('http')
 				? thumb
-				: path.posix.join(upload_url, thumb.replace(/\\/g, "/")),
+				: path.posix.join(upload_url, thumb.replace(/\\/g, '/')),
 		})),
 	);
 
-	({ thumbs: response } = await plugins.hooks.fire("filter:topics.getThumbs", {
+	({ thumbs: response } = await plugins.hooks.fire('filter:topics.getThumbs', {
 		tids,
 		thumbsOnly: options.thumbsOnly,
 		thumbs: response,
@@ -135,9 +135,9 @@ Thumbs.get = async function (tids, options) {
 	}
 
 	const topicData = await topics.getTopicsFields(tids, [
-		"tid",
-		"mainPid",
-		"thumbs",
+		'tid',
+		'mainPid',
+		'thumbs',
 	]);
 	const response = await loadFromTopicData(topicData, options);
 	return singular ? response[0] : response;
@@ -149,18 +149,18 @@ Thumbs.associate = async function ({ id, path, score }) {
 	if (!topicData) {
 		return;
 	}
-	const isLocal = !path.startsWith("http");
+	const isLocal = !path.startsWith('http');
 
 	// Normalize the path to allow for changes in upload_path (and so upload_url can be appended if needed)
 	if (isLocal) {
-		path = path.replace(nconf.get("relative_path"), "");
-		path = path.replace(nconf.get("upload_url"), "");
+		path = path.replace(nconf.get('relative_path'), '');
+		path = path.replace(nconf.get('upload_url'), '');
 	}
 
 	if (Array.isArray(topicData.thumbs)) {
 		const currentIdx = topicData.thumbs.indexOf(path);
 		const insertIndex =
-			typeof score === "number" && score >= 0 && score < topicData.thumbs.length
+			typeof score === 'number' && score >= 0 && score < topicData.thumbs.length
 				? score
 				: topicData.thumbs.length;
 
@@ -191,7 +191,7 @@ Thumbs.filterThumbs = function (thumbs) {
 		return [];
 	}
 	thumbs = thumbs.filter((thumb) => {
-		if (thumb.startsWith("http")) {
+		if (thumb.startsWith('http')) {
 			return true;
 		}
 		// ensure it is in upload path
@@ -207,10 +207,10 @@ Thumbs.delete = async function (tid, relativePaths) {
 		return;
 	}
 
-	if (typeof relativePaths === "string") {
+	if (typeof relativePaths === 'string') {
 		relativePaths = [relativePaths];
 	} else if (!Array.isArray(relativePaths)) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	const toRemove = relativePaths

@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Store list of chat rooms",
+	name: 'Store list of chat rooms',
 	timestamp: Date.UTC(2023, 6, 3),
 	method: async function () {
 		const { progress } = this;
-		const lastRoomId = await db.getObjectField("global", "nextChatRoomId");
+		const lastRoomId = await db.getObjectField('global', 'nextChatRoomId');
 		const allRoomIds = [];
 		for (let x = 1; x <= lastRoomId; x++) {
 			allRoomIds.push(x);
@@ -37,7 +37,7 @@ module.exports = {
 						: timestamp,
 				);
 
-				await db.sortedSetAdd("chat:rooms", timestamps, roomIds);
+				await db.sortedSetAdd('chat:rooms', timestamps, roomIds);
 				await db.setObjectBulk(
 					roomIds.map((id, idx) => [
 						`chat:room:${id}`,

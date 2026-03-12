@@ -1,26 +1,26 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const api = require("../../api");
-const topics = require("../../topics");
-const activitypub = require("../../activitypub");
+const db = require('../../database');
+const api = require('../../api');
+const topics = require('../../topics');
+const activitypub = require('../../activitypub');
 
-const helpers = require("../helpers");
-const middleware = require("../../middleware");
-const uploadsController = require("../uploads");
+const helpers = require('../helpers');
+const middleware = require('../../middleware');
+const uploadsController = require('../uploads');
 
 const Topics = module.exports;
 
 Topics.get = async (req, res) => {
 	const topicData = await api.topics.get(req, req.params);
 	if (!topicData) {
-		return helpers.formatApiResponse(404, res, new Error("[[error:no-topic]]"));
+		return helpers.formatApiResponse(404, res, new Error('[[error:no-topic]]'));
 	}
 	helpers.formatApiResponse(200, res, topicData);
 };
 
 Topics.create = async (req, res) => {
-	const id = await lockPosting(req, "[[error:already-posting]]");
+	const id = await lockPosting(req, '[[error:already-posting]]');
 	try {
 		const payload = await api.topics.create(req, req.body);
 		if (payload.queued) {
@@ -29,12 +29,12 @@ Topics.create = async (req, res) => {
 			helpers.formatApiResponse(200, res, payload);
 		}
 	} finally {
-		await db.deleteObjectField("locks", id);
+		await db.deleteObjectField('locks', id);
 	}
 };
 
 Topics.reply = async (req, res) => {
-	const id = await lockPosting(req, "[[error:already-posting]]");
+	const id = await lockPosting(req, '[[error:already-posting]]');
 	try {
 		const payload = await api.topics.reply(req, {
 			...req.body,
@@ -42,14 +42,14 @@ Topics.reply = async (req, res) => {
 		});
 		helpers.formatApiResponse(200, res, payload);
 	} finally {
-		await db.deleteObjectField("locks", id);
+		await db.deleteObjectField('locks', id);
 	}
 };
 
 async function lockPosting(req, error) {
 	const id = req.uid > 0 ? req.uid : req.sessionID;
 	const value = `posting${id}`;
-	const count = await db.incrObjectField("locks", value);
+	const count = await db.incrObjectField('locks', value);
 	if (count > 1) {
 		throw new Error(error);
 	}
@@ -162,7 +162,7 @@ Topics.addThumb = async (req, res) => {
 };
 
 Topics.deleteThumb = async (req, res) => {
-	if (!req.body.path.startsWith("http")) {
+	if (!req.body.path.startsWith('http')) {
 		await middleware.assert.path(req, res, () => {});
 		if (res.headersSent) {
 			return;
@@ -244,7 +244,7 @@ Topics.uncrosspost = async (req, res) => {
 		cid,
 		req.uid,
 	);
-	await activitypub.out.undo.announce("uid", req.uid, req.params.tid);
+	await activitypub.out.undo.announce('uid', req.uid, req.params.tid);
 
 	helpers.formatApiResponse(200, res, { crossposts });
 };

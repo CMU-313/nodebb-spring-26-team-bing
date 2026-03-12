@@ -3,8 +3,8 @@ get:
     - admin
   summary: Get registration queue/invites
   responses:
-    "200":
-      description: "A JSON object containing the registration queue and invites"
+    '200':
+      description: 'A JSON object containing the registration queue and invites'
       content:
         application/json:
           schema:
@@ -61,7 +61,7 @@ get:
                                   value is used in conjunction with
                                   `icon:text` for the user's auto-generated
                                   icon
-                                example: "#f44336"
+                                example: '#f44336'
                         customActions:
                           type: array
                           items:

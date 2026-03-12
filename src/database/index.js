@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
-const databaseName = nconf.get("database");
-const winston = require("winston");
+const databaseName = nconf.get('database');
+const winston = require('winston');
 
 if (!databaseName) {
-	winston.error(new Error("Database type not set! Run ./nodebb setup"));
+	winston.error(new Error('Database type not set! Run ./nodebb setup'));
 	process.exit();
 }
 
 const primaryDB = require(`./${databaseName}`);
-const utils = require("../utils");
+const utils = require('../utils');
 
 primaryDB.parseIntFields = function (data, intFields, requestedFields) {
 	intFields.forEach((field) => {
@@ -29,14 +29,14 @@ primaryDB.parseIntFields = function (data, intFields, requestedFields) {
 
 primaryDB.initSessionStore = async function () {
 	const sessionStoreConfig =
-		nconf.get("session_store") || nconf.get("redis") || nconf.get(databaseName);
+		nconf.get('session_store') || nconf.get('redis') || nconf.get(databaseName);
 	let sessionStoreDB = primaryDB;
 
-	if (nconf.get("session_store")) {
+	if (nconf.get('session_store')) {
 		sessionStoreDB = require(`./${sessionStoreConfig.name}`);
-	} else if (nconf.get("redis")) {
+	} else if (nconf.get('redis')) {
 		// if redis is specified, use it as session store over others
-		sessionStoreDB = require("./redis");
+		sessionStoreDB = require('./redis');
 	}
 
 	primaryDB.sessionStore =
@@ -46,23 +46,23 @@ primaryDB.initSessionStore = async function () {
 function promisifySessionStoreMethod(method, sid) {
 	return new Promise((resolve, reject) => {
 		if (!primaryDB.sessionStore) {
-			resolve(method === "get" ? null : undefined);
+			resolve(method === 'get' ? null : undefined);
 			return;
 		}
 
 		primaryDB.sessionStore[method](sid, (err, result) => {
 			if (err) reject(err);
-			else resolve(method === "get" ? result || null : undefined);
+			else resolve(method === 'get' ? result || null : undefined);
 		});
 	});
 }
 
 primaryDB.sessionStoreGet = function (sid) {
-	return promisifySessionStoreMethod("get", sid);
+	return promisifySessionStoreMethod('get', sid);
 };
 
 primaryDB.sessionStoreDestroy = function (sid) {
-	return promisifySessionStoreMethod("destroy", sid);
+	return promisifySessionStoreMethod('destroy', sid);
 };
 
 module.exports = primaryDB;

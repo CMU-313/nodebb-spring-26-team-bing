@@ -1,30 +1,30 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const user = require("../user");
-const topics = require("../topics");
-const plugins = require("../plugins");
-const privileges = require("../privileges");
-const activitypub = require("../activitypub");
-const cache = require("../cache");
-const meta = require("../meta");
-const utils = require("../utils");
+const db = require('../database');
+const user = require('../user');
+const topics = require('../topics');
+const plugins = require('../plugins');
+const privileges = require('../privileges');
+const activitypub = require('../activitypub');
+const cache = require('../cache');
+const meta = require('../meta');
+const utils = require('../utils');
 
 const Categories = module.exports;
 
-require("./data")(Categories);
-require("./create")(Categories);
-require("./delete")(Categories);
-require("./topics")(Categories);
-require("./activeusers")(Categories);
-require("./recentreplies")(Categories);
-require("./update")(Categories);
-require("./watch")(Categories);
-require("./search")(Categories);
+require('./data')(Categories);
+require('./create')(Categories);
+require('./delete')(Categories);
+require('./topics')(Categories);
+require('./activeusers')(Categories);
+require('./recentreplies')(Categories);
+require('./update')(Categories);
+require('./watch')(Categories);
+require('./search')(Categories);
 
-Categories.icons = require("./icon");
+Categories.icons = require('./icon');
 
 Categories.exists = async function (cids) {
 	let keys;
@@ -41,9 +41,9 @@ Categories.exists = async function (cids) {
 
 Categories.existsByHandle = async function (handle) {
 	if (Array.isArray(handle)) {
-		return await db.isSortedSetMembers("categoryhandle:cid", handle);
+		return await db.isSortedSetMembers('categoryhandle:cid', handle);
 	}
-	return await db.isSortedSetMember("categoryhandle:cid", handle);
+	return await db.isSortedSetMember('categoryhandle:cid', handle);
 };
 
 Categories.getCategoryById = async function (data) {
@@ -55,7 +55,7 @@ Categories.getCategoryById = async function (data) {
 	data.category = category;
 
 	const promises = [
-		data.cid !== "-1" ? Categories.getCategoryTopics(data) : [],
+		data.cid !== '-1' ? Categories.getCategoryTopics(data) : [],
 		Categories.getTopicCount(data),
 		Categories.getWatchState([data.cid], data.uid),
 		getChildrenTree(category, data.uid),
@@ -83,7 +83,7 @@ Categories.getCategoryById = async function (data) {
 	category.parent = parent;
 
 	calculateTopicPostCount(category);
-	const result = await plugins.hooks.fire("filter:category.get", {
+	const result = await plugins.hooks.fire('filter:category.get', {
 		category: category,
 		...data,
 	});
@@ -94,10 +94,10 @@ Categories.getCidByHandle = async function (handle) {
 	if (!handle) {
 		return null;
 	}
-	let cid = await db.sortedSetScore("categoryhandle:cid", handle);
+	let cid = await db.sortedSetScore('categoryhandle:cid', handle);
 	if (!cid) {
 		// remote cids
-		cid = await db.getObjectField("handle:cid", handle);
+		cid = await db.getObjectField('handle:cid', handle);
 	}
 
 	return cid;
@@ -116,13 +116,13 @@ Categories.getAllCidsFromSet = async function (key) {
 };
 
 Categories.getAllCategories = async function () {
-	const cids = await Categories.getAllCidsFromSet("categories:cid");
+	const cids = await Categories.getAllCidsFromSet('categories:cid');
 	return await Categories.getCategories(cids);
 };
 
 Categories.getCidsByPrivilege = async function (set, uid, privilege) {
 	const cids = await Categories.getAllCidsFromSet(set);
-	if (set === "categories:cid") {
+	if (set === 'categories:cid') {
 		cids.unshift(-1);
 	}
 
@@ -137,20 +137,20 @@ Categories.getCategoriesByPrivilege = async function (set, uid, privilege) {
 Categories.getModerators = async function (cid) {
 	const uids = await Categories.getModeratorUids([cid]);
 	return await user.getUsersFields(uids[0], [
-		"uid",
-		"username",
-		"userslug",
-		"picture",
+		'uid',
+		'username',
+		'userslug',
+		'picture',
 	]);
 };
 
 Categories.getModeratorUids = async function (cids) {
-	return await privileges.categories.getUidsWithPrivilege(cids, "moderate");
+	return await privileges.categories.getUidsWithPrivilege(cids, 'moderate');
 };
 
 Categories.getCategories = async function (cids) {
 	if (!Array.isArray(cids)) {
-		throw new Error("[[error:invalid-cid]]");
+		throw new Error('[[error:invalid-cid]]');
 	}
 
 	if (!cids.length) {
@@ -190,7 +190,7 @@ Categories.setUnread = async function (tree, cids, uid) {
 				category.children.forEach(setCategoryUnread);
 				category.unread = category.children.some((c) => c && c.unread);
 			}
-			category["unread-class"] = category.unread ? "unread" : "";
+			category['unread-class'] = category.unread ? 'unread' : '';
 		}
 	}
 	tree.forEach(setCategoryUnread);
@@ -224,7 +224,7 @@ Categories.getTagWhitelist = async function (cids) {
 
 // remove system tags from tag whitelist for non privileged user
 Categories.filterTagWhitelist = function (tagWhitelist, isAdminOrMod) {
-	const systemTags = (meta.config.systemTags || "").split(",");
+	const systemTags = (meta.config.systemTags || '').split(',');
 	if (!isAdminOrMod && systemTags.length) {
 		return tagWhitelist.filter((tag) => !systemTags.includes(tag));
 	}
@@ -253,7 +253,7 @@ Categories.calculateTopicPostCount = calculateTopicPostCount;
 
 Categories.getParents = async function (cids) {
 	const categoriesData = await Categories.getCategoriesFields(cids, [
-		"parentCid",
+		'parentCid',
 	]);
 	const parentCids = categoriesData
 		.filter((c) => c && c.parentCid)
@@ -268,7 +268,7 @@ Categories.getParents = async function (cids) {
 
 Categories.getChildren = async function (cids, uid) {
 	const categoryData = await Categories.getCategoriesFields(cids, [
-		"parentCid",
+		'parentCid',
 	]);
 	const categories = categoryData.map((category, index) => ({
 		cid: cids[index],
@@ -281,7 +281,7 @@ Categories.getChildren = async function (cids, uid) {
 async function getChildrenTree(category, uid) {
 	let childrenCids = await Categories.getChildrenCids(category.cid);
 	childrenCids = await privileges.categories.filterCids(
-		"find",
+		'find',
 		childrenCids,
 		uid,
 	);
@@ -305,7 +305,7 @@ Categories.getParentCids = async function (currentCid) {
 	const parents = [];
 	while (utils.isNumber(cid) ? parseInt(cid, 10) : cid) {
 		// eslint-disable-next-line
-		cid = await Categories.getCategoryField(cid, "parentCid");
+		cid = await Categories.getCategoryField(cid, 'parentCid');
 		if (cid) {
 			parents.unshift(cid);
 		}
@@ -383,7 +383,7 @@ Categories.getTree = function (categories, parentCid) {
 				return;
 			}
 			if (
-				!category.hasOwnProperty("parentCid") ||
+				!category.hasOwnProperty('parentCid') ||
 				category.parentCid === null
 			) {
 				category.parentCid = 0;
@@ -422,7 +422,7 @@ Categories.getTree = function (categories, parentCid) {
 
 Categories.buildForSelect = async function (uid, privilege, fields) {
 	const cids = await Categories.getCidsByPrivilege(
-		"categories:cid",
+		'categories:cid',
 		uid,
 		privilege,
 	);
@@ -430,7 +430,7 @@ Categories.buildForSelect = async function (uid, privilege, fields) {
 };
 
 Categories.buildForSelectAll = async function (fields) {
-	const cids = await Categories.getAllCidsFromSet("categories:cid");
+	const cids = await Categories.getAllCidsFromSet('categories:cid');
 	return await getSelectData(cids, fields);
 };
 
@@ -442,7 +442,7 @@ async function getSelectData(cids, fields) {
 
 Categories.buildForSelectCategories = function (categories, fields, parentCid) {
 	function recursive({ ...category }, categoriesData, level, depth) {
-		const bullet = level ? "&bull; " : "";
+		const bullet = level ? '&bull; ' : '';
 		category.value = category.cid;
 		category.level = level;
 		category.text = level + bullet + category.name;
@@ -474,22 +474,22 @@ Categories.buildForSelectCategories = function (categories, fields, parentCid) {
 	});
 
 	rootCategories.forEach((category) =>
-		recursive(category, categoriesData, "", 0),
+		recursive(category, categoriesData, '', 0),
 	);
 
 	const pickFields = [
-		"cid",
-		"name",
-		"level",
-		"icon",
-		"parentCid",
-		"color",
-		"bgColor",
-		"backgroundImage",
-		"imageClass",
+		'cid',
+		'name',
+		'level',
+		'icon',
+		'parentCid',
+		'color',
+		'bgColor',
+		'backgroundImage',
+		'imageClass',
 	];
 	fields = fields || [];
-	if (fields.includes("text") && fields.includes("value")) {
+	if (fields.includes('text') && fields.includes('value')) {
 		return categoriesData.map((category) => _.pick(category, fields));
 	}
 	if (fields.length) {
@@ -499,4 +499,4 @@ Categories.buildForSelectCategories = function (categories, fields, parentCid) {
 	return categoriesData.map((category) => _.pick(category, pickFields));
 };
 
-require("../promisify")(Categories);
+require('../promisify')(Categories);

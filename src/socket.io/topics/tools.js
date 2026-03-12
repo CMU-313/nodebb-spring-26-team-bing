@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const topics = require("../../topics");
-const privileges = require("../../privileges");
-const plugins = require("../../plugins");
+const topics = require('../../topics');
+const privileges = require('../../privileges');
+const plugins = require('../../plugins');
 
 module.exports = function (SocketTopics) {
 	SocketTopics.loadTopicTools = async function (socket, data) {
 		if (!data) {
-			throw new Error("[[error:invalid-data]]");
+			throw new Error('[[error:invalid-data]]');
 		}
 
 		const [topicData, userPrivileges] = await Promise.all([
@@ -16,13 +16,13 @@ module.exports = function (SocketTopics) {
 		]);
 
 		if (!topicData) {
-			throw new Error("[[error:no-topic]]");
+			throw new Error('[[error:no-topic]]');
 		}
-		if (!userPrivileges["topics:read"] || !userPrivileges.view_thread_tools) {
-			throw new Error("[[error:no-privileges]]");
+		if (!userPrivileges['topics:read'] || !userPrivileges.view_thread_tools) {
+			throw new Error('[[error:no-privileges]]');
 		}
 		topicData.privileges = userPrivileges;
-		const result = await plugins.hooks.fire("filter:topic.thread_tools", {
+		const result = await plugins.hooks.fire('filter:topic.thread_tools', {
 			topic: topicData,
 			uid: socket.uid,
 			tools: [],
@@ -33,7 +33,7 @@ module.exports = function (SocketTopics) {
 
 	SocketTopics.orderPinnedTopics = async function (socket, data) {
 		if (!data || !data.tid) {
-			throw new Error("[[error:invalid-data]]");
+			throw new Error('[[error:invalid-data]]');
 		}
 
 		await topics.tools.orderPinnedTopics(socket.uid, data);

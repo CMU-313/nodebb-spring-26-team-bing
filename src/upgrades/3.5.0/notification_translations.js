@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Update translation keys in notification bodyShort",
+	name: 'Update translation keys in notification bodyShort',
 	timestamp: Date.UTC(2023, 9, 5),
 	method: async function () {
 		const { progress } = this;
@@ -17,7 +17,7 @@ module.exports = {
 				);
 				notifData.forEach((n) => {
 					if (n && n.bodyShort) {
-						n.bodyShort = n.bodyShort.replace(/_/g, "-");
+						n.bodyShort = n.bodyShort.replace(/_/g, '-');
 					}
 				});
 

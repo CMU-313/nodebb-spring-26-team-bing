@@ -1,21 +1,21 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const querystring = require("querystring");
+const nconf = require('nconf');
+const querystring = require('querystring');
 
-const meta = require("../meta");
-const pagination = require("../pagination");
-const user = require("../user");
-const topics = require("../topics");
-const helpers = require("./helpers");
-const privileges = require("../privileges");
+const meta = require('../meta');
+const pagination = require('../pagination');
+const user = require('../user');
+const topics = require('../topics');
+const helpers = require('./helpers');
+const privileges = require('../privileges');
 
 const unreadController = module.exports;
-const relative_path = nconf.get("relative_path");
+const relative_path = nconf.get('relative_path');
 
 unreadController.get = async function (req, res) {
 	const { cid, tag } = req.query;
-	const filter = req.query.filter || "";
+	const filter = req.query.filter || '';
 
 	const [categoryData, tagData, userSettings, canPost, isPrivileged] =
 		await Promise.all([
@@ -43,13 +43,13 @@ unreadController.get = async function (req, res) {
 		req.originalUrl.startsWith(`${relative_path}/api/unread`) ||
 		req.originalUrl.startsWith(`${relative_path}/unread`)
 	);
-	const baseUrl = isDisplayedAsHome ? "" : "unread";
+	const baseUrl = isDisplayedAsHome ? '' : 'unread';
 
 	if (isDisplayedAsHome) {
-		data.title = meta.config.homePageTitle || "[[pages:home]]";
+		data.title = meta.config.homePageTitle || '[[pages:home]]';
 	} else {
-		data.title = "[[pages:unread]]";
-		data.breadcrumbs = helpers.buildBreadcrumbs([{ text: "[[unread:title]]" }]);
+		data.title = '[[pages:unread]]';
+		data.breadcrumbs = helpers.buildBreadcrumbs([{ text: '[[unread:title]]' }]);
 	}
 
 	data.pageCount = Math.max(
@@ -58,7 +58,7 @@ unreadController.get = async function (req, res) {
 	);
 	data.pagination = pagination.create(page, data.pageCount, req.query);
 	helpers.addLinkTags({
-		url: "unread",
+		url: 'unread',
 		res: req.res,
 		tags: data.pagination.rel,
 		page: page,
@@ -71,11 +71,11 @@ unreadController.get = async function (req, res) {
 	data.canPost = canPost;
 	data.showSelect = true;
 	data.showTopicTools = isPrivileged;
-	data.allCategoriesUrl = `${baseUrl}${helpers.buildQueryString(req.query, "cid", "")}`;
+	data.allCategoriesUrl = `${baseUrl}${helpers.buildQueryString(req.query, 'cid', '')}`;
 	data.selectedCategory = categoryData.selectedCategory;
 	data.selectedCids = categoryData.selectedCids;
-	data.selectCategoryLabel = "[[unread:mark-as-read]]";
-	data.selectCategoryIcon = "fa-inbox";
+	data.selectCategoryLabel = '[[unread:mark-as-read]]';
+	data.selectCategoryIcon = 'fa-inbox';
 	data.showCategorySelectLabel = true;
 	data.selectedTag = tagData.selectedTag;
 	data.selectedTags = tagData.selectedTags;
@@ -83,13 +83,13 @@ unreadController.get = async function (req, res) {
 	data.selectedFilter = data.filters.find(
 		(filter) => filter && filter.selected,
 	);
-	data["reputation:disabled"] = meta.config["reputation:disabled"];
+	data['reputation:disabled'] = meta.config['reputation:disabled'];
 
-	res.render("unread", data);
+	res.render('unread', data);
 };
 
 unreadController.unreadTotal = async function (req, res, next) {
-	const filter = req.query.filter || "";
+	const filter = req.query.filter || '';
 	try {
 		const unreadCount = await topics.getTotalUnread(req.uid, filter);
 		res.json(unreadCount);

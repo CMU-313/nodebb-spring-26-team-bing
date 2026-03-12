@@ -3,8 +3,8 @@ get:
     - flags
   summary: Get flags list
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:
@@ -111,7 +111,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
-                              example: "#f44336"
+                              example: '#f44336'
                       reporterId:
                         type: array
                         items:
@@ -146,7 +146,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
-                              example: "#f44336"
+                              example: '#f44336'
                       targetUid:
                         type: array
                         items:
@@ -181,7 +181,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
-                              example: "#f44336"
+                              example: '#f44336'
               - $ref: ../components/schemas/Pagination.yaml#/Pagination
               - $ref: ../components/schemas/Breadcrumbs.yaml#/Breadcrumbs
               - $ref: ../components/schemas/CommonProps.yaml#/CommonProps

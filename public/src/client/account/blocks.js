@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-define("forum/account/blocks", [
-	"forum/account/header",
-	"api",
-	"hooks",
-	"alerts",
+define('forum/account/blocks', [
+	'forum/account/header',
+	'api',
+	'hooks',
+	'alerts',
 ], function (header, api, hooks, alerts) {
 	const Blocks = {};
 
@@ -14,23 +14,23 @@ define("forum/account/blocks", [
 		const startTypingEl = blockListEl.find('[component="blocks/start-typing"]');
 		const noUsersEl = blockListEl.find('[component="blocks/no-users"]');
 
-		$("#user-search").on(
-			"keyup",
+		$('#user-search').on(
+			'keyup',
 			utils.debounce(function () {
 				const username = this.value;
 
 				if (!username) {
 					blockListEl.find('[component="blocks/search/match"]').remove();
-					startTypingEl.removeClass("hidden");
-					noUsersEl.addClass("hidden");
+					startTypingEl.removeClass('hidden');
+					noUsersEl.addClass('hidden');
 					return;
 				}
-				startTypingEl.addClass("hidden");
+				startTypingEl.addClass('hidden');
 				api.get(
-					"/api/users",
+					'/api/users',
 					{
 						query: username,
-						searchBy: "username",
+						searchBy: 'username',
 						paginate: false,
 					},
 					function (err, data) {
@@ -39,18 +39,18 @@ define("forum/account/blocks", [
 						}
 						if (!data.users.length) {
 							blockListEl.find('[component="blocks/search/match"]').remove();
-							noUsersEl.removeClass("hidden");
+							noUsersEl.removeClass('hidden');
 							return;
 						}
-						noUsersEl.addClass("hidden");
+						noUsersEl.addClass('hidden');
 						// Only show first 10 matches
 						if (data.matchCount > 10) {
 							data.users.length = 10;
 						}
 
 						app.parseAndTranslate(
-							"account/blocks",
-							"edit",
+							'account/blocks',
+							'edit',
 							{
 								edit: data.users,
 							},
@@ -64,29 +64,29 @@ define("forum/account/blocks", [
 			}, 200),
 		);
 
-		$(".block-edit").on(
-			"click",
+		$('.block-edit').on(
+			'click',
 			'[data-action="block"], [data-action="unblock"]',
 			async function () {
-				const uid = parseInt(this.getAttribute("data-uid"), 10);
-				const action = $(this).attr("data-action");
+				const uid = parseInt(this.getAttribute('data-uid'), 10);
+				const action = $(this).attr('data-action');
 				const currentBtn = $(this);
 				await performBlock(uid, action);
 				currentBtn
-					.addClass("hidden")
-					.siblings("[data-action]")
-					.removeClass("hidden");
+					.addClass('hidden')
+					.siblings('[data-action]')
+					.removeClass('hidden');
 				Blocks.refreshList();
 			},
 		);
 
-		$("#users-container").on(
-			"click",
+		$('#users-container').on(
+			'click',
 			'[data-action="unblock"]',
 			async function () {
 				await performBlock(
-					$(this).attr("data-uid"),
-					$(this).attr("data-action"),
+					$(this).attr('data-uid'),
+					$(this).attr('data-action'),
 				);
 				Blocks.refreshList();
 			},
@@ -95,7 +95,7 @@ define("forum/account/blocks", [
 
 	async function performBlock(uid, action) {
 		return socket
-			.emit("user.toggleBlock", {
+			.emit('user.toggleBlock', {
 				blockeeUid: uid,
 				blockerUid: ajaxify.data.uid,
 				action: action,
@@ -104,21 +104,21 @@ define("forum/account/blocks", [
 	}
 
 	Blocks.refreshList = function () {
-		$.get(config.relative_path + "/api/" + ajaxify.currentPage)
+		$.get(config.relative_path + '/api/' + ajaxify.currentPage)
 			.done(function (payload) {
 				app.parseAndTranslate(
-					"account/blocks",
-					"users",
+					'account/blocks',
+					'users',
 					payload,
 					function (html) {
-						html.find(".timeago").timeago();
-						$("#users-container").html(html);
-						$("#users-container")
-							.siblings("div.alert")
-							[html.length ? "hide" : "show"]();
+						html.find('.timeago').timeago();
+						$('#users-container').html(html);
+						$('#users-container')
+							.siblings('div.alert')
+							[html.length ? 'hide' : 'show']();
 					},
 				);
-				hooks.fire("action:user.blocks.toggle", { data: payload });
+				hooks.fire('action:user.blocks.toggle', { data: payload });
 			})
 			.fail(function () {
 				ajaxify.go(ajaxify.currentPage);

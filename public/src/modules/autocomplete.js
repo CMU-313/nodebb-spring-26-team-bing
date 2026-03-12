@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-define("autocomplete", [
-	"api",
-	"alerts",
-	"@textcomplete/core",
-	"@textcomplete/textarea",
-	"@textcomplete/contenteditable",
+define('autocomplete', [
+	'api',
+	'alerts',
+	'@textcomplete/core',
+	'@textcomplete/textarea',
+	'@textcomplete/contenteditable',
 ], function (
 	api,
 	alerts,
@@ -26,7 +26,7 @@ define("autocomplete", [
 			input.autocomplete({
 				...acParams,
 				open: function () {
-					$(this).autocomplete("widget").css("z-index", 100005);
+					$(this).autocomplete('widget').css('z-index', 100005);
 				},
 				select: function (event, ui) {
 					handleOnSelect(input, onSelect, event, ui);
@@ -36,7 +36,7 @@ define("autocomplete", [
 	};
 
 	autocomplete.user = function (input, params, onSelect) {
-		if (typeof params === "function") {
+		if (typeof params === 'function') {
 			onSelect = params;
 			params = {};
 		}
@@ -48,14 +48,14 @@ define("autocomplete", [
 			source: (request, response) => {
 				params.query = request.term;
 
-				api.get("/api/users", params, function (err, result) {
+				api.get('/api/users', params, function (err, result) {
 					if (err) {
 						return alerts.error(err);
 					}
 
 					if (result && result.users) {
 						const names = result.users.map(function (user) {
-							const username = $("<div></div>").html(user.username).text();
+							const username = $('<div></div>').html(user.username).text();
 							return (
 								user && {
 									label: username,
@@ -69,8 +69,8 @@ define("autocomplete", [
 										displayname: user.displayname,
 										picture: user.picture,
 										banned: user.banned,
-										"icon:text": user["icon:text"],
-										"icon:bgColor": user["icon:bgColor"],
+										'icon:text': user['icon:text'],
+										'icon:bgColor': user['icon:bgColor'],
 									},
 								}
 							);
@@ -78,7 +78,7 @@ define("autocomplete", [
 						response(names);
 					}
 
-					$(".ui-autocomplete a").attr("data-ajaxify", "false");
+					$('.ui-autocomplete a').attr('data-ajaxify', 'false');
 				});
 			},
 		});
@@ -90,7 +90,7 @@ define("autocomplete", [
 			onSelect,
 			source: (request, response) => {
 				socket.emit(
-					"groups.search",
+					'groups.search',
 					{
 						query: request.term,
 					},
@@ -110,7 +110,7 @@ define("autocomplete", [
 							});
 							response(names);
 						}
-						$(".ui-autocomplete a").attr("data-ajaxify", "false");
+						$('.ui-autocomplete a').attr('data-ajaxify', 'false');
 					},
 				);
 			},
@@ -124,7 +124,7 @@ define("autocomplete", [
 			delay: 100,
 			source: (request, response) => {
 				socket.emit(
-					"topics.autocompleteTags",
+					'topics.autocompleteTags',
 					{
 						query: request.term,
 						cid: ajaxify.data.cid || 0,
@@ -136,7 +136,7 @@ define("autocomplete", [
 						if (tags) {
 							response(tags);
 						}
-						$(".ui-autocomplete a").attr("data-ajaxify", "false");
+						$('.ui-autocomplete a').attr('data-ajaxify', 'false');
 					},
 				);
 			},
@@ -145,7 +145,7 @@ define("autocomplete", [
 
 	function handleOnSelect(input, onselect, event, ui) {
 		onselect = onselect || function () {};
-		const e = jQuery.Event("keypress");
+		const e = jQuery.Event('keypress');
 		e.which = 13;
 		e.keyCode = 13;
 		setTimeout(function () {
@@ -161,27 +161,27 @@ define("autocomplete", [
 			return;
 		}
 		var editor;
-		if (targetEl.nodeName === "TEXTAREA" || targetEl.nodeName === "INPUT") {
+		if (targetEl.nodeName === 'TEXTAREA' || targetEl.nodeName === 'INPUT') {
 			editor = new TextareaEditor(targetEl);
 		} else if (
-			targetEl.nodeName === "DIV" &&
-			targetEl.getAttribute("contenteditable") === "true"
+			targetEl.nodeName === 'DIV' &&
+			targetEl.getAttribute('contenteditable') === 'true'
 		) {
 			editor = new ContenteditableEditor(targetEl);
 		}
 		if (!editor) {
-			throw new Error("unknown target element type");
+			throw new Error('unknown target element type');
 		}
 		// yuku-t/textcomplete inherits directionality from target element itself
 		targetEl.setAttribute(
-			"dir",
-			document.querySelector("html").getAttribute("data-dir"),
+			'dir',
+			document.querySelector('html').getAttribute('data-dir'),
 		);
 
 		var textcomplete = new Textcomplete(editor, strategies, {
 			dropdown: options,
 		});
-		textcomplete.on("rendered", function () {
+		textcomplete.on('rendered', function () {
 			if (textcomplete.dropdown.items.length) {
 				// Activate the first item by default.
 				textcomplete.dropdown.items[0].activate();

@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const router = require("express").Router();
-const middleware = require("../../middleware");
-const controllers = require("../../controllers");
-const routeHelpers = require("../helpers");
+const router = require('express').Router();
+const middleware = require('../../middleware');
+const controllers = require('../../controllers');
+const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
@@ -15,19 +15,19 @@ module.exports = function () {
 
 	setupApiRoute(
 		router,
-		"get",
-		"/categories",
+		'get',
+		'/categories',
 		[],
 		controllers.write.search.categories,
 	);
 
 	setupApiRoute(
 		router,
-		"get",
-		"/chats/:roomId/users",
+		'get',
+		'/chats/:roomId/users',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["query"]),
+			middleware.checkRequired.bind(null, ['query']),
 			middleware.canChat,
 			middleware.assert.room,
 		],
@@ -35,11 +35,11 @@ module.exports = function () {
 	);
 	setupApiRoute(
 		router,
-		"get",
-		"/chats/:roomId/messages",
+		'get',
+		'/chats/:roomId/messages',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["query"]),
+			middleware.checkRequired.bind(null, ['query']),
 			middleware.canChat,
 			middleware.assert.room,
 		],

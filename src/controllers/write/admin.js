@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const categories = require("../../categories");
-const api = require("../../api");
-const helpers = require("../helpers");
-const messaging = require("../../messaging");
-const events = require("../../events");
-const activitypub = require("../../activitypub");
+const categories = require('../../categories');
+const api = require('../../api');
+const helpers = require('../helpers');
+const messaging = require('../../messaging');
+const events = require('../../events');
+const activitypub = require('../../activitypub');
 
 const Admin = module.exports;
 
@@ -79,12 +79,12 @@ Admin.chats = {};
 Admin.chats.deleteRoom = async (req, res) => {
 	const roomData = await messaging.getRoomData(req.params.roomId);
 	if (!roomData) {
-		throw new Error("[[error:no-room]]");
+		throw new Error('[[error:no-room]]');
 	}
 	await messaging.deleteRooms([req.params.roomId]);
 
 	events.log({
-		type: "chat-room-deleted",
+		type: 'chat-room-deleted',
 		roomId: req.params.roomId,
 		roomName: roomData.roomName ? roomData.roomName : `No room name`,
 		uid: req.uid,

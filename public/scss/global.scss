@@ -8,23 +8,23 @@
 
 // rtl fixes for text-break and code blocks
 /*rtl:begin:ignore*/
-html[data-dir="rtl"] {
+html[data-dir='rtl'] {
   .text-break {
     word-wrap: break-word !important;
     word-break: break-word !important;
   }
 
-  [component="post/content"] code {
+  [component='post/content'] code {
     direction: ltr;
     text-align: left;
   }
 }
 /*rtl:end:ignore*/
 
-[component="post/content"],
-[component="post/parent/content"],
-[component="chat/message/body"],
-[component="composer"] .preview {
+[component='post/content'],
+[component='post/parent/content'],
+[component='chat/message/body'],
+[component='composer'] .preview {
   h1 {
     font-size: calc(1.15rem + 1vw);
   }

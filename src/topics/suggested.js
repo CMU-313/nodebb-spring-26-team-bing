@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const user = require("../user");
-const privileges = require("../privileges");
-const plugins = require("../plugins");
+const db = require('../database');
+const user = require('../user');
+const privileges = require('../privileges');
+const plugins = require('../plugins');
 
 module.exports = function (Topics) {
 	Topics.getSuggestedTopics = async function (
@@ -22,9 +22,9 @@ module.exports = function (Topics) {
 		tid = String(tid);
 		cutoff = cutoff === 0 ? cutoff : cutoff * 2592000000;
 		const { cid, title, tags } = await Topics.getTopicFields(tid, [
-			"cid",
-			"title",
-			"tags",
+			'cid',
+			'title',
+			'tags',
 		]);
 
 		const [tagTids, searchTids] = await Promise.all([
@@ -43,7 +43,7 @@ module.exports = function (Topics) {
 			categoryTids = await getCategoryTids(tid, cid, cutoff);
 		}
 		tids = _.shuffle(_.uniq(tids.concat(categoryTids)));
-		tids = await privileges.topics.filterTids("topics:read", tids, uid);
+		tids = await privileges.topics.filterTids('topics:read', tids, uid);
 
 		let topicData = await Topics.getTopicsByTids(tids, uid);
 		topicData = topicData.filter((topic) => topic && String(topic.tid) !== tid);
@@ -67,7 +67,7 @@ module.exports = function (Topics) {
 						tags.map((tag) => `tag:${tag}:topics`),
 						0,
 						-1,
-						"+inf",
+						'+inf',
 						Date.now() - cutoff,
 					);
 		tids = tids.filter((_tid) => _tid !== tid); // remove self
@@ -75,10 +75,10 @@ module.exports = function (Topics) {
 	}
 
 	async function getSearchTids(tid, title, cid, cutoff) {
-		let { ids: tids } = await plugins.hooks.fire("filter:search.query", {
-			index: "topic",
+		let { ids: tids } = await plugins.hooks.fire('filter:search.query', {
+			index: 'topic',
 			content: title,
-			matchWords: "any",
+			matchWords: 'any',
 			cid: [cid],
 			limit: 20,
 			ids: [],
@@ -86,8 +86,8 @@ module.exports = function (Topics) {
 		tids = tids.filter((_tid) => String(_tid) !== tid); // remove self
 		if (cutoff) {
 			const topicData = await Topics.getTopicsFields(tids, [
-				"tid",
-				"timestamp",
+				'tid',
+				'timestamp',
 			]);
 			const now = Date.now();
 			tids = topicData
@@ -106,7 +106,7 @@ module.exports = function (Topics) {
 						`cid:${cid}:tids:lastposttime`,
 						0,
 						10,
-						"+inf",
+						'+inf',
 						Date.now() - cutoff,
 					);
 		return _.shuffle(tids.filter((_tid) => _tid !== tid));

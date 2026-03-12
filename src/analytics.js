@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const cronJob = require("cron").CronJob;
-const winston = require("winston");
-const nconf = require("nconf");
-const util = require("util");
-const _ = require("lodash");
+const cronJob = require('cron').CronJob;
+const winston = require('winston');
+const nconf = require('nconf');
+const util = require('util');
+const _ = require('lodash');
 
 const sleep = util.promisify(setTimeout);
 
-const db = require("./database");
-const utils = require("./utils");
-const plugins = require("./plugins");
-const pubsub = require("./pubsub");
+const db = require('./database');
+const utils = require('./utils');
+const plugins = require('./plugins');
+const pubsub = require('./pubsub');
 
 const Analytics = module.exports;
 
@@ -27,13 +27,13 @@ let local = {
 const empty = _.cloneDeep(local);
 const total = _.cloneDeep(local);
 
-const runJobs = nconf.get("runJobs");
+const runJobs = nconf.get('runJobs');
 
 Analytics.pause = false;
 
 Analytics.init = async function () {
 	new cronJob(
-		"*/10 * * * * *",
+		'*/10 * * * * *',
 		async () => {
 			if (Analytics.pause) return;
 			publishLocalAnalytics();
@@ -48,11 +48,11 @@ Analytics.init = async function () {
 
 	if (runJobs) {
 		new cronJob(
-			"*/30 * * * *",
+			'*/30 * * * *',
 			async () => {
 				await db.sortedSetsRemoveRangeByScore(
-					["ip:recent"],
-					"-inf",
+					['ip:recent'],
+					'-inf',
 					Date.now() - 172800000,
 				);
 			},
@@ -62,14 +62,14 @@ Analytics.init = async function () {
 	}
 
 	if (runJobs) {
-		pubsub.on("analytics:publish", (data) => {
+		pubsub.on('analytics:publish', (data) => {
 			incrementProperties(total, data.local);
 		});
 	}
 };
 
 function publishLocalAnalytics() {
-	pubsub.publish("analytics:publish", {
+	pubsub.publish('analytics:publish', {
 		local: local,
 	});
 	local = _.cloneDeep(empty);
@@ -77,7 +77,7 @@ function publishLocalAnalytics() {
 
 function incrementProperties(obj1, obj2) {
 	for (const [key, value] of Object.entries(obj2)) {
-		if (typeof value === "object") {
+		if (typeof value === 'object') {
 			incrementProperties(obj1[key], value);
 		} else if (utils.isNumber(value)) {
 			obj1[key] = obj1[key] || 0;
@@ -89,21 +89,21 @@ function incrementProperties(obj1, obj2) {
 Analytics.increment = function (keys, callback) {
 	keys = Array.isArray(keys) ? keys : [keys];
 
-	plugins.hooks.fire("action:analytics.increment", { keys: keys });
+	plugins.hooks.fire('action:analytics.increment', { keys: keys });
 
 	keys.forEach((key) => {
 		local.counters[key] = local.counters[key] || 0;
 		local.counters[key] += 1;
 	});
 
-	if (typeof callback === "function") {
+	if (typeof callback === 'function') {
 		callback();
 	}
 };
 
 Analytics.peek = () => local;
 
-Analytics.getKeys = async () => db.getSortedSetRange("analyticsKeys", 0, -1);
+Analytics.getKeys = async () => db.getSortedSetRange('analyticsKeys', 0, -1);
 
 Analytics.pageView = async function (payload) {
 	local.pageViews += 1;
@@ -126,7 +126,7 @@ Analytics.apPageView = async function ({ ip }) {
 
 async function incrementUniqueVisitors(ip) {
 	if (ip) {
-		const score = await db.sortedSetScore("ip:recent", ip);
+		const score = await db.sortedSetScore('ip:recent', ip);
 		let record = !score;
 		if (score) {
 			const today = new Date();
@@ -136,7 +136,7 @@ async function incrementUniqueVisitors(ip) {
 
 		if (record) {
 			local.uniquevisitors += 1;
-			await db.sortedSetAdd("ip:recent", Date.now(), ip);
+			await db.sortedSetAdd('ip:recent', Date.now(), ip);
 		}
 	}
 }
@@ -148,23 +148,23 @@ Analytics.writeData = async function () {
 	const incrByBulk = [];
 
 	// Build list of metrics that were updated
-	let metrics = ["pageviews", "pageviews:month"];
+	let metrics = ['pageviews', 'pageviews:month'];
 	metrics.forEach((metric) => {
-		const toAdd = ["registered", "guest", "bot"].map(
+		const toAdd = ['registered', 'guest', 'bot'].map(
 			(type) => `${metric}:${type}`,
 		);
 		metrics = [...metrics, ...toAdd];
 	});
-	metrics.push("uniquevisitors");
+	metrics.push('uniquevisitors');
 
 	today.setHours(today.getHours(), 0, 0, 0);
 	month.setMonth(month.getMonth(), 1);
 	month.setHours(0, 0, 0, 0);
 
 	if (total.pageViews > 0) {
-		incrByBulk.push(["analytics:pageviews", total.pageViews, today.getTime()]);
+		incrByBulk.push(['analytics:pageviews', total.pageViews, today.getTime()]);
 		incrByBulk.push([
-			"analytics:pageviews:month",
+			'analytics:pageviews:month',
 			total.pageViews,
 			month.getTime(),
 		]);
@@ -173,12 +173,12 @@ Analytics.writeData = async function () {
 
 	if (total.pageViewsRegistered > 0) {
 		incrByBulk.push([
-			"analytics:pageviews:registered",
+			'analytics:pageviews:registered',
 			total.pageViewsRegistered,
 			today.getTime(),
 		]);
 		incrByBulk.push([
-			"analytics:pageviews:month:registered",
+			'analytics:pageviews:month:registered',
 			total.pageViewsRegistered,
 			month.getTime(),
 		]);
@@ -187,12 +187,12 @@ Analytics.writeData = async function () {
 
 	if (total.pageViewsGuest > 0) {
 		incrByBulk.push([
-			"analytics:pageviews:guest",
+			'analytics:pageviews:guest',
 			total.pageViewsGuest,
 			today.getTime(),
 		]);
 		incrByBulk.push([
-			"analytics:pageviews:month:guest",
+			'analytics:pageviews:month:guest',
 			total.pageViewsGuest,
 			month.getTime(),
 		]);
@@ -201,12 +201,12 @@ Analytics.writeData = async function () {
 
 	if (total.pageViewsBot > 0) {
 		incrByBulk.push([
-			"analytics:pageviews:bot",
+			'analytics:pageviews:bot',
 			total.pageViewsBot,
 			today.getTime(),
 		]);
 		incrByBulk.push([
-			"analytics:pageviews:month:bot",
+			'analytics:pageviews:month:bot',
 			total.pageViewsBot,
 			month.getTime(),
 		]);
@@ -215,12 +215,12 @@ Analytics.writeData = async function () {
 
 	if (total.apPageViews > 0) {
 		incrByBulk.push([
-			"analytics:pageviews:ap",
+			'analytics:pageviews:ap',
 			total.apPageViews,
 			today.getTime(),
 		]);
 		incrByBulk.push([
-			"analytics:pageviews:ap:month",
+			'analytics:pageviews:ap:month',
 			total.apPageViews,
 			month.getTime(),
 		]);
@@ -229,7 +229,7 @@ Analytics.writeData = async function () {
 
 	if (total.uniquevisitors > 0) {
 		incrByBulk.push([
-			"analytics:uniquevisitors",
+			'analytics:uniquevisitors',
 			total.uniquevisitors,
 			today.getTime(),
 		]);
@@ -249,7 +249,7 @@ Analytics.writeData = async function () {
 	// Update list of tracked metrics
 	dbQueue.push(
 		db.sortedSetAdd(
-			"analyticsKeys",
+			'analyticsKeys',
 			metrics.map(() => +Date.now()),
 			metrics,
 		),
@@ -266,7 +266,7 @@ Analytics.writeData = async function () {
 
 Analytics.getHourlyStatsForSet = async function (set, hour, numHours) {
 	// Guard against accidental ommission of `analytics:` prefix
-	if (!set.startsWith("analytics:")) {
+	if (!set.startsWith('analytics:')) {
 		set = `analytics:${set}`;
 	}
 
@@ -298,7 +298,7 @@ Analytics.getHourlyStatsForSet = async function (set, hour, numHours) {
 
 Analytics.getDailyStatsForSet = async function (set, day, numDays) {
 	// Guard against accidental ommission of `analytics:` prefix
-	if (!set.startsWith("analytics:")) {
+	if (!set.startsWith('analytics:')) {
 		set = `analytics:${set}`;
 	}
 
@@ -329,8 +329,8 @@ Analytics.getSummary = async function () {
 	today.setHours(0, 0, 0, 0);
 
 	const [seven, thirty] = await Promise.all([
-		Analytics.getDailyStatsForSet("analytics:pageviews", today, 7),
-		Analytics.getDailyStatsForSet("analytics:pageviews", today, 30),
+		Analytics.getDailyStatsForSet('analytics:pageviews', today, 7),
+		Analytics.getDailyStatsForSet('analytics:pageviews', today, 30),
 	]);
 
 	return {
@@ -341,22 +341,22 @@ Analytics.getSummary = async function () {
 
 Analytics.getCategoryAnalytics = async function (cid) {
 	return await utils.promiseParallel({
-		"pageviews:hourly": Analytics.getHourlyStatsForSet(
+		'pageviews:hourly': Analytics.getHourlyStatsForSet(
 			`analytics:pageviews:byCid:${cid}`,
 			Date.now(),
 			24,
 		),
-		"pageviews:daily": Analytics.getDailyStatsForSet(
+		'pageviews:daily': Analytics.getDailyStatsForSet(
 			`analytics:pageviews:byCid:${cid}`,
 			Date.now(),
 			30,
 		),
-		"topics:daily": Analytics.getDailyStatsForSet(
+		'topics:daily': Analytics.getDailyStatsForSet(
 			`analytics:topics:byCid:${cid}`,
 			Date.now(),
 			7,
 		),
-		"posts:daily": Analytics.getDailyStatsForSet(
+		'posts:daily': Analytics.getDailyStatsForSet(
 			`analytics:posts:byCid:${cid}`,
 			Date.now(),
 			7,
@@ -366,13 +366,13 @@ Analytics.getCategoryAnalytics = async function (cid) {
 
 Analytics.getErrorAnalytics = async function () {
 	return await utils.promiseParallel({
-		"not-found": Analytics.getDailyStatsForSet(
-			"analytics:errors:404",
+		'not-found': Analytics.getDailyStatsForSet(
+			'analytics:errors:404',
 			Date.now(),
 			7,
 		),
 		toobusy: Analytics.getDailyStatsForSet(
-			"analytics:errors:503",
+			'analytics:errors:503',
 			Date.now(),
 			7,
 		),
@@ -381,13 +381,13 @@ Analytics.getErrorAnalytics = async function () {
 
 Analytics.getBlacklistAnalytics = async function () {
 	return await utils.promiseParallel({
-		daily: Analytics.getDailyStatsForSet("analytics:blacklist", Date.now(), 7),
+		daily: Analytics.getDailyStatsForSet('analytics:blacklist', Date.now(), 7),
 		hourly: Analytics.getHourlyStatsForSet(
-			"analytics:blacklist",
+			'analytics:blacklist',
 			Date.now(),
 			24,
 		),
 	});
 };
 
-require("./promisify")(Analytics);
+require('./promisify')(Analytics);

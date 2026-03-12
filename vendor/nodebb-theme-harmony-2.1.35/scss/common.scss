@@ -47,8 +47,8 @@ hr {
 .caret {
   &::after {
     border: none;
-    font-family: "FontAwesome";
-    content: "\f078";
+    font-family: 'FontAwesome';
+    content: '\f078';
   }
 }
 
@@ -117,8 +117,8 @@ body:not(.page-user) {
   @extend .border;
 }
 
-[component="chat/message/body"],
-[component="post/content"] {
+[component='chat/message/body'],
+[component='post/content'] {
   .img-fluid {
     @extend .shadow-sm;
     padding: $spacer * 0.5;
@@ -131,10 +131,10 @@ body:not(.page-user) {
   }
 }
 
-[component="chat/message/body"],
-[component="post/content"],
-[component="topic/teaser"] .post-content,
-[component="category/posts"] .post-content,
+[component='chat/message/body'],
+[component='post/content'],
+[component='topic/teaser'] .post-content,
+[component='category/posts'] .post-content,
 .post-queue.posts-list .post-content {
   a {
     text-decoration: underline;

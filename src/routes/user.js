@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const helpers = require("./helpers");
+const helpers = require('./helpers');
 
 const { setupPageRoute } = helpers;
 
@@ -16,9 +16,9 @@ module.exports = function (app, name, middleware, controllers) {
 		middleware.checkAccountPermissions,
 	];
 
-	setupPageRoute(app, "/me", [], middleware.redirectMeToUserslug);
-	setupPageRoute(app, "/me/*", [], middleware.redirectMeToUserslug);
-	setupPageRoute(app, "/uid/:uid*", [], middleware.redirectUidToUserslug);
+	setupPageRoute(app, '/me', [], middleware.redirectMeToUserslug);
+	setupPageRoute(app, '/me/*', [], middleware.redirectMeToUserslug);
+	setupPageRoute(app, '/uid/:uid*', [], middleware.redirectUidToUserslug);
 
 	setupPageRoute(
 		app,
@@ -187,7 +187,7 @@ module.exports = function (app, name, middleware, controllers) {
 
 	setupPageRoute(
 		app,
-		"/notifications",
+		'/notifications',
 		[middleware.ensureLoggedIn],
 		controllers.accounts.notifications.get,
 	);
@@ -199,7 +199,7 @@ module.exports = function (app, name, middleware, controllers) {
 	);
 	setupPageRoute(
 		app,
-		"/chats/:roomid?/:index?",
+		'/chats/:roomid?/:index?',
 		[middleware.ensureLoggedIn],
 		controllers.accounts.chats.redirectToChat,
 	);

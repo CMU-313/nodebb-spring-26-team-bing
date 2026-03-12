@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const router = require("express").Router();
-const middleware = require("../../middleware");
-const controllers = require("../../controllers");
-const routeHelpers = require("../helpers");
+const router = require('express').Router();
+const middleware = require('../../middleware');
+const controllers = require('../../controllers');
+const routeHelpers = require('../helpers');
 
 const { setupApiRoute } = routeHelpers;
 
@@ -20,11 +20,11 @@ module.exports = function () {
 	// ], controllers.write.files.upload);
 	setupApiRoute(
 		router,
-		"delete",
-		"/",
+		'delete',
+		'/',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["path"]),
+			middleware.checkRequired.bind(null, ['path']),
 			middleware.assert.path,
 		],
 		controllers.write.files.delete,
@@ -32,11 +32,11 @@ module.exports = function () {
 
 	setupApiRoute(
 		router,
-		"put",
-		"/folder",
+		'put',
+		'/folder',
 		[
 			...middlewares,
-			middleware.checkRequired.bind(null, ["path", "folderName"]),
+			middleware.checkRequired.bind(null, ['path', 'folderName']),
 			middleware.assert.path,
 			// Should come after assert.path
 			middleware.assert.folderName,

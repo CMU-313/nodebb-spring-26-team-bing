@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const plugins = require("../plugins");
-const utils = require("../utils");
+const db = require('../database');
+const plugins = require('../plugins');
+const utils = require('../utils');
 
 module.exports = function (Groups) {
 	Groups.ownership = {};
@@ -24,11 +24,11 @@ module.exports = function (Groups) {
 
 	Groups.ownership.grant = async function (toUid, groupName) {
 		if (!utils.isNumber(toUid)) {
-			throw new Error("[[error:invalid-uid]]");
+			throw new Error('[[error:invalid-uid]]');
 		}
 
 		await db.setAdd(`group:${groupName}:owners`, toUid);
-		plugins.hooks.fire("action:group.grantOwnership", {
+		plugins.hooks.fire('action:group.grantOwnership', {
 			uid: toUid,
 			groupName: groupName,
 		});
@@ -36,7 +36,7 @@ module.exports = function (Groups) {
 
 	Groups.ownership.rescind = async function (toUid, groupName) {
 		if (!utils.isNumber(toUid)) {
-			throw new Error("[[error:invalid-uid]]");
+			throw new Error('[[error:invalid-uid]]');
 		}
 
 		// If the owners set only contains one member (and toUid is that member), error out!
@@ -45,10 +45,10 @@ module.exports = function (Groups) {
 			db.isSetMember(`group:${groupName}:owners`, toUid),
 		]);
 		if (numOwners <= 1 && isOwner) {
-			throw new Error("[[error:group-needs-owner]]");
+			throw new Error('[[error:group-needs-owner]]');
 		}
 		await db.setRemove(`group:${groupName}:owners`, toUid);
-		plugins.hooks.fire("action:group.rescindOwnership", {
+		plugins.hooks.fire('action:group.rescindOwnership', {
 			uid: toUid,
 			groupName: groupName,
 		});

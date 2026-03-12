@@ -1,171 +1,171 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const assert = require("assert");
-const path = require("path");
-const fs = require("fs");
-const SwaggerParser = require("@apidevtools/swagger-parser");
-const nconf = require("nconf");
-const jwt = require("jsonwebtoken");
-const util = require("util");
+const _ = require('lodash');
+const assert = require('assert');
+const path = require('path');
+const fs = require('fs');
+const SwaggerParser = require('@apidevtools/swagger-parser');
+const nconf = require('nconf');
+const jwt = require('jsonwebtoken');
+const util = require('util');
 
 const wait = util.promisify(setTimeout);
 
-const db = require("./mocks/databasemock");
-const request = require("../src/request");
-const helpers = require("./helpers");
-const meta = require("../src/meta");
-const user = require("../src/user");
-const groups = require("../src/groups");
-const categories = require("../src/categories");
-const topics = require("../src/topics");
-const posts = require("../src/posts");
-const plugins = require("../src/plugins");
-const flags = require("../src/flags");
-const messaging = require("../src/messaging");
-const activitypub = require("../src/activitypub");
-const utils = require("../src/utils");
-const api = require("../src/api");
+const db = require('./mocks/databasemock');
+const request = require('../src/request');
+const helpers = require('./helpers');
+const meta = require('../src/meta');
+const user = require('../src/user');
+const groups = require('../src/groups');
+const categories = require('../src/categories');
+const topics = require('../src/topics');
+const posts = require('../src/posts');
+const plugins = require('../src/plugins');
+const flags = require('../src/flags');
+const messaging = require('../src/messaging');
+const activitypub = require('../src/activitypub');
+const utils = require('../src/utils');
+const api = require('../src/api');
 
-describe("API", async () => {
+describe('API', async () => {
 	let readApi = false;
 	let writeApi = false;
-	const readApiPath = path.resolve(__dirname, "../public/openapi/read.yaml");
-	const writeApiPath = path.resolve(__dirname, "../public/openapi/write.yaml");
+	const readApiPath = path.resolve(__dirname, '../public/openapi/read.yaml');
+	const writeApiPath = path.resolve(__dirname, '../public/openapi/write.yaml');
 	let jar;
 	let csrfToken;
 	let setup = false;
-	const unauthenticatedRoutes = ["/api/login", "/api/register"]; // Everything else will be called with the admin user
+	const unauthenticatedRoutes = ['/api/login', '/api/register']; // Everything else will be called with the admin user
 
 	const mocks = {
 		head: {},
 		get: {
-			"/api/email/unsubscribe/{token}": [
+			'/api/email/unsubscribe/{token}': [
 				{
-					in: "path",
-					name: "token",
+					in: 'path',
+					name: 'token',
 					example: (() =>
 						jwt.sign(
 							{
-								template: "digest",
+								template: 'digest',
 								uid: 1,
 							},
-							nconf.get("secret"),
+							nconf.get('secret'),
 						))(),
 				},
 			],
-			"/api/confirm/{code}": [
+			'/api/confirm/{code}': [
 				{
-					in: "path",
-					name: "code",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'code',
+					example: '', // to be defined later...
 				},
 			],
-			"/admin/tokens/{token}": [
+			'/admin/tokens/{token}': [
 				{
-					in: "path",
-					name: "token",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'token',
+					example: '', // to be defined later...
 				},
 			],
 		},
 		post: {
-			"/admin/tokens/{token}/roll": [
+			'/admin/tokens/{token}/roll': [
 				{
-					in: "path",
-					name: "token",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'token',
+					example: '', // to be defined later...
 				},
 			],
 		},
 		put: {
-			"/groups/{slug}/pending/{uid}": [
+			'/groups/{slug}/pending/{uid}': [
 				{
-					in: "path",
-					name: "slug",
-					example: "private-group",
+					in: 'path',
+					name: 'slug',
+					example: 'private-group',
 				},
 				{
-					in: "path",
-					name: "uid",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'uid',
+					example: '', // to be defined later...
 				},
 			],
-			"/admin/tokens/{token}": [
+			'/admin/tokens/{token}': [
 				{
-					in: "path",
-					name: "token",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'token',
+					example: '', // to be defined later...
 				},
 			],
 		},
 		patch: {},
 		delete: {
-			"/users/{uid}/tokens/{token}": [
+			'/users/{uid}/tokens/{token}': [
 				{
-					in: "path",
-					name: "uid",
+					in: 'path',
+					name: 'uid',
 					example: 1,
 				},
 				{
-					in: "path",
-					name: "token",
+					in: 'path',
+					name: 'token',
 					example: utils.generateUUID(),
 				},
 			],
-			"/users/{uid}/sessions/{uuid}": [
+			'/users/{uid}/sessions/{uuid}': [
 				{
-					in: "path",
-					name: "uid",
+					in: 'path',
+					name: 'uid',
 					example: 1,
 				},
 				{
-					in: "path",
-					name: "uuid",
-					example: "", // to be defined below...
+					in: 'path',
+					name: 'uuid',
+					example: '', // to be defined below...
 				},
 			],
-			"/posts/{pid}/diffs/{timestamp}": [
+			'/posts/{pid}/diffs/{timestamp}': [
 				{
-					in: "path",
-					name: "pid",
-					example: "", // to be defined below...
+					in: 'path',
+					name: 'pid',
+					example: '', // to be defined below...
 				},
 				{
-					in: "path",
-					name: "timestamp",
-					example: "", // to be defined below...
-				},
-			],
-			"/groups/{slug}/pending/{uid}": [
-				{
-					in: "path",
-					name: "slug",
-					example: "private-group",
-				},
-				{
-					in: "path",
-					name: "uid",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'timestamp',
+					example: '', // to be defined below...
 				},
 			],
-			"/groups/{slug}/invites/{uid}": [
+			'/groups/{slug}/pending/{uid}': [
 				{
-					in: "path",
-					name: "slug",
-					example: "invitations-only",
+					in: 'path',
+					name: 'slug',
+					example: 'private-group',
 				},
 				{
-					in: "path",
-					name: "uid",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'uid',
+					example: '', // to be defined later...
 				},
 			],
-			"/admin/tokens/{token}": [
+			'/groups/{slug}/invites/{uid}': [
 				{
-					in: "path",
-					name: "token",
-					example: "", // to be defined later...
+					in: 'path',
+					name: 'slug',
+					example: 'invitations-only',
+				},
+				{
+					in: 'path',
+					name: 'uid',
+					example: '', // to be defined later...
+				},
+			],
+			'/admin/tokens/{token}': [
+				{
+					in: 'path',
+					name: 'token',
+					example: '', // to be defined later...
 				},
 			],
 		},
@@ -179,8 +179,8 @@ describe("API", async () => {
 	}
 
 	after(async () => {
-		plugins.hooks.unregister("core", "filter:search.query", dummySearchHook);
-		plugins.hooks.unregister("emailer-test", "static:email.send");
+		plugins.hooks.unregister('core', 'filter:search.query', dummySearchHook);
+		plugins.hooks.unregister('emailer-test', 'static:email.send');
 	});
 
 	async function setupData() {
@@ -190,44 +190,44 @@ describe("API", async () => {
 
 		// Create sample users
 		const adminUid = await user.create({
-			username: "admin",
-			password: "123456",
+			username: 'admin',
+			password: '123456',
 		});
 		const unprivUid = await user.create({
-			username: "unpriv",
-			password: "123456",
+			username: 'unpriv',
+			password: '123456',
 		});
 		const emailConfirmationUid = await user.create({
-			username: "emailConf",
-			email: "emailConf@example.org",
+			username: 'emailConf',
+			email: 'emailConf@example.org',
 		});
-		await user.setUserField(adminUid, "email", "test@example.org");
-		await user.setUserField(unprivUid, "email", "unpriv@example.org");
+		await user.setUserField(adminUid, 'email', 'test@example.org');
+		await user.setUserField(unprivUid, 'email', 'unpriv@example.org');
 		await user.email.confirmByUid(adminUid);
 		await user.email.confirmByUid(unprivUid);
-		mocks.get["/api/confirm/{code}"][0].example = await db.get(
+		mocks.get['/api/confirm/{code}'][0].example = await db.get(
 			`confirm:byUid:${emailConfirmationUid}`,
 		);
 
 		for (let x = 0; x < 4; x++) {
 			// eslint-disable-next-line no-await-in-loop
-			await user.create({ username: "deleteme", password: "123456" }); // for testing of DELETE /users (uids 5, 6) and DELETE /user/:uid/account (uid 7)
+			await user.create({ username: 'deleteme', password: '123456' }); // for testing of DELETE /users (uids 5, 6) and DELETE /user/:uid/account (uid 7)
 		}
-		await groups.join("administrators", adminUid);
+		await groups.join('administrators', adminUid);
 
 		// Create api token for testing read/updating/deletion
 		const token = await api.utils.tokens.generate({ uid: adminUid });
-		mocks.get["/admin/tokens/{token}"][0].example = token;
-		mocks.put["/admin/tokens/{token}"][0].example = token;
-		mocks.delete["/admin/tokens/{token}"][0].example = token;
+		mocks.get['/admin/tokens/{token}'][0].example = token;
+		mocks.put['/admin/tokens/{token}'][0].example = token;
+		mocks.delete['/admin/tokens/{token}'][0].example = token;
 
 		// Create another token for testing rolling
 		const token2 = await api.utils.tokens.generate({ uid: adminUid });
-		mocks.post["/admin/tokens/{token}/roll"][0].example = token2;
+		mocks.post['/admin/tokens/{token}/roll'][0].example = token2;
 
 		// Create sample group
 		await groups.create({
-			name: "Test Group",
+			name: 'Test Group',
 		});
 
 		// Create private groups for pending/invitations
@@ -236,112 +236,112 @@ describe("API", async () => {
 			await user.create({ username: utils.generateUUID().slice(0, 8) }),
 			await user.create({ username: utils.generateUUID().slice(0, 8) }),
 		]);
-		mocks.put["/groups/{slug}/pending/{uid}"][1].example = pending1;
-		mocks.delete["/groups/{slug}/pending/{uid}"][1].example = pending2;
-		mocks.delete["/groups/{slug}/invites/{uid}"][1].example = inviteUid;
+		mocks.put['/groups/{slug}/pending/{uid}'][1].example = pending1;
+		mocks.delete['/groups/{slug}/pending/{uid}'][1].example = pending2;
+		mocks.delete['/groups/{slug}/invites/{uid}'][1].example = inviteUid;
 		await Promise.all(
-			["private-group", "invitations-only"].map(async (name) => {
+			['private-group', 'invitations-only'].map(async (name) => {
 				await groups.create({ name, private: true });
 			}),
 		);
-		await groups.requestMembership("private-group", pending1);
-		await groups.requestMembership("private-group", pending2);
-		await groups.invite("invitations-only", inviteUid);
+		await groups.requestMembership('private-group', pending1);
+		await groups.requestMembership('private-group', pending2);
+		await groups.invite('invitations-only', inviteUid);
 
-		await meta.settings.set("core.api", {
+		await meta.settings.set('core.api', {
 			tokens: [
 				{
-					token: mocks.delete["/users/{uid}/tokens/{token}"][1].example,
+					token: mocks.delete['/users/{uid}/tokens/{token}'][1].example,
 					uid: 1,
-					description: "for testing of token deletion route",
+					description: 'for testing of token deletion route',
 					timestamp: Date.now(),
 				},
 			],
 		});
 		meta.config.allowTopicsThumbnail = 1;
 		meta.config.termsOfUse =
-			"I, for one, welcome our new test-driven overlords";
+			'I, for one, welcome our new test-driven overlords';
 		meta.config.chatMessageDelay = 0;
 		meta.config.activitypubEnabled = 1;
 
 		// Create a category
-		const testCategory = await categories.create({ name: "test" });
+		const testCategory = await categories.create({ name: 'test' });
 
 		// Post a new topic
 		await topics.post({
 			uid: adminUid,
 			cid: testCategory.cid,
-			title: "Test Topic",
-			content: "Test topic content",
+			title: 'Test Topic',
+			content: 'Test topic content',
 		});
 		const unprivTopic = await topics.post({
 			uid: unprivUid,
 			cid: testCategory.cid,
-			title: "Test Topic 2",
-			content: "Test topic 2 content",
+			title: 'Test Topic 2',
+			content: 'Test topic 2 content',
 		});
 		await topics.post({
 			uid: unprivUid,
 			cid: testCategory.cid,
-			title: "Test Topic 3",
-			content: "Test topic 3 content",
+			title: 'Test Topic 3',
+			content: 'Test topic 3 content',
 		});
 
 		// Create a post diff
 		await posts.edit({
 			uid: adminUid,
 			pid: unprivTopic.postData.pid,
-			content: "Test topic 2 edited content",
+			content: 'Test topic 2 edited content',
 			req: {},
 		});
-		mocks.delete["/posts/{pid}/diffs/{timestamp}"][0].example =
+		mocks.delete['/posts/{pid}/diffs/{timestamp}'][0].example =
 			unprivTopic.postData.pid;
-		mocks.delete["/posts/{pid}/diffs/{timestamp}"][1].example = (
+		mocks.delete['/posts/{pid}/diffs/{timestamp}'][1].example = (
 			await posts.diffs.list(unprivTopic.postData.pid)
 		)[0];
 
 		// Create a sample flag
 		const { flagId } = await flags.create(
-			"post",
+			'post',
 			1,
 			unprivUid,
-			"sample reasons",
+			'sample reasons',
 			Date.now(),
 		); // deleted in DELETE /api/v3/flags/1
-		await flags.appendNote(flagId, 1, "test note", 1626446956652);
-		await flags.create("post", 2, unprivUid, "sample reasons", Date.now()); // for testing flag notes (since flag 1 deleted)
+		await flags.appendNote(flagId, 1, 'test note', 1626446956652);
+		await flags.create('post', 2, unprivUid, 'sample reasons', Date.now()); // for testing flag notes (since flag 1 deleted)
 
 		// Create a new chat room & send a message
 		const roomId = await messaging.newRoom(adminUid, { uids: [unprivUid] });
 		await messaging.sendMessage({
 			roomId,
 			uid: adminUid,
-			content: "this is a chat message",
+			content: 'this is a chat message',
 		});
 
 		// Create an empty file to test DELETE /files and thumb deletion
 		fs.closeSync(
 			fs.openSync(
-				path.resolve(nconf.get("upload_path"), "files/test.txt"),
-				"w",
+				path.resolve(nconf.get('upload_path'), 'files/test.txt'),
+				'w',
 			),
 		);
 		fs.closeSync(
 			fs.openSync(
-				path.resolve(nconf.get("upload_path"), "files/test.png"),
-				"w",
+				path.resolve(nconf.get('upload_path'), 'files/test.png'),
+				'w',
 			),
 		);
 
 		// Associate thumb with topic to test thumb reordering
 		await topics.thumbs.associate({
 			id: 2,
-			path: "files/test.png",
+			path: 'files/test.png',
 		});
 
-		const socketAdmin = require("../src/socket.io/admin");
+		const socketAdmin = require('../src/socket.io/admin');
 		await Promise.all(
-			["profile", "posts", "uploads"].map(async (type) =>
+			['profile', 'posts', 'uploads'].map(async (type) =>
 				api.users.generateExport({ uid: adminUid }, { uid: adminUid, type }),
 			),
 		);
@@ -350,37 +350,37 @@ describe("API", async () => {
 		await wait(5000);
 
 		// Attach a search hook so /api/search is enabled
-		plugins.hooks.register("core", {
-			hook: "filter:search.query",
+		plugins.hooks.register('core', {
+			hook: 'filter:search.query',
 			method: dummySearchHook,
 		});
 		// Attach an emailer hook so related requests do not error
-		plugins.hooks.register("emailer-test", {
-			hook: "static:email.send",
+		plugins.hooks.register('emailer-test', {
+			hook: 'static:email.send',
 			method: dummyEmailerHook,
 		});
 
 		// All tests run as admin user
-		({ jar } = await helpers.loginUser("admin", "123456"));
+		({ jar } = await helpers.loginUser('admin', '123456'));
 
 		// Retrieve CSRF token using cookie, to test Write API
 		csrfToken = await helpers.getCsrfToken(jar);
 
 		// Pre-seed ActivityPub cache so contrived actor assertions pass
 		activitypub._cache.set(`0;https://example.org/foobar`, {
-			id: "https://example.org/foobar",
-			name: "foobar",
+			id: 'https://example.org/foobar',
+			name: 'foobar',
 			publicKey: {
 				id: `https://example.org/foobar#key`,
 				owner: `https://example.org/foobar`,
-				publicKeyPem: "secretcat",
+				publicKeyPem: 'secretcat',
 			},
 		});
 
 		setup = true;
 	}
 
-	it("should pass OpenAPI v3 validation", async () => {
+	it('should pass OpenAPI v3 validation', async () => {
 		try {
 			await SwaggerParser.validate(readApiPath);
 			await SwaggerParser.validate(writeApiPath);
@@ -392,33 +392,33 @@ describe("API", async () => {
 	readApi = await SwaggerParser.dereference(readApiPath);
 	writeApi = await SwaggerParser.dereference(writeApiPath);
 
-	it("should grab all mounted routes and ensure a schema exists", async () => {
-		const webserver = require("../src/webserver");
+	it('should grab all mounted routes and ensure a schema exists', async () => {
+		const webserver = require('../src/webserver');
 		const buildPaths = function (stack, prefix) {
 			const paths = stack.map((dispatch) => {
 				if (
 					dispatch.route &&
 					dispatch.route.path &&
-					typeof dispatch.route.path === "string"
+					typeof dispatch.route.path === 'string'
 				) {
-					if (!prefix && !dispatch.route.path.startsWith("/api/")) {
+					if (!prefix && !dispatch.route.path.startsWith('/api/')) {
 						return null;
 					}
 
-					if (prefix === nconf.get("relative_path")) {
-						prefix = "";
+					if (prefix === nconf.get('relative_path')) {
+						prefix = '';
 					}
 
 					return {
 						method: Object.keys(dispatch.route.methods)[0],
-						path: (prefix || "") + dispatch.route.path,
+						path: (prefix || '') + dispatch.route.path,
 					};
-				} else if (dispatch.name === "router") {
+				} else if (dispatch.name === 'router') {
 					const prefix = dispatch.regexp
 						.toString()
-						.replace("/^", "")
-						.replace("\\/?(?=\\/|$)/i", "")
-						.replace(/\\\//g, "/");
+						.replace('/^', '')
+						.replace('\\/?(?=\\/|$)/i', '')
+						.replace(/\\\//g, '/');
 					return buildPaths(dispatch.handle.stack, prefix);
 				}
 
@@ -432,39 +432,39 @@ describe("API", async () => {
 		let paths = buildPaths(webserver.app._router.stack)
 			.filter(Boolean)
 			.map((pathObj) => {
-				pathObj.path = pathObj.path.replace(/\/:([^\\/]+)/g, "/{$1}");
+				pathObj.path = pathObj.path.replace(/\/:([^\\/]+)/g, '/{$1}');
 				return pathObj;
 			});
 		const exclusionPrefixes = [
-			"/api/admin/plugins",
-			"/api/compose",
-			"/debug",
-			"/api/user/{userslug}/theme", // from persona
+			'/api/admin/plugins',
+			'/api/compose',
+			'/debug',
+			'/api/user/{userslug}/theme', // from persona
 		];
 		paths = paths.filter(
 			(path) =>
-				path.method !== "_all" &&
+				path.method !== '_all' &&
 				!exclusionPrefixes.some((prefix) => path.path.startsWith(prefix)),
 		);
 
 		// For each express path, query for existence in read and write api schemas
 		paths.forEach((pathObj) => {
 			describe(`${pathObj.method.toUpperCase()} ${pathObj.path}`, () => {
-				it("should be defined in schema docs", () => {
+				it('should be defined in schema docs', () => {
 					let schema = readApi;
-					if (pathObj.path.startsWith("/api/v3")) {
+					if (pathObj.path.startsWith('/api/v3')) {
 						schema = writeApi;
-						pathObj.path = pathObj.path.replace("/api/v3", "");
+						pathObj.path = pathObj.path.replace('/api/v3', '');
 					}
 
 					// Don't check non-GET routes in Read API
-					if (schema === readApi && pathObj.method !== "get") {
+					if (schema === readApi && pathObj.method !== 'get') {
 						return;
 					}
 
 					const normalizedPath = pathObj.path
-						.replace(/\/:([^\\/]+)/g, "/{$1}")
-						.replace(/\?/g, "");
+						.replace(/\/:([^\\/]+)/g, '/{$1}')
+						.replace(/\?/g, '');
 					assert(
 						schema.paths.hasOwnProperty(normalizedPath),
 						`${pathObj.path} is not defined in schema docs`,
@@ -487,7 +487,7 @@ describe("API", async () => {
 		const pathLib = path; // for calling path module from inside this forEach
 		paths.forEach((path) => {
 			/* remove flaky test*/
-			if (path === "/api/admin/extend/plugins") {
+			if (path === '/api/admin/extend/plugins') {
 				return;
 			}
 			const context = api.paths[path];
@@ -500,11 +500,11 @@ describe("API", async () => {
 
 			Object.keys(context).forEach((_method) => {
 				// Only test GET routes in the Read API
-				if (api.info.title === "NodeBB Read API" && _method !== "get") {
+				if (api.info.title === 'NodeBB Read API' && _method !== 'get') {
 					return;
 				}
 
-				it("should have each path parameter defined in its context", () => {
+				it('should have each path parameter defined in its context', () => {
 					method = _method;
 					if (!context[method].parameters) {
 						return;
@@ -514,7 +514,7 @@ describe("API", async () => {
 						match.slice(1, -1),
 					);
 					const schemaParams = context[method].parameters
-						.map((param) => (param.in === "path" ? param.name : null))
+						.map((param) => (param.in === 'path' ? param.name : null))
 						.filter(Boolean);
 					assert(
 						pathParams.every((param) => schemaParams.includes(param)),
@@ -522,7 +522,7 @@ describe("API", async () => {
 					);
 				});
 
-				it("should have examples when parameters are present", () => {
+				it('should have examples when parameters are present', () => {
 					let { parameters } = context[method];
 					let testPath = path;
 
@@ -537,26 +537,26 @@ describe("API", async () => {
 							);
 
 							switch (param.in) {
-								case "path":
+								case 'path':
 									testPath = testPath.replace(`{${param.name}}`, param.example);
 									break;
-								case "header":
+								case 'header':
 									headers[param.name] = param.example;
 									break;
-								case "query":
+								case 'query':
 									qs[param.name] = param.example;
 									break;
 							}
 						});
 					}
 
-					url = nconf.get("url") + (prefix || "") + testPath;
+					url = nconf.get('url') + (prefix || '') + testPath;
 				});
 
-				it("should contain a valid request body (if present) with application/json or multipart/form-data type if POST/PUT/DELETE", () => {
+				it('should contain a valid request body (if present) with application/json or multipart/form-data type if POST/PUT/DELETE', () => {
 					if (
-						["post", "put", "delete"].includes(method) &&
-						context[method].hasOwnProperty("requestBody")
+						['post', 'put', 'delete'].includes(method) &&
+						context[method].hasOwnProperty('requestBody')
 					) {
 						const failMessage = `${method.toUpperCase()} ${path} has a malformed request body`;
 						assert(context[method].requestBody, failMessage);
@@ -564,38 +564,38 @@ describe("API", async () => {
 
 						if (
 							context[method].requestBody.content.hasOwnProperty(
-								"application/json",
+								'application/json',
 							)
 						) {
 							assert(
-								context[method].requestBody.content["application/json"],
+								context[method].requestBody.content['application/json'],
 								failMessage,
 							);
 							assert(
-								context[method].requestBody.content["application/json"].schema,
+								context[method].requestBody.content['application/json'].schema,
 								failMessage,
 							);
 							assert(
-								context[method].requestBody.content["application/json"].schema
+								context[method].requestBody.content['application/json'].schema
 									.properties,
 								failMessage,
 							);
 						} else if (
 							context[method].requestBody.content.hasOwnProperty(
-								"multipart/form-data",
+								'multipart/form-data',
 							)
 						) {
 							assert(
-								context[method].requestBody.content["multipart/form-data"],
+								context[method].requestBody.content['multipart/form-data'],
 								failMessage,
 							);
 							assert(
-								context[method].requestBody.content["multipart/form-data"]
+								context[method].requestBody.content['multipart/form-data']
 									.schema,
 								failMessage,
 							);
 							assert(
-								context[method].requestBody.content["multipart/form-data"]
+								context[method].requestBody.content['multipart/form-data']
 									.schema.properties,
 								failMessage,
 							);
@@ -603,47 +603,47 @@ describe("API", async () => {
 					}
 				});
 
-				it("should not error out when called", async function () {
+				it('should not error out when called', async function () {
 					this.timeout(0);
 					await setupData();
 
 					if (csrfToken) {
-						headers["x-csrf-token"] = csrfToken;
+						headers['x-csrf-token'] = csrfToken;
 					}
 
 					let body = {};
-					let type = "json";
+					let type = 'json';
 					if (
-						context[method].hasOwnProperty("requestBody") &&
+						context[method].hasOwnProperty('requestBody') &&
 						context[method].requestBody.required !== false &&
-						context[method].requestBody.content["application/json"]
+						context[method].requestBody.content['application/json']
 					) {
 						body = buildBody(
-							context[method].requestBody.content["application/json"].schema
+							context[method].requestBody.content['application/json'].schema
 								.properties,
 						);
 					} else if (
-						context[method].hasOwnProperty("requestBody") &&
-						context[method].requestBody.content["multipart/form-data"]
+						context[method].hasOwnProperty('requestBody') &&
+						context[method].requestBody.content['multipart/form-data']
 					) {
-						type = "form";
+						type = 'form';
 					}
 
 					try {
-						if (type === "json") {
+						if (type === 'json') {
 							const searchParams = new URLSearchParams(qs);
 							result = await request[method](`${url}?${searchParams}`, {
 								jar: !unauthenticatedRoutes.includes(path) ? jar : undefined,
 								maxRedirect: 0,
-								redirect: "manual",
+								redirect: 'manual',
 								headers: headers,
 								body: body,
 								timeout: 30000,
 							});
-						} else if (type === "form") {
+						} else if (type === 'form') {
 							result = await helpers.uploadFile(
 								url,
-								pathLib.join(__dirname, "./files/test.png"),
+								pathLib.join(__dirname, './files/test.png'),
 								{},
 								jar,
 								csrfToken,
@@ -657,11 +657,11 @@ describe("API", async () => {
 					}
 				});
 
-				it("response status code should match one of the schema defined responses", () => {
+				it('response status code should match one of the schema defined responses', () => {
 					// HACK: allow HTTP 418 I am a teapot, for now   👇
 					const { responses } = context[method];
 					assert(
-						responses.hasOwnProperty("418") ||
+						responses.hasOwnProperty('418') ||
 							Object.keys(responses).includes(
 								String(result.response.statusCode),
 							),
@@ -670,19 +670,19 @@ describe("API", async () => {
 				});
 
 				// Recursively iterate through schema properties, comparing type
-				it("response body should match schema definition", () => {
-					if (path === "/api/admin/extend/plugins") {
+				it('response body should match schema definition', () => {
+					if (path === '/api/admin/extend/plugins') {
 						return;
 					}
-					const http302 = context[method].responses["302"];
+					const http302 = context[method].responses['302'];
 					if (http302 && result.response.statusCode === 302) {
 						// Compare headers instead
 						const expectedHeaders = Object.keys(http302.headers).reduce(
 							(memo, name) => {
 								const value = http302.headers[name].schema.example;
-								memo[name] = value.startsWith(nconf.get("relative_path"))
+								memo[name] = value.startsWith(nconf.get('relative_path'))
 									? value
-									: nconf.get("relative_path") + value;
+									: nconf.get('relative_path') + value;
 								return memo;
 							},
 							{},
@@ -700,13 +700,13 @@ describe("API", async () => {
 
 					if (
 						result.response.statusCode === 400 &&
-						context[method].responses["400"]
+						context[method].responses['400']
 					) {
 						// TODO: check 400 schema to response.body?
 						return;
 					}
 
-					const http200 = context[method].responses["200"];
+					const http200 = context[method].responses['200'];
 					if (!http200) {
 						return;
 					}
@@ -718,40 +718,40 @@ describe("API", async () => {
 					);
 
 					const hasJSON =
-						http200.content && http200.content["application/json"];
+						http200.content && http200.content['application/json'];
 					if (hasJSON) {
 						schema =
-							context[method].responses["200"].content["application/json"]
+							context[method].responses['200'].content['application/json']
 								.schema;
-						compare(schema, result.body, method.toUpperCase(), path, "root");
+						compare(schema, result.body, method.toUpperCase(), path, 'root');
 					}
 
 					// TODO someday: text/csv, binary file type checking?
 				});
 
-				it("should successfully re-login if needed", async () => {
+				it('should successfully re-login if needed', async () => {
 					const reloginPaths = [
-						"GET /api/user/{userslug}/edit/email",
-						"PUT /users/{uid}/password",
-						"DELETE /users/{uid}/sessions/{uuid}",
+						'GET /api/user/{userslug}/edit/email',
+						'PUT /users/{uid}/password',
+						'DELETE /users/{uid}/sessions/{uuid}',
 					];
 					if (reloginPaths.includes(`${method.toUpperCase()} ${path}`)) {
-						({ jar } = await helpers.loginUser("admin", "123456"));
+						({ jar } = await helpers.loginUser('admin', '123456'));
 						let sessionIds = await db.getSortedSetRange(
-							"uid:1:sessions",
+							'uid:1:sessions',
 							0,
 							-1,
 						);
 						let sessObj = await db.sessionStoreGet(sessionIds[0]);
 						if (!sessObj) {
 							// password changed so login with new pwd
-							({ jar } = await helpers.loginUser("admin", "654321"));
-							sessionIds = await db.getSortedSetRange("uid:1:sessions", 0, -1);
+							({ jar } = await helpers.loginUser('admin', '654321'));
+							sessionIds = await db.getSortedSetRange('uid:1:sessions', 0, -1);
 							sessObj = await db.sessionStoreGet(sessionIds[0]);
 						}
 
 						const { uuid } = sessObj.meta;
-						mocks.delete["/users/{uid}/sessions/{uuid}"][1].example = uuid;
+						mocks.delete['/users/{uid}/sessions/{uuid}'][1].example = uuid;
 
 						// Retrieve CSRF token using cookie, to test Write API
 						csrfToken = await helpers.getCsrfToken(jar);
@@ -770,7 +770,7 @@ describe("API", async () => {
 
 	function compare(schema, response, method, path, context) {
 		let required = [];
-		const additionalProperties = schema.hasOwnProperty("additionalProperties");
+		const additionalProperties = schema.hasOwnProperty('additionalProperties');
 
 		function flattenAllOf(obj) {
 			return obj.reduce((memo, obj) => {
@@ -822,22 +822,22 @@ describe("API", async () => {
 				);
 
 				switch (schema[prop].type) {
-					case "string":
+					case 'string':
 						assert.strictEqual(
 							typeof response[prop],
-							"string",
+							'string',
 							`"${prop}" was expected to be a string, but was ${typeof response[prop]} instead (path: ${method} ${path}, context: ${context})`,
 						);
 						break;
-					case "boolean":
+					case 'boolean':
 						assert.strictEqual(
 							typeof response[prop],
-							"boolean",
+							'boolean',
 							`"${prop}" was expected to be a boolean, but was ${typeof response[prop]} instead (path: ${method} ${path}, context: ${context})`,
 						);
 						break;
-					case "object": {
-						let valid = ["object"];
+					case 'object': {
+						let valid = ['object'];
 						if (
 							schema[prop].additionalProperties &&
 							schema[prop].additionalProperties.oneOf
@@ -855,11 +855,11 @@ describe("API", async () => {
 							response[prop],
 							method,
 							path,
-							context ? [context, prop].join(".") : prop,
+							context ? [context, prop].join('.') : prop,
 						);
 						break;
 					}
-					case "array":
+					case 'array':
 						assert.strictEqual(
 							Array.isArray(response[prop]),
 							true,
@@ -878,7 +878,7 @@ describe("API", async () => {
 
 							// Compare types
 							if (
-								schema[prop].items.type === "object" ||
+								schema[prop].items.type === 'object' ||
 								Array.isArray(
 									schema[prop].items.allOf ||
 										schema[prop].items.anyOf ||
@@ -891,7 +891,7 @@ describe("API", async () => {
 										res,
 										method,
 										path,
-										context ? [context, prop].join(".") : prop,
+										context ? [context, prop].join('.') : prop,
 									);
 								});
 							} else if (response[prop].length) {

@@ -12,7 +12,7 @@ get:
       description: a valid topic id
       example: 1
   responses:
-    "200":
+    '200':
       description: Topic events successfully retrieved
       content:
         application/json:
@@ -83,7 +83,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's
                                 auto-generated icon
-                              example: "#f44336"
+                              example: '#f44336'
                       required:
                         - type
                         - id

@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Remove cid:<cid>:read_by_uid sets",
+	name: 'Remove cid:<cid>:read_by_uid sets',
 	timestamp: Date.UTC(2024, 0, 29),
 	method: async function () {
 		const { progress } = this;
-		const nextCid = await db.getObjectField("global", "nextCid");
+		const nextCid = await db.getObjectField('global', 'nextCid');
 		progress.total = nextCid;
 		const allCids = [];
 		for (let i = 1; i <= nextCid; i++) {

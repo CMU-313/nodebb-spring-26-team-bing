@@ -1,41 +1,41 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
-const nconf = require("nconf");
+const validator = require('validator');
+const nconf = require('nconf');
 
-const meta = require("../meta");
-const groups = require("../groups");
-const user = require("../user");
-const helpers = require("./helpers");
-const pagination = require("../pagination");
-const privileges = require("../privileges");
+const meta = require('../meta');
+const groups = require('../groups');
+const user = require('../user');
+const helpers = require('./helpers');
+const pagination = require('../pagination');
+const privileges = require('../privileges');
 
 const groupsController = module.exports;
 
-const url = nconf.get("url");
+const url = nconf.get('url');
 
 groupsController.list = async function (req, res) {
-	const sort = req.query.sort || "alpha";
+	const sort = req.query.sort || 'alpha';
 	const page = parseInt(req.query.page, 10) || 1;
 	const [allowGroupCreation, [groupData, pageCount]] = await Promise.all([
-		privileges.global.can("group:create", req.uid),
+		privileges.global.can('group:create', req.uid),
 		getGroups(req, sort, page),
 	]);
 
 	res.locals.linkTags = [
 		{
-			rel: "canonical",
-			href: `${url}${req.url.replace(/^\/api/, "")}`,
+			rel: 'canonical',
+			href: `${url}${req.url.replace(/^\/api/, '')}`,
 		},
 	];
 
-	res.render("groups/list", {
+	res.render('groups/list', {
 		groups: groupData,
 		allowGroupCreation: allowGroupCreation,
 		sort: validator.escape(String(sort)),
 		pagination: pagination.create(page, pageCount, req.query),
-		title: "[[pages:groups]]",
-		breadcrumbs: helpers.buildBreadcrumbs([{ text: "[[pages:groups]]" }]),
+		title: '[[pages:groups]]',
+		breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[pages:groups]]' }]),
 	});
 };
 
@@ -46,13 +46,13 @@ async function getGroups(req, sort, page) {
 
 	if (req.query.query) {
 		const filterHidden =
-			req.query.filterHidden === "true" ||
+			req.query.filterHidden === 'true' ||
 			!(await user.isAdministrator(req.uid));
 		const groupData = await groups.search(req.query.query, {
 			sort,
 			filterHidden: filterHidden,
-			showMembers: req.query.showMembers === "true",
-			hideEphemeralGroups: req.query.hideEphemeralGroups === "true",
+			showMembers: req.query.showMembers === 'true',
+			hideEphemeralGroups: req.query.hideEphemeralGroups === 'true',
 			excludeGroups: Array.isArray(req.query.excludeGroups)
 				? req.query.excludeGroups
 				: [],
@@ -78,7 +78,7 @@ groupsController.details = async function (req, res, next) {
 			req.params.slug = lowercaseSlug;
 		} else {
 			return res.redirect(
-				`${nconf.get("relative_path")}/groups/${lowercaseSlug}`,
+				`${nconf.get('relative_path')}/groups/${lowercaseSlug}`,
 			);
 		}
 	}
@@ -89,7 +89,7 @@ groupsController.details = async function (req, res, next) {
 	const [exists, isHidden, isAdmin, isGlobalMod] = await Promise.all([
 		groups.exists(groupName),
 		groups.isHidden(groupName),
-		privileges.admin.can("admin:groups", req.uid),
+		privileges.admin.can('admin:groups', req.uid),
 		user.isGlobalModerator(req.uid),
 	]);
 	if (!exists) {
@@ -118,12 +118,12 @@ groupsController.details = async function (req, res, next) {
 
 	res.locals.linkTags = [
 		{
-			rel: "canonical",
+			rel: 'canonical',
 			href: `${url}/groups/${lowercaseSlug}`,
 		},
 	];
 
-	res.render("groups/details", {
+	res.render('groups/details', {
 		title: `[[pages:group, ${groupData.displayName}]]`,
 		group: groupData,
 		posts: posts,
@@ -131,7 +131,7 @@ groupsController.details = async function (req, res, next) {
 		isGlobalMod: isGlobalMod,
 		allowPrivateGroups: meta.config.allowPrivateGroups,
 		breadcrumbs: helpers.buildBreadcrumbs([
-			{ text: "[[pages:groups]]", url: "/groups" },
+			{ text: '[[pages:groups]]', url: '/groups' },
 			{ text: groupData.displayName },
 		]),
 	});
@@ -166,19 +166,19 @@ groupsController.members = async function (req, res, next) {
 	);
 
 	const breadcrumbs = helpers.buildBreadcrumbs([
-		{ text: "[[pages:groups]]", url: "/groups" },
+		{ text: '[[pages:groups]]', url: '/groups' },
 		{
 			text: validator.escape(String(groupName)),
 			url: `/groups/${req.params.slug}`,
 		},
-		{ text: "[[groups:details.members]]" },
+		{ text: '[[groups:details.members]]' },
 	]);
 
 	const pageCount = Math.max(
 		1,
 		Math.ceil(groupData.memberCount / usersPerPage),
 	);
-	res.render("groups/members", {
+	res.render('groups/members', {
 		users: users,
 		pagination: pagination.create(page, pageCount, req.query),
 		breadcrumbs: breadcrumbs,

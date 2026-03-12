@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Remove flag reporters sorted set",
+	name: 'Remove flag reporters sorted set',
 	timestamp: Date.UTC(2020, 6, 31),
 	method: async function () {
 		const { progress } = this;
-		progress.total = await db.sortedSetCard("flags:datetime");
+		progress.total = await db.sortedSetCard('flags:datetime');
 
 		await batch.processSortedSet(
-			"flags:datetime",
+			'flags:datetime',
 			async (flagIds) => {
 				await Promise.all(
 					flagIds.map(async (flagId) => {
@@ -28,7 +28,7 @@ module.exports = {
 							memo.push([
 								`flag:${flagId}:reports`,
 								cur.score,
-								[reporterUids[idx] || 0, cur.value].join(";"),
+								[reporterUids[idx] || 0, cur.value].join(';'),
 							]);
 							return memo;
 						}, []);

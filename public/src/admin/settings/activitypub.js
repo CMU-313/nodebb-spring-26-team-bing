@@ -1,39 +1,39 @@
-"use strict";
+'use strict';
 
-define("admin/settings/activitypub", [
-	"benchpress",
-	"bootbox",
-	"categorySelector",
-	"api",
-	"alerts",
-	"translator",
+define('admin/settings/activitypub', [
+	'benchpress',
+	'bootbox',
+	'categorySelector',
+	'api',
+	'alerts',
+	'translator',
 ], function (Benchpress, bootbox, categorySelector, api, alerts, translator) {
 	const Module = {};
 
 	Module.init = function () {
-		const rulesEl = document.getElementById("rules");
+		const rulesEl = document.getElementById('rules');
 		if (rulesEl) {
-			rulesEl.addEventListener("click", (e) => {
-				const subselector = e.target.closest("[data-action]");
+			rulesEl.addEventListener('click', (e) => {
+				const subselector = e.target.closest('[data-action]');
 				if (subselector) {
-					const action = subselector.getAttribute("data-action");
+					const action = subselector.getAttribute('data-action');
 					switch (action) {
-						case "rules.add": {
+						case 'rules.add': {
 							Module.throwRulesModal();
 							break;
 						}
 
-						case "rules.delete": {
-							const rid = subselector.closest("tr").getAttribute("data-rid");
+						case 'rules.delete': {
+							const rid = subselector.closest('tr').getAttribute('data-rid');
 							api
 								.del(`/admin/activitypub/rules/${rid}`, {})
 								.then(async (data) => {
 									const html = await Benchpress.render(
-										"admin/settings/activitypub",
+										'admin/settings/activitypub',
 										{ rules: data },
-										"rules",
+										'rules',
 									);
-									const tbodyEl = document.querySelector("#rules tbody");
+									const tbodyEl = document.querySelector('#rules tbody');
 									if (tbodyEl) {
 										tbodyEl.innerHTML = html;
 									}
@@ -45,29 +45,29 @@ define("admin/settings/activitypub", [
 			});
 		}
 
-		const relaysEl = document.getElementById("relays");
+		const relaysEl = document.getElementById('relays');
 		if (relaysEl) {
-			relaysEl.addEventListener("click", (e) => {
-				const subselector = e.target.closest("[data-action]");
+			relaysEl.addEventListener('click', (e) => {
+				const subselector = e.target.closest('[data-action]');
 				if (subselector) {
-					const action = subselector.getAttribute("data-action");
+					const action = subselector.getAttribute('data-action');
 					switch (action) {
-						case "relays.add": {
+						case 'relays.add': {
 							Module.throwRelaysModal();
 							break;
 						}
 
-						case "relays.remove": {
-							const url = subselector.closest("tr").getAttribute("data-url");
+						case 'relays.remove': {
+							const url = subselector.closest('tr').getAttribute('data-url');
 							api
 								.del(`/admin/activitypub/relays/${encodeURIComponent(url)}`, {})
 								.then(async (data) => {
 									const html = await app.parseAndTranslate(
-										"admin/settings/activitypub",
-										"relays",
+										'admin/settings/activitypub',
+										'relays',
 										{ relays: data },
 									);
-									const tbodyEl = document.querySelector("#relays tbody");
+									const tbodyEl = document.querySelector('#relays tbody');
 									if (tbodyEl) {
 										$(tbodyEl).html(html);
 									}
@@ -81,21 +81,21 @@ define("admin/settings/activitypub", [
 	};
 
 	Module.throwRulesModal = function () {
-		Benchpress.render("admin/partials/activitypub/rules", {}).then(
+		Benchpress.render('admin/partials/activitypub/rules', {}).then(
 			function (html) {
 				const submit = function () {
-					const formEl = modal.find("form").get(0);
+					const formEl = modal.find('form').get(0);
 					const payload = Object.fromEntries(new FormData(formEl));
 
 					api
-						.post("/admin/activitypub/rules", payload)
+						.post('/admin/activitypub/rules', payload)
 						.then(async (data) => {
 							const html = await Benchpress.render(
-								"admin/settings/activitypub",
+								'admin/settings/activitypub',
 								{ rules: data },
-								"rules",
+								'rules',
 							);
-							const tbodyEl = document.querySelector("#rules tbody");
+							const tbodyEl = document.querySelector('#rules tbody');
 							if (tbodyEl) {
 								tbodyEl.innerHTML = html;
 							}
@@ -103,19 +103,19 @@ define("admin/settings/activitypub", [
 						.catch(alerts.error);
 				};
 				const modal = bootbox.dialog({
-					title: "[[admin/settings/activitypub:rules.add]]",
+					title: '[[admin/settings/activitypub:rules.add]]',
 					message: html,
 					buttons: {
 						save: {
-							label: "[[global:save]]",
-							className: "btn-primary",
+							label: '[[global:save]]',
+							className: 'btn-primary',
 							callback: submit,
 						},
 					},
 				});
 
-				modal.on("shown.bs.modal", function () {
-					modal.find("input").focus();
+				modal.on('shown.bs.modal', function () {
+					modal.find('input').focus();
 				});
 
 				// help text
@@ -125,14 +125,14 @@ define("admin/settings/activitypub", [
 					);
 					el.innerHTML = text;
 				};
-				const helpTextEl = modal.get(0).querySelector("#help-text");
-				const typeEl = modal.get(0).querySelector("#type");
+				const helpTextEl = modal.get(0).querySelector('#help-text');
+				const typeEl = modal.get(0).querySelector('#type');
 				updateHelp(
-					modal.get(0).querySelector("#type option").value,
+					modal.get(0).querySelector('#type option').value,
 					helpTextEl,
 				);
 				if (typeEl && helpTextEl) {
-					typeEl.addEventListener("change", function () {
+					typeEl.addEventListener('change', function () {
 						updateHelp(this.value, helpTextEl);
 					});
 				}
@@ -144,28 +144,28 @@ define("admin/settings/activitypub", [
 					},
 					cacheList: false,
 					showLinks: true,
-					template: "admin/partials/category/selector-dropdown-right",
+					template: 'admin/partials/category/selector-dropdown-right',
 				});
 			},
 		);
 	};
 
 	Module.throwRelaysModal = function () {
-		Benchpress.render("admin/partials/activitypub/relays", {}).then(
+		Benchpress.render('admin/partials/activitypub/relays', {}).then(
 			function (html) {
 				const submit = function () {
-					const formEl = modal.find("form").get(0);
+					const formEl = modal.find('form').get(0);
 					const payload = Object.fromEntries(new FormData(formEl));
 
 					api
-						.post("/admin/activitypub/relays", payload)
+						.post('/admin/activitypub/relays', payload)
 						.then(async (data) => {
 							const html = await app.parseAndTranslate(
-								"admin/settings/activitypub",
-								"relays",
+								'admin/settings/activitypub',
+								'relays',
 								{ relays: data },
 							);
-							const tbodyEl = document.querySelector("#relays tbody");
+							const tbodyEl = document.querySelector('#relays tbody');
 							if (tbodyEl) {
 								$(tbodyEl).html(html);
 							}
@@ -173,19 +173,19 @@ define("admin/settings/activitypub", [
 						.catch(alerts.error);
 				};
 				const modal = bootbox.dialog({
-					title: "[[admin/settings/activitypub:relays.add]]",
+					title: '[[admin/settings/activitypub:relays.add]]',
 					message: html,
 					buttons: {
 						save: {
-							label: "[[global:save]]",
-							className: "btn-primary",
+							label: '[[global:save]]',
+							className: 'btn-primary',
 							callback: submit,
 						},
 					},
 				});
 
-				modal.on("shown.bs.modal", function () {
-					modal.find("input").focus();
+				modal.on('shown.bs.modal', function () {
+					modal.find('input').focus();
 				});
 			},
 		);

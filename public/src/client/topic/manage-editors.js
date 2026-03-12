@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("forum/topic/manage-editors", ["autocomplete", "alerts"], function (
+define('forum/topic/manage-editors', ['autocomplete', 'alerts'], function (
 	autocomplete,
 	alerts,
 ) {
@@ -12,30 +12,30 @@ define("forum/topic/manage-editors", ["autocomplete", "alerts"], function (
 		if (modal) {
 			return;
 		}
-		const pid = postEl.attr("data-pid");
+		const pid = postEl.attr('data-pid');
 
-		let editors = await socket.emit("posts.getEditors", { pid: pid });
+		let editors = await socket.emit('posts.getEditors', { pid: pid });
 		app.parseAndTranslate(
-			"modals/manage-editors",
+			'modals/manage-editors',
 			{
 				editors: editors,
 			},
 			function (html) {
 				modal = html;
 
-				const commitEl = modal.find("#manage_editors_commit");
+				const commitEl = modal.find('#manage_editors_commit');
 
-				$("body").append(modal);
+				$('body').append(modal);
 
-				modal.find("#manage_editors_cancel").on("click", closeModal);
+				modal.find('#manage_editors_cancel').on('click', closeModal);
 
-				commitEl.on("click", function () {
+				commitEl.on('click', function () {
 					saveEditors(pid);
 				});
 
 				autocomplete.user(
-					modal.find("#username"),
-					{ filters: ["notbanned"] },
+					modal.find('#username'),
+					{ filters: ['notbanned'] },
 					function (ev, ui) {
 						const isInEditors = editors.find(
 							(e) => String(e.uid) === String(ui.item.user.uid),
@@ -43,23 +43,23 @@ define("forum/topic/manage-editors", ["autocomplete", "alerts"], function (
 						if (!isInEditors) {
 							editors.push(ui.item.user);
 							app.parseAndTranslate(
-								"modals/manage-editors",
-								"editors",
+								'modals/manage-editors',
+								'editors',
 								{
 									editors: editors,
 								},
 								function (html) {
 									modal.find('[component="topic/editors"]').html(html);
-									modal.find("#username").val("");
+									modal.find('#username').val('');
 								},
 							);
 						}
 					},
 				);
 
-				modal.on("click", "button.remove-user-icon", function () {
-					const el = $(this).parents("[data-uid]");
-					const uid = el.attr("data-uid");
+				modal.on('click', 'button.remove-user-icon', function () {
+					const el = $(this).parents('[data-uid]');
+					const uid = el.attr('data-uid');
 					editors = editors.filter((e) => String(e.uid) !== String(uid));
 					el.remove();
 				});
@@ -70,10 +70,10 @@ define("forum/topic/manage-editors", ["autocomplete", "alerts"], function (
 	function saveEditors(pid) {
 		const uids = modal
 			.find('[component="topic/editors"]>[data-uid]')
-			.map((i, el) => $(el).attr("data-uid"))
+			.map((i, el) => $(el).attr('data-uid'))
 			.get();
 
-		socket.emit("posts.saveEditors", { pid: pid, uids: uids }, function (err) {
+		socket.emit('posts.saveEditors', { pid: pid, uids: uids }, function (err) {
 			if (err) {
 				return alerts.error(err);
 			}

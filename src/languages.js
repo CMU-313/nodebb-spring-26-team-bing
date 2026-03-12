@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const utils = require("./utils");
-const { paths } = require("./constants");
-const plugins = require("./plugins");
+const fs = require('fs');
+const path = require('path');
+const utils = require('./utils');
+const { paths } = require('./constants');
+const plugins = require('./plugins');
 
 const Languages = module.exports;
-const languagesPath = path.join(__dirname, "../build/public/language");
+const languagesPath = path.join(__dirname, '../build/public/language');
 
-const files = fs.readdirSync(path.join(paths.nodeModules, "/timeago/locales"));
+const files = fs.readdirSync(path.join(paths.nodeModules, '/timeago/locales'));
 Languages.timeagoCodes = files
-	.filter((f) => f.startsWith("jquery.timeago"))
-	.map((f) => f.split(".")[2]);
+	.filter((f) => f.startsWith('jquery.timeago'))
+	.map((f) => f.split('.')[2]);
 
 Languages.get = async function (language, namespace) {
 	const pathToLanguageFile = path.join(
@@ -21,11 +21,11 @@ Languages.get = async function (language, namespace) {
 		`${namespace}.json`,
 	);
 	if (!pathToLanguageFile.startsWith(languagesPath)) {
-		throw new Error("[[error:invalid-path]]");
+		throw new Error('[[error:invalid-path]]');
 	}
-	const data = await fs.promises.readFile(pathToLanguageFile, "utf8");
+	const data = await fs.promises.readFile(pathToLanguageFile, 'utf8');
 	const parsed = JSON.parse(data) || {};
-	const result = await plugins.hooks.fire("filter:languages.get", {
+	const result = await plugins.hooks.fire('filter:languages.get', {
 		language,
 		namespace,
 		data: parsed,
@@ -40,15 +40,15 @@ Languages.listCodes = async function () {
 	}
 	try {
 		const file = await fs.promises.readFile(
-			path.join(languagesPath, "metadata.json"),
-			"utf8",
+			path.join(languagesPath, 'metadata.json'),
+			'utf8',
 		);
 		const parsed = JSON.parse(file);
 
 		codeCache = parsed.languages;
 		return parsed.languages;
 	} catch (err) {
-		if (err.code === "ENOENT") {
+		if (err.code === 'ENOENT') {
 			return [];
 		}
 		throw err;
@@ -66,12 +66,12 @@ Languages.list = async function () {
 	let languages = await Promise.all(
 		codes.map(async (folder) => {
 			try {
-				const configPath = path.join(languagesPath, folder, "language.json");
-				const file = await fs.promises.readFile(configPath, "utf8");
+				const configPath = path.join(languagesPath, folder, 'language.json');
+				const file = await fs.promises.readFile(configPath, 'utf8');
 				const lang = JSON.parse(file);
 				return lang;
 			} catch (err) {
-				if (err.code === "ENOENT") {
+				if (err.code === 'ENOENT') {
 					return;
 				}
 				throw err;
@@ -97,7 +97,7 @@ Languages.userTimeagoCode = async function (userLang) {
 	) {
 		return timeagoCode;
 	}
-	return "";
+	return '';
 };
 
-require("./promisify")(Languages);
+require('./promisify')(Languages);

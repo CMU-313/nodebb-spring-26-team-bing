@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-define("forum/account/downvoted", [
-	"forum/account/header",
-	"forum/account/posts",
+define('forum/account/downvoted', [
+	'forum/account/header',
+	'forum/account/posts',
 ], function (header, posts) {
 	const Downvoted = {};
 
@@ -10,10 +10,10 @@ define("forum/account/downvoted", [
 		header.init();
 
 		$('[component="post/content"] img:not(.not-responsive)').addClass(
-			"img-fluid",
+			'img-fluid',
 		);
 
-		posts.handleInfiniteScroll("account/downvoted");
+		posts.handleInfiniteScroll('account/downvoted');
 	};
 
 	return Downvoted;

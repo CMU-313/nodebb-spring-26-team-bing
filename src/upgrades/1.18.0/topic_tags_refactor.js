@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Store tags in topic hash",
+	name: 'Store tags in topic hash',
 	timestamp: Date.UTC(2021, 8, 9),
 	method: async function () {
 		const { progress } = this;
@@ -14,7 +14,7 @@ module.exports = {
 		}
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const tags = await getTopicsTags(tids);
 
@@ -29,7 +29,7 @@ module.exports = {
 				await db.setObjectBulk(
 					topicsWithTags.map((t) => [
 						`topic:${t.tid}`,
-						{ tags: t.tags.join(",") },
+						{ tags: t.tags.join(',') },
 					]),
 				);
 				await db.deleteAll(tids.map((tid) => `topic:${tid}:tags`));

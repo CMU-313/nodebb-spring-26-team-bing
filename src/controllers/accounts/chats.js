@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const messaging = require("../../messaging");
-const meta = require("../../meta");
-const user = require("../../user");
-const privileges = require("../../privileges");
-const helpers = require("../helpers");
+const db = require('../../database');
+const messaging = require('../../messaging');
+const meta = require('../../meta');
+const user = require('../../user');
+const privileges = require('../../privileges');
+const helpers = require('../helpers');
 
 const chatsController = module.exports;
 
@@ -19,7 +19,7 @@ chatsController.get = async function (req, res, next) {
 		return next();
 	}
 	const canChat = await privileges.global.can(
-		["chat", "chat:privileged"],
+		['chat', 'chat:privileged'],
 		req.uid,
 	);
 	if (!canChat.includes(true)) {
@@ -27,7 +27,7 @@ chatsController.get = async function (req, res, next) {
 	}
 
 	const payload = {
-		title: "[[pages:chats]]",
+		title: '[[pages:chats]]',
 		uid: uid,
 		userslug: req.params.userslug,
 	};
@@ -48,7 +48,7 @@ chatsController.get = async function (req, res, next) {
 	}
 
 	if (!req.params.roomid) {
-		return res.render("chats", payload);
+		return res.render('chats', payload);
 	}
 
 	const { index } = req.params;
@@ -57,7 +57,7 @@ chatsController.get = async function (req, res, next) {
 	if (index) {
 		const msgCount = await db.getObjectField(
 			`chat:room:${req.params.roomid}`,
-			"messageCount",
+			'messageCount',
 		);
 		start = Math.max(0, parseInt(msgCount, 10) - index - 49);
 		payload.scrollToIndex = Math.min(
@@ -74,18 +74,18 @@ chatsController.get = async function (req, res, next) {
 		return next();
 	}
 
-	room.title = room.roomName || room.usernames || "[[pages:chats]]";
-	room.bodyClasses = ["chat-loaded"];
+	room.title = room.roomName || room.usernames || '[[pages:chats]]';
+	room.bodyClasses = ['chat-loaded'];
 	const [canViewInfo, canUploadImage, canUploadFile] =
 		await privileges.global.can(
-			["view:users:info", "upload:post:image", "upload:post:file"],
+			['view:users:info', 'upload:post:image', 'upload:post:file'],
 			uid,
 		);
 	room.canViewInfo = canViewInfo;
 	room.canUpload =
 		(canUploadImage || canUploadFile) &&
 		(meta.config.maximumFileSize > 0 || room.isAdmin);
-	res.render("chats", {
+	res.render('chats', {
 		...payload,
 		...room,
 	});
@@ -95,7 +95,7 @@ chatsController.redirectToChat = async function (req, res, next) {
 	if (!req.loggedIn) {
 		return next();
 	}
-	const userslug = await user.getUserField(req.uid, "userslug");
+	const userslug = await user.getUserField(req.uid, 'userslug');
 	if (!userslug) {
 		return next();
 	}
@@ -103,7 +103,7 @@ chatsController.redirectToChat = async function (req, res, next) {
 	const index = parseInt(req.params.index, 10);
 	helpers.redirect(
 		res,
-		`/user/${userslug}/chats${roomid ? `/${roomid}` : ""}${index ? `/${index}` : ""}`,
+		`/user/${userslug}/chats${roomid ? `/${roomid}` : ''}${index ? `/${index}` : ''}`,
 	);
 };
 
@@ -113,8 +113,8 @@ chatsController.redirectToMessage = async function (req, res, next) {
 		return next();
 	}
 	const [userslug, roomId] = await Promise.all([
-		user.getUserField(req.uid, "userslug"),
-		messaging.getMessageField(mid, "roomId"),
+		user.getUserField(req.uid, 'userslug'),
+		messaging.getMessageField(mid, 'roomId'),
 	]);
 	if (!userslug || !roomId) {
 		return next();
@@ -126,7 +126,7 @@ chatsController.redirectToMessage = async function (req, res, next) {
 
 	helpers.redirect(
 		res,
-		`/user/${userslug}/chats/${roomId}${index ? `/${index + 1}` : ""}`,
+		`/user/${userslug}/chats/${roomId}${index ? `/${index + 1}` : ''}`,
 		true,
 	);
 };

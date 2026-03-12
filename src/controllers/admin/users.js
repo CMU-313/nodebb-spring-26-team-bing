@@ -1,31 +1,31 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
+const validator = require('validator');
 
-const user = require("../../user");
-const meta = require("../../meta");
-const db = require("../../database");
-const pagination = require("../../pagination");
-const events = require("../../events");
-const plugins = require("../../plugins");
-const privileges = require("../../privileges");
-const utils = require("../../utils");
+const user = require('../../user');
+const meta = require('../../meta');
+const db = require('../../database');
+const pagination = require('../../pagination');
+const events = require('../../events');
+const plugins = require('../../plugins');
+const privileges = require('../../privileges');
+const utils = require('../../utils');
 
 const usersController = module.exports;
 
 const userFields = [
-	"uid",
-	"username",
-	"userslug",
-	"email",
-	"postcount",
-	"joindate",
-	"banned",
-	"reputation",
-	"picture",
-	"flags",
-	"lastonline",
-	"email:confirmed",
+	'uid',
+	'username',
+	'userslug',
+	'email',
+	'postcount',
+	'joindate',
+	'banned',
+	'reputation',
+	'picture',
+	'flags',
+	'lastonline',
+	'email:confirmed',
 ];
 
 usersController.index = async function (req, res) {
@@ -37,15 +37,15 @@ usersController.index = async function (req, res) {
 };
 
 async function getUsers(req, res) {
-	const sortDirection = req.query.sortDirection || "desc";
-	const reverse = sortDirection === "desc";
+	const sortDirection = req.query.sortDirection || 'desc';
+	const reverse = sortDirection === 'desc';
 
 	const page = parseInt(req.query.page, 10) || 1;
 	let resultsPerPage = parseInt(req.query.resultsPerPage, 10) || 50;
 	if (![50, 100, 250, 500].includes(resultsPerPage)) {
 		resultsPerPage = 50;
 	}
-	let sortBy = validator.escape(req.query.sortBy || "");
+	let sortBy = validator.escape(req.query.sortBy || '');
 	const filterBy = Array.isArray(req.query.filters || [])
 		? req.query.filters || []
 		: [req.query.filters];
@@ -54,29 +54,29 @@ async function getUsers(req, res) {
 
 	function buildSet() {
 		const sortToSet = {
-			postcount: "users:postcount",
-			reputation: "users:reputation",
-			joindate: "users:joindate",
-			lastonline: "users:online",
-			flags: "users:flags",
+			postcount: 'users:postcount',
+			reputation: 'users:reputation',
+			joindate: 'users:joindate',
+			lastonline: 'users:online',
+			flags: 'users:flags',
 		};
 
 		const set = [];
 		if (sortBy) {
 			set.push(sortToSet[sortBy]);
 		}
-		if (filterBy.includes("unverified")) {
-			set.push("group:unverified-users:members");
+		if (filterBy.includes('unverified')) {
+			set.push('group:unverified-users:members');
 		}
-		if (filterBy.includes("verified")) {
-			set.push("group:verified-users:members");
+		if (filterBy.includes('verified')) {
+			set.push('group:verified-users:members');
 		}
-		if (filterBy.includes("banned")) {
-			set.push("users:banned");
+		if (filterBy.includes('banned')) {
+			set.push('users:banned');
 		}
 		if (!set.length) {
-			set.push("users:online");
-			sortBy = "lastonline";
+			set.push('users:online');
+			sortBy = 'lastonline';
 		}
 		return set.length > 1 ? set : set[0];
 	}
@@ -93,7 +93,7 @@ async function getUsers(req, res) {
 		if (Array.isArray(set)) {
 			const weights = set.map((s, index) => (index ? 0 : 1));
 			uids = await db[
-				reverse ? "getSortedSetRevIntersect" : "getSortedSetIntersect"
+				reverse ? 'getSortedSetRevIntersect' : 'getSortedSetIntersect'
 			]({
 				sets: set,
 				start: start,
@@ -101,7 +101,7 @@ async function getUsers(req, res) {
 				weights: weights,
 			});
 		} else {
-			uids = await db[reverse ? "getSortedSetRevRange" : "getSortedSetRange"](
+			uids = await db[reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'](
 				set,
 				start,
 				stop,
@@ -130,15 +130,15 @@ async function getUsers(req, res) {
 }
 
 async function getCustomUserFields() {
-	const keys = await db.getSortedSetRange("user-custom-fields", 0, -1);
+	const keys = await db.getSortedSetRange('user-custom-fields', 0, -1);
 	return (
 		await db.getObjects(keys.map((k) => `user-custom-field:${k}`))
 	).filter(Boolean);
 }
 
 usersController.search = async function (req, res) {
-	const sortDirection = req.query.sortDirection || "desc";
-	const reverse = sortDirection === "desc";
+	const sortDirection = req.query.sortDirection || 'desc';
+	const reverse = sortDirection === 'desc';
 	const page = parseInt(req.query.page, 10) || 1;
 	let resultsPerPage = parseInt(req.query.resultsPerPage, 10) || 50;
 	if (![50, 100, 250, 500].includes(resultsPerPage)) {
@@ -159,8 +159,8 @@ usersController.search = async function (req, res) {
 				return [];
 			}
 			query = String(query).toLowerCase();
-			if (!query.endsWith("*")) {
-				query += "*";
+			if (!query.endsWith('*')) {
+				query += '*';
 			}
 
 			const data = await db.getSortedSetScan({
@@ -168,18 +168,18 @@ usersController.search = async function (req, res) {
 				match: query,
 				limit: hardCap || resultsPerPage * 10,
 			});
-			return data.map((data) => data.split(":").pop());
+			return data.map((data) => data.split(':').pop());
 		},
 	});
 
 	const uids = searchData.users.map((user) => user && user.uid);
 	searchData.users = await loadUserInfo(req.uid, uids);
-	if (req.query.searchBy === "ip") {
+	if (req.query.searchBy === 'ip') {
 		searchData.users.forEach((user) => {
 			user.ip = user.ips.find((ip) => ip.includes(String(req.query.query)));
 		});
 	}
-	searchData.query = validator.escape(String(req.query.query || ""));
+	searchData.query = validator.escape(String(req.query.query || ''));
 	searchData.page = page;
 	searchData.resultsPerPage = resultsPerPage;
 	searchData.sortBy = req.query.sortBy;
@@ -205,7 +205,7 @@ async function loadUserInfo(callerUid, uids) {
 	const [isAdmin, userData, lastonline, confirmObjs, ips] = await Promise.all([
 		user.isAdministrator(uids),
 		user.getUsersWithFields(uids, userFields, callerUid),
-		db.sortedSetScores("users:online", uids),
+		db.sortedSetScores('users:online', uids),
 		getConfirmObjs(),
 		getIPs(),
 	]);
@@ -221,9 +221,9 @@ async function loadUserInfo(callerUid, uids) {
 			user.emailToConfirm = user.email;
 			if (confirmObjs[index] && confirmObjs[index].email) {
 				const confirmObj = confirmObjs[index];
-				user["email:expired"] =
+				user['email:expired'] =
 					!confirmObj.expires || Date.now() >= confirmObj.expires;
-				user["email:pending"] =
+				user['email:pending'] =
 					confirmObj.expires && Date.now() < confirmObj.expires;
 				user.emailToConfirm = validator.escape(String(confirmObj.email));
 			}
@@ -239,10 +239,10 @@ usersController.registrationQueue = async function (req, res) {
 	const stop = start + itemsPerPage - 1;
 
 	const data = await utils.promiseParallel({
-		registrationQueueCount: db.sortedSetCard("registration:queue"),
+		registrationQueueCount: db.sortedSetCard('registration:queue'),
 		users: user.getRegistrationQueue(start, stop),
 		customHeaders: plugins.hooks.fire(
-			"filter:admin.registrationQueue.customHeaders",
+			'filter:admin.registrationQueue.customHeaders',
 			{ headers: [] },
 		),
 		invites: getInvites(),
@@ -253,14 +253,14 @@ usersController.registrationQueue = async function (req, res) {
 	);
 	data.pagination = pagination.create(page, pageCount);
 	data.customHeaders = data.customHeaders.headers;
-	data.title = "[[pages:registration-queue]]";
-	res.render("admin/manage/registration", data);
+	data.title = '[[pages:registration-queue]]';
+	res.render('admin/manage/registration', data);
 };
 
 async function getInvites() {
 	const invitations = await user.getAllInvites();
 	const uids = invitations.map((invite) => invite.uid);
-	let usernames = await user.getUsersFields(uids, ["username"]);
+	let usernames = await user.getUsersFields(uids, ['username']);
 	usernames = usernames.map((user) => user.username);
 
 	invitations.forEach((invites, index) => {
@@ -269,10 +269,10 @@ async function getInvites() {
 
 	async function getUsernamesByEmails(emails) {
 		const uids = await db.sortedSetScores(
-			"email:uid",
+			'email:uid',
 			emails.map((email) => String(email).toLowerCase()),
 		);
-		const usernames = await user.getUsersFields(uids, ["username"]);
+		const usernames = await user.getUsersFields(uids, ['username']);
 		return usernames.map((user) => user.username);
 	}
 
@@ -284,7 +284,7 @@ async function getInvites() {
 		invites.invitations = invites.invitations.map((email, i) => ({
 			email: email,
 			username:
-				usernames[index][i] === "[[global:guest]]" ? "" : usernames[index][i],
+				usernames[index][i] === '[[global:guest]]' ? '' : usernames[index][i],
 		}));
 	});
 	return invitations;
@@ -296,9 +296,9 @@ async function render(req, res, data) {
 	const { registrationType } = meta.config;
 
 	data.inviteOnly =
-		registrationType === "invite-only" ||
-		registrationType === "admin-invite-only";
-	data.adminInviteOnly = registrationType === "admin-invite-only";
+		registrationType === 'invite-only' ||
+		registrationType === 'admin-invite-only';
+	data.adminInviteOnly = registrationType === 'admin-invite-only';
 	data[`sort_${data.sortBy}`] = true;
 	if (req.query.searchBy) {
 		data[`searchBy_${validator.escape(String(req.query.searchBy))}`] = true;
@@ -309,36 +309,36 @@ async function render(req, res, data) {
 	filterBy.forEach((filter) => {
 		data[`filterBy_${validator.escape(String(filter))}`] = true;
 	});
-	data.userCount = parseInt(await db.getObjectField("global", "userCount"), 10);
+	data.userCount = parseInt(await db.getObjectField('global', 'userCount'), 10);
 	if (data.adminInviteOnly) {
 		data.showInviteButton = await privileges.users.isAdministrator(req.uid);
 	} else {
 		data.showInviteButton = await privileges.users.hasInvitePrivilege(req.uid);
 	}
 
-	res.render("admin/manage/users", data);
+	res.render('admin/manage/users', data);
 }
 
 usersController.getCSV = async function (req, res, next) {
 	await events.log({
-		type: "getUsersCSV",
+		type: 'getUsersCSV',
 		uid: req.uid,
 		ip: req.ip,
 	});
-	const path = require("path");
-	const { baseDir } = require("../../constants").paths;
+	const path = require('path');
+	const { baseDir } = require('../../constants').paths;
 	res.sendFile(
-		"users.csv",
+		'users.csv',
 		{
-			root: path.join(baseDir, "build/export"),
+			root: path.join(baseDir, 'build/export'),
 			headers: {
-				"Content-Type": "text/csv",
-				"Content-Disposition": "attachment; filename=users.csv",
+				'Content-Type': 'text/csv',
+				'Content-Disposition': 'attachment; filename=users.csv',
 			},
 		},
 		(err) => {
 			if (err) {
-				if (err.code === "ENOENT") {
+				if (err.code === 'ENOENT') {
 					res.locals.isAPI = false;
 					return next();
 				}
@@ -349,19 +349,19 @@ usersController.getCSV = async function (req, res, next) {
 };
 
 usersController.customFields = async function (req, res) {
-	const keys = await db.getSortedSetRange("user-custom-fields", 0, -1);
+	const keys = await db.getSortedSetRange('user-custom-fields', 0, -1);
 	const fields = (
 		await db.getObjects(keys.map((k) => `user-custom-field:${k}`))
 	).filter(Boolean);
 	fields.forEach((field) => {
-		if (field["select-options"]) {
-			field.selectOptionsFormatted = field["select-options"]
+		if (field['select-options']) {
+			field.selectOptionsFormatted = field['select-options']
 				.trim()
-				.split("\n")
-				.join(", ");
+				.split('\n')
+				.join(', ');
 		}
-		field["min:rep"] = field["min:rep"] || 0;
-		field.visibility = field.visibility || "all";
+		field['min:rep'] = field['min:rep'] || 0;
+		field.visibility = field.visibility || 'all';
 	});
-	res.render("admin/manage/users/custom-fields", { fields: fields });
+	res.render('admin/manage/users/custom-fields', { fields: fields });
 };

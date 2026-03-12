@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const dns = require("dns").promises;
-require("undici"); // keep this here, needed for SSRF (see `lookup()`)
+const dns = require('dns').promises;
+require('undici'); // keep this here, needed for SSRF (see `lookup()`)
 
-const nconf = require("nconf");
-const ipaddr = require("ipaddr.js");
-const { CookieJar } = require("tough-cookie");
-const fetchCookie = require("fetch-cookie").default;
-const { version } = require("../package.json");
+const nconf = require('nconf');
+const ipaddr = require('ipaddr.js');
+const { CookieJar } = require('tough-cookie');
+const fetchCookie = require('fetch-cookie').default;
+const { version } = require('../package.json');
 
-const plugins = require("./plugins");
-const ttl = require("./cache/ttl");
+const plugins = require('./plugins');
+const ttl = require('./cache/ttl');
 const checkCache = ttl({
-	name: "request-check",
+	name: 'request-check',
 	max: 1000,
 	ttl: 1000 * 60 * 60, // 1 hour
 });
@@ -23,15 +23,15 @@ exports.jar = function () {
 	return new CookieJar();
 };
 
-const userAgent = `NodeBB/${version.split(".").shift()}.x (${nconf.get("url")})`;
+const userAgent = `NodeBB/${version.split('.').shift()}.x (${nconf.get('url')})`;
 
 async function init() {
 	if (initialized) {
 		return;
 	}
 
-	allowList.add(nconf.get("url_parsed").host);
-	const { allowed } = await plugins.hooks.fire("filter:request.init", {
+	allowList.add(nconf.get('url_parsed').host);
+	const { allowed } = await plugins.hooks.fire('filter:request.init', {
 		allowed: allowList,
 	});
 	if (allowed instanceof Set) {
@@ -52,7 +52,7 @@ function lookup(hostname, options, callback) {
 	let { ok, lookup } = checkCache.get(hostname);
 	lookup = lookup && [...lookup];
 	if (!ok) {
-		throw new Error("lookup-failed");
+		throw new Error('lookup-failed');
 	}
 
 	if (!lookup) {
@@ -78,7 +78,7 @@ function lookup(hostname, options, callback) {
 async function call(url, method, { body, timeout, jar, ...config } = {}) {
 	const { ok } = await check(url);
 	if (!ok) {
-		throw new Error("[[error:reserved-ip-address]]");
+		throw new Error('[[error:reserved-ip-address]]');
 	}
 
 	let fetchImpl = fetch;
@@ -90,8 +90,8 @@ async function call(url, method, { body, timeout, jar, ...config } = {}) {
 		...config,
 		method,
 		headers: {
-			"content-type": "application/json",
-			"user-agent": userAgent,
+			'content-type': 'application/json',
+			'user-agent': userAgent,
 			...config.headers,
 		},
 	};
@@ -99,10 +99,10 @@ async function call(url, method, { body, timeout, jar, ...config } = {}) {
 		opts.signal = AbortSignal.timeout(timeout);
 	}
 
-	if (body && ["POST", "PUT", "PATCH", "DEL", "DELETE"].includes(method)) {
+	if (body && ['POST', 'PUT', 'PATCH', 'DEL', 'DELETE'].includes(method)) {
 		if (
-			opts.headers["content-type"] &&
-			jsonTest.test(opts.headers["content-type"])
+			opts.headers['content-type'] &&
+			jsonTest.test(opts.headers['content-type'])
 		) {
 			opts.body = JSON.stringify(body);
 		} else {
@@ -110,12 +110,12 @@ async function call(url, method, { body, timeout, jar, ...config } = {}) {
 		}
 	}
 	// Workaround for https://github.com/nodejs/undici/issues/1305
-	if (global[Symbol.for("undici.globalDispatcher.1")] !== undefined) {
+	if (global[Symbol.for('undici.globalDispatcher.1')] !== undefined) {
 		class FetchAgent
-			extends global[Symbol.for("undici.globalDispatcher.1")].constructor
+			extends global[Symbol.for('undici.globalDispatcher.1')].constructor
 		{
 			dispatch(opts, handler) {
-				delete opts.headers["sec-fetch-mode"];
+				delete opts.headers['sec-fetch-mode'];
 				return super.dispatch(opts, handler);
 			}
 		}
@@ -127,14 +127,14 @@ async function call(url, method, { body, timeout, jar, ...config } = {}) {
 	const response = await fetchImpl(url, opts);
 
 	const { headers } = response;
-	const contentType = headers.get("content-type");
+	const contentType = headers.get('content-type');
 	const isJSON = contentType && jsonTest.test(contentType);
 	let respBody = await response.text();
 	if (isJSON && respBody) {
 		try {
 			respBody = JSON.parse(respBody);
 		} catch (err) {
-			throw new Error("invalid json in response body", url);
+			throw new Error('invalid json in response body', url);
 		}
 	}
 
@@ -183,7 +183,7 @@ async function check(url) {
 	// Every IP address that the host resolves to should be a unicast address
 	const ok = Array.from(addresses).every(({ address: ip }) => {
 		const parsed = ipaddr.parse(ip);
-		return parsed.range() === "unicast";
+		return parsed.range() === 'unicast';
 	});
 
 	const payload = { ok, lookup };
@@ -194,16 +194,16 @@ async function check(url) {
 /*
 const { body, response } = await request.get('someurl?foo=1&baz=2')
 */
-exports.get = async (url, config) => call(url, "GET", config);
+exports.get = async (url, config) => call(url, 'GET', config);
 
-exports.head = async (url, config) => call(url, "HEAD", config);
-exports.del = async (url, config) => call(url, "DELETE", config);
+exports.head = async (url, config) => call(url, 'HEAD', config);
+exports.del = async (url, config) => call(url, 'DELETE', config);
 exports.delete = exports.del;
-exports.options = async (url, config) => call(url, "OPTIONS", config);
+exports.options = async (url, config) => call(url, 'OPTIONS', config);
 
 /*
 const { body, response } = await request.post('someurl', { body: { foo: 1, baz: 2}})
 */
-exports.post = async (url, config) => call(url, "POST", config);
-exports.put = async (url, config) => call(url, "PUT", config);
-exports.patch = async (url, config) => call(url, "PATCH", config);
+exports.post = async (url, config) => call(url, 'POST', config);
+exports.put = async (url, config) => call(url, 'PUT', config);
+exports.patch = async (url, config) => call(url, 'PATCH', config);

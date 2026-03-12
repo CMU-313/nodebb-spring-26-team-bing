@@ -11,7 +11,7 @@ ul.categories-list {
 
     &.selected {
       background-color: mix($body-bg, $body-color, 90%);
-      [component="topic/select"] {
+      [component='topic/select'] {
         color: $success !important;
         visibility: visible;
       }
@@ -30,7 +30,7 @@ ul.categories-list {
     }
 
     // if only one thumb don't display
-    [data-numthumbs="1"] {
+    [data-numthumbs='1'] {
       display: none;
     }
   }

@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
 module.exports = {
-	name: "Reset old bootswatch skin for all users",
+	name: 'Reset old bootswatch skin for all users',
 	timestamp: Date.UTC(2023, 4, 1),
 	method: async function () {
-		const batch = require("../../batch");
-		const css = require("../../meta/css");
+		const batch = require('../../batch');
+		const css = require('../../meta/css');
 
 		batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				let settings = await db.getObjects(
 					uids.map((uid) => `user:${uid}:settings`),
@@ -23,7 +23,7 @@ module.exports = {
 				);
 
 				await db.setObjectBulk(
-					settings.map((s) => [`user:${s.uid}`, { bootswatchSkin: "" }]),
+					settings.map((s) => [`user:${s.uid}`, { bootswatchSkin: '' }]),
 				);
 			},
 			{

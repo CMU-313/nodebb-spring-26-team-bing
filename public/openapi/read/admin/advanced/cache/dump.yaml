@@ -7,13 +7,13 @@ get:
       name: name
       schema:
         type: string
-        enum: ["post", "object", "group", "local"]
+        enum: ['post', 'object', 'group', 'local']
       required: false
       description: Specify cache to dump if calling `/dump`
-      example: "post"
+      example: 'post'
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:

@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const validator = require("validator");
+const validator = require('validator');
 
-const meta = require("../../meta");
-const emailer = require("../../emailer");
-const notifications = require("../../notifications");
-const groups = require("../../groups");
-const languages = require("../../languages");
-const navigationAdmin = require("../../navigation/admin");
-const social = require("../../social");
-const activitypub = require("../../activitypub");
-const api = require("../../api");
-const pagination = require("../../pagination");
-const helpers = require("../helpers");
-const translator = require("../../translator");
+const meta = require('../../meta');
+const emailer = require('../../emailer');
+const notifications = require('../../notifications');
+const groups = require('../../groups');
+const languages = require('../../languages');
+const navigationAdmin = require('../../navigation/admin');
+const social = require('../../social');
+const activitypub = require('../../activitypub');
+const api = require('../../api');
+const pagination = require('../../pagination');
+const helpers = require('../helpers');
+const translator = require('../../translator');
 
 const settingsController = module.exports;
 
@@ -25,7 +25,7 @@ settingsController.general = async (req, res) => {
 		language.selected = language.code === meta.config.defaultLang;
 	});
 
-	res.render("admin/settings/general", {
+	res.render('admin/settings/general', {
 		title: `[[admin/menu:settings/general]]`,
 		routes,
 		postSharing,
@@ -37,7 +37,7 @@ settingsController.general = async (req, res) => {
 settingsController.navigation = async function (req, res) {
 	const [admin, allGroups] = await Promise.all([
 		navigationAdmin.getAdmin(),
-		groups.getNonPrivilegeGroups("groups:createtime", 0, -1),
+		groups.getNonPrivilegeGroups('groups:createtime', 0, -1),
 	]);
 
 	allGroups.sort((a, b) => b.system - a.system);
@@ -52,7 +52,7 @@ settingsController.navigation = async function (req, res) {
 		enabled.title = translator.escape(enabled.title);
 		enabled.text = translator.escape(enabled.text);
 		enabled.dropdownContent = translator.escape(
-			validator.escape(String(enabled.dropdownContent || "")),
+			validator.escape(String(enabled.dropdownContent || '')),
 		);
 		enabled.groups = admin.groups.map((group) => ({
 			displayName: group.displayName,
@@ -65,21 +65,21 @@ settingsController.navigation = async function (req, res) {
 	});
 
 	admin.navigation = admin.enabled.slice();
-	admin.title = "[[admin/menu:settings/navigation]]";
-	res.render("admin/settings/navigation", admin);
+	admin.title = '[[admin/menu:settings/navigation]]';
+	res.render('admin/settings/navigation', admin);
 };
 
 settingsController.user = async (req, res) => {
 	const [notificationTypes, groupData] = await Promise.all([
 		notifications.getAllNotificationTypes(),
-		groups.getNonPrivilegeGroups("groups:createtime", 0, -1),
+		groups.getNonPrivilegeGroups('groups:createtime', 0, -1),
 	]);
 	const notificationSettings = notificationTypes.map((type) => ({
 		name: type,
-		label: `[[notifications:${type.replace(/_/g, "-")}]]`,
+		label: `[[notifications:${type.replace(/_/g, '-')}]]`,
 	}));
-	res.render("admin/settings/user", {
-		title: "[[admin/menu:settings/user]]",
+	res.render('admin/settings/user', {
+		title: '[[admin/menu:settings/user]]',
 		notificationSettings: notificationSettings,
 		groupsExemptFromNewUserRestrictions: groupData,
 	});
@@ -105,12 +105,12 @@ settingsController.tags = async (req, res) => {
 
 settingsController.post = async (req, res) => {
 	const groupData = await groups.getNonPrivilegeGroups(
-		"groups:createtime",
+		'groups:createtime',
 		0,
 		-1,
 	);
-	res.render("admin/settings/post", {
-		title: "[[admin/menu:settings/post]]",
+	res.render('admin/settings/post', {
+		title: '[[admin/menu:settings/post]]',
 		groupsExemptFromPostQueue: groupData,
 	});
 };
@@ -124,12 +124,12 @@ settingsController.uploads = async (req, res) => {
 settingsController.email = async (req, res) => {
 	const emails = await emailer.getTemplates(meta.config);
 
-	res.render("admin/settings/email", {
-		title: "[[admin/menu:settings/email]]",
+	res.render('admin/settings/email', {
+		title: '[[admin/menu:settings/email]]',
 		emails: emails,
 		sendable: emails
 			.filter(
-				(e) => !e.path.includes("_plaintext") && !e.path.includes("partials"),
+				(e) => !e.path.includes('_plaintext') && !e.path.includes('partials'),
 			)
 			.map((tpl) => tpl.path),
 		services: emailer.listServices(),
@@ -164,8 +164,8 @@ settingsController.api = async (req, res) => {
 		api.utils.tokens.count(),
 	]);
 	const pageCount = Math.ceil(count / resultsPerPage);
-	res.render("admin/settings/api", {
-		title: "[[admin/menu:settings/api]]",
+	res.render('admin/settings/api', {
+		title: '[[admin/menu:settings/api]]',
 		tokens,
 		pagination: pagination.create(page, pageCount, req.query),
 	});
@@ -178,7 +178,7 @@ settingsController.activitypub = async (req, res) => {
 		activitypub.relays.list(),
 	]);
 
-	res.render("admin/settings/activitypub", {
+	res.render('admin/settings/activitypub', {
 		title: `[[admin/menu:settings/activitypub]]`,
 		instanceCount,
 		rules,
@@ -200,12 +200,12 @@ settingsController.webCrawler = async (req, res) => {
 
 settingsController.advanced = async (req, res) => {
 	const groupData = await groups.getNonPrivilegeGroups(
-		"groups:createtime",
+		'groups:createtime',
 		0,
 		-1,
 	);
-	res.render("admin/settings/advanced", {
-		title: "[[admin/menu:settings/advanced]]",
+	res.render('admin/settings/advanced', {
+		title: '[[admin/menu:settings/advanced]]',
 		groupsExemptFromMaintenanceMode: groupData,
 	});
 };

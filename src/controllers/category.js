@@ -1,46 +1,46 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
-const validator = require("validator");
-const qs = require("querystring");
+const nconf = require('nconf');
+const validator = require('validator');
+const qs = require('querystring');
 
-const db = require("../database");
-const privileges = require("../privileges");
-const user = require("../user");
-const categories = require("../categories");
-const meta = require("../meta");
-const activitypub = require("../activitypub");
-const pagination = require("../pagination");
-const helpers = require("./helpers");
-const utils = require("../utils");
-const translator = require("../translator");
-const analytics = require("../analytics");
+const db = require('../database');
+const privileges = require('../privileges');
+const user = require('../user');
+const categories = require('../categories');
+const meta = require('../meta');
+const activitypub = require('../activitypub');
+const pagination = require('../pagination');
+const helpers = require('./helpers');
+const utils = require('../utils');
+const translator = require('../translator');
+const analytics = require('../analytics');
 
 const categoryController = module.exports;
 
-const url = nconf.get("url");
-const relative_path = nconf.get("relative_path");
+const url = nconf.get('url');
+const relative_path = nconf.get('relative_path');
 const validSorts = [
-	"recently_replied",
-	"recently_created",
-	"most_posts",
-	"most_votes",
-	"most_views",
+	'recently_replied',
+	'recently_created',
+	'most_posts',
+	'most_votes',
+	'most_views',
 ];
 
 categoryController.get = async function (req, res, next) {
 	let cid = req.params.category_id;
-	if (cid === "-1") {
+	if (cid === '-1') {
 		return helpers.redirect(
 			res,
-			`${res.locals.isAPI ? "/api" : ""}/world?${qs.stringify(req.query)}`,
+			`${res.locals.isAPI ? '/api' : ''}/world?${qs.stringify(req.query)}`,
 		);
 	}
 
 	if (!utils.isNumber(cid)) {
 		const assertion = await activitypub.actors.assertGroup([cid]);
 		if (!activitypub.helpers.isUri(cid)) {
-			cid = await db.getObjectField("handle:cid", cid);
+			cid = await db.getObjectField('handle:cid', cid);
 		}
 
 		if (!assertion || !cid) {
@@ -58,7 +58,7 @@ categoryController.get = async function (req, res, next) {
 
 	const [categoryFields, userPrivileges, tagData, userSettings, rssToken] =
 		await Promise.all([
-			categories.getCategoryFields(cid, ["slug", "disabled", "link"]),
+			categories.getCategoryFields(cid, ['slug', 'disabled', 'link']),
 			privileges.categories.get(cid, req.uid),
 			helpers.getSelectedTag(req.query.tag),
 			user.getSettings(req.uid),
@@ -98,7 +98,7 @@ categoryController.get = async function (req, res, next) {
 	}
 
 	if (categoryFields.link) {
-		await db.incrObjectField(`category:${cid}`, "timesClicked");
+		await db.incrObjectField(`category:${cid}`, 'timesClicked');
 		return helpers.redirect(res, validator.unescape(categoryFields.link));
 	}
 
@@ -190,7 +190,7 @@ categoryController.get = async function (req, res, next) {
 	}
 
 	categoryData.title = translator.escape(categoryData.name);
-	categoryData.selectCategoryLabel = "[[category:subcategories]]";
+	categoryData.selectCategoryLabel = '[[category:subcategories]]';
 	categoryData.description = translator.escape(categoryData.description);
 	categoryData.privileges = userPrivileges;
 	categoryData.showSelect = userPrivileges.editable;
@@ -198,9 +198,9 @@ categoryController.get = async function (req, res, next) {
 	categoryData.topicIndex = topicIndex;
 	categoryData.selectedTag = tagData.selectedTag;
 	categoryData.selectedTags = tagData.selectedTags;
-	categoryData.sortOptionLabel = `[[topic:${validator.escape(String(sort)).replace(/_/g, "-")}]]`;
+	categoryData.sortOptionLabel = `[[topic:${validator.escape(String(sort)).replace(/_/g, '-')}]]`;
 
-	if (utils.isNumber(categoryData.cid) && !meta.config["feeds:disableRSS"]) {
+	if (utils.isNumber(categoryData.cid) && !meta.config['feeds:disableRSS']) {
 		categoryData.rssFeedUrl = `${url}/category/${categoryData.cid}.rss`;
 		if (req.loggedIn) {
 			categoryData.rssFeedUrl += `?uid=${req.uid}&token=${rssToken}`;
@@ -209,8 +209,8 @@ categoryController.get = async function (req, res, next) {
 
 	addTags(categoryData, res, currentPage);
 
-	categoryData["feeds:disableRSS"] = meta.config["feeds:disableRSS"] || 0;
-	categoryData["reputation:disabled"] = meta.config["reputation:disabled"];
+	categoryData['feeds:disableRSS'] = meta.config['feeds:disableRSS'] || 0;
+	categoryData['reputation:disabled'] = meta.config['reputation:disabled'];
 	categoryData.pagination = pagination.create(
 		currentPage,
 		pageCount,
@@ -226,30 +226,30 @@ categoryController.get = async function (req, res, next) {
 	if (meta.config.activitypubEnabled) {
 		// Include link header for richer parsing
 		res.set(
-			"Link",
-			`<${nconf.get("url")}/category/${cid}>; rel="alternate"; type="application/activity+json"`,
+			'Link',
+			`<${nconf.get('url')}/category/${cid}>; rel="alternate"; type="application/activity+json"`,
 		);
 
 		// Category accessible
 		const federating = await privileges.categories.can(
-			"read",
+			'read',
 			cid,
 			activitypub._constants.uid,
 		);
 		if (federating) {
-			categoryData.handleFull = `${categoryData.handle}@${nconf.get("url_parsed").host}`;
+			categoryData.handleFull = `${categoryData.handle}@${nconf.get('url_parsed').host}`;
 		}
 
 		// Some remote categories don't have `url`, assume same as id
 		if (
 			!utils.isNumber(categoryData.cid) &&
-			!categoryData.hasOwnProperty("url")
+			!categoryData.hasOwnProperty('url')
 		) {
 			categoryData.url = categoryData.cid;
 		}
 	}
 
-	res.render("category", categoryData);
+	res.render('category', categoryData);
 };
 
 async function buildBreadcrumbs(req, categoryData) {
@@ -272,70 +272,70 @@ async function buildBreadcrumbs(req, categoryData) {
 function addTags(categoryData, res, currentPage) {
 	res.locals.metaTags = [
 		{
-			name: "title",
+			name: 'title',
 			content: categoryData.name,
 			noEscape: true,
 		},
 		{
-			property: "og:title",
+			property: 'og:title',
 			content: categoryData.name,
 			noEscape: true,
 		},
 		{
-			name: "description",
+			name: 'description',
 			content: categoryData.description,
 			noEscape: true,
 		},
 		{
-			property: "og:type",
-			content: "website",
+			property: 'og:type',
+			content: 'website',
 		},
 	];
 
 	if (categoryData.backgroundImage) {
 		let { backgroundImage } = categoryData;
 		backgroundImage = utils.decodeHTMLEntities(backgroundImage);
-		if (!backgroundImage.startsWith("http")) {
+		if (!backgroundImage.startsWith('http')) {
 			backgroundImage =
 				url +
 				backgroundImage.replace(
-					new RegExp(`^${nconf.get("relative_path")}`),
-					"",
+					new RegExp(`^${nconf.get('relative_path')}`),
+					'',
 				);
 		}
 		res.locals.metaTags.push({
-			property: "og:image",
+			property: 'og:image',
 			content: backgroundImage,
 			noEscape: true,
 		});
 	}
 
-	const page = currentPage > 1 ? `?page=${currentPage}` : "";
+	const page = currentPage > 1 ? `?page=${currentPage}` : '';
 	res.locals.linkTags = [
 		{
-			rel: "up",
+			rel: 'up',
 			href: url,
 		},
 		{
-			rel: "canonical",
+			rel: 'canonical',
 			href: `${url}/category/${categoryData.slug}${page}`,
 			noEscape: true,
 		},
 	];
 
-	if (categoryData.rssFeedUrl && !categoryData["feeds:disableRSS"]) {
+	if (categoryData.rssFeedUrl && !categoryData['feeds:disableRSS']) {
 		res.locals.linkTags.push({
-			rel: "alternate",
-			type: "application/rss+xml",
+			rel: 'alternate',
+			type: 'application/rss+xml',
 			href: categoryData.rssFeedUrl,
 		});
 	}
 
 	if (meta.config.activitypubEnabled) {
 		res.locals.linkTags.push({
-			rel: "alternate",
-			type: "application/activity+json",
-			href: `${nconf.get("url")}/category/${categoryData.cid}`,
+			rel: 'alternate',
+			type: 'application/activity+json',
+			href: `${nconf.get('url')}/category/${categoryData.cid}`,
 		});
 	}
 }

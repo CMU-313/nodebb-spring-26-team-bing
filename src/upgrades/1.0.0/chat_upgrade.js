@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const winston = require("winston");
-const db = require("../../database");
+const async = require('async');
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Upgrading chats",
+	name: 'Upgrading chats',
 	timestamp: Date.UTC(2015, 11, 15),
 	method: function (callback) {
 		db.getObjectFields(
-			"global",
-			["nextMid", "nextChatRoomId"],
+			'global',
+			['nextMid', 'nextChatRoomId'],
 			(err, globalData) => {
 				if (err) {
 					return callback(err);
@@ -27,7 +27,7 @@ module.exports = {
 					(next) => {
 						db.getObject(`message:${currentMid}`, (err, message) => {
 							if (err || !message) {
-								winston.verbose("skipping chat message ", currentMid);
+								winston.verbose('skipping chat message ', currentMid);
 								currentMid += 1;
 								return next(err);
 							}
@@ -37,7 +37,7 @@ module.exports = {
 								parseInt(message.touid, 10),
 							]
 								.sort()
-								.join(":");
+								.join(':');
 							const msgTime = parseInt(message.timestamp, 10);
 
 							function addMessageToUids(roomId, callback) {
@@ -116,7 +116,7 @@ module.exports = {
 										rooms[pairID] = roomId;
 										roomId += 1;
 										currentMid += 1;
-										db.setObjectField("global", "nextChatRoomId", roomId, next);
+										db.setObjectField('global', 'nextChatRoomId', roomId, next);
 									},
 								);
 							}

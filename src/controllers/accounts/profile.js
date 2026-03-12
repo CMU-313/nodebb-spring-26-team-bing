@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const nconf = require("nconf");
+const _ = require('lodash');
+const nconf = require('nconf');
 
-const db = require("../../database");
-const meta = require("../../meta");
-const user = require("../../user");
-const posts = require("../../posts");
-const categories = require("../../categories");
-const plugins = require("../../plugins");
-const privileges = require("../../privileges");
-const helpers = require("../helpers");
-const accountHelpers = require("./helpers");
-const utils = require("../../utils");
+const db = require('../../database');
+const meta = require('../../meta');
+const user = require('../../user');
+const posts = require('../../posts');
+const categories = require('../../categories');
+const plugins = require('../../plugins');
+const privileges = require('../../privileges');
+const helpers = require('../helpers');
+const accountHelpers = require('./helpers');
+const utils = require('../../utils');
 
 const profileController = module.exports;
 
-const url = nconf.get("url");
+const url = nconf.get('url');
 
 profileController.get = async function (req, res, next) {
 	const { userData } = res.locals;
@@ -54,17 +54,17 @@ profileController.get = async function (req, res, next) {
 	if (meta.config.activitypubEnabled) {
 		// Include link header for richer parsing
 		res.set(
-			"Link",
-			`<${nconf.get("url")}/uid/${userData.uid}>; rel="alternate"; type="application/activity+json"`,
+			'Link',
+			`<${nconf.get('url')}/uid/${userData.uid}>; rel="alternate"; type="application/activity+json"`,
 		);
 
 		if (!utils.isNumber(userData.uid)) {
-			res.set("Link", `<${userData.url || userData.uid}>; rel="canonical"`);
-			res.set("x-robots-tag", "noindex");
+			res.set('Link', `<${userData.url || userData.uid}>; rel="canonical"`);
+			res.set('x-robots-tag', 'noindex');
 		}
 	}
 
-	res.render("account/profile", userData);
+	res.render('account/profile', userData);
 };
 
 async function incrementProfileViews(req, userData) {
@@ -76,25 +76,25 @@ async function incrementProfileViews(req, userData) {
 			(!req.session.uids_viewed[userData.uid] ||
 				req.session.uids_viewed[userData.uid] < Date.now() - 3600000)
 		) {
-			await user.incrementUserFieldBy(userData.uid, "profileviews", 1);
+			await user.incrementUserFieldBy(userData.uid, 'profileviews', 1);
 			req.session.uids_viewed[userData.uid] = Date.now();
 		}
 	}
 }
 
 async function getLatestPosts(callerUid, userData) {
-	return await getPosts(callerUid, userData, "pids");
+	return await getPosts(callerUid, userData, 'pids');
 }
 
 async function getBestPosts(callerUid, userData) {
-	return await getPosts(callerUid, userData, "pids:votes");
+	return await getPosts(callerUid, userData, 'pids:votes');
 }
 
 async function getPosts(callerUid, userData, setSuffix) {
 	const cids = await categories.getCidsByPrivilege(
-		"categories:cid",
+		'categories:cid',
 		callerUid,
-		"topics:read",
+		'topics:read',
 	);
 	const keys = cids.map((c) => `cid:${c}:uid:${userData.uid}:${setSuffix}`);
 	let hasMorePosts = true;
@@ -105,7 +105,7 @@ async function getPosts(callerUid, userData, setSuffix) {
 	const [isAdmin, isModOfCids, canSchedule] = await Promise.all([
 		user.isAdministrator(callerUid),
 		user.isModerator(callerUid, cids),
-		privileges.categories.isUserAllowedTo("topics:schedule", cids, callerUid),
+		privileges.categories.isUserAllowedTo('topics:schedule', cids, callerUid),
 	]);
 	const isModOfCid = _.zipObject(cids, isModOfCids);
 	const cidToCanSchedule = _.zipObject(cids, canSchedule);
@@ -117,7 +117,7 @@ async function getPosts(callerUid, userData, setSuffix) {
 			hasMorePosts = false;
 		}
 		if (pids.length) {
-			({ pids } = await plugins.hooks.fire("filter:account.profile.getPids", {
+			({ pids } = await plugins.hooks.fire('filter:account.profile.getPids', {
 				uid: callerUid,
 				userData,
 				setSuffix,
@@ -146,24 +146,24 @@ async function getPosts(callerUid, userData, setSuffix) {
 function addTags(res, userData) {
 	const plainAboutMe = userData.aboutme
 		? utils.stripHTMLTags(utils.decodeHTMLEntities(userData.aboutme))
-		: "";
+		: '';
 	res.locals.metaTags = [
 		{
-			name: "title",
+			name: 'title',
 			content: userData.fullname || userData.username,
 			noEscape: true,
 		},
 		{
-			name: "description",
+			name: 'description',
 			content: plainAboutMe,
 		},
 		{
-			property: "og:title",
+			property: 'og:title',
 			content: userData.fullname || userData.username,
 			noEscape: true,
 		},
 		{
-			property: "og:description",
+			property: 'og:description',
 			content: plainAboutMe,
 		},
 	];
@@ -171,12 +171,12 @@ function addTags(res, userData) {
 	if (userData.picture) {
 		res.locals.metaTags.push(
 			{
-				property: "og:image",
+				property: 'og:image',
 				content: userData.picture,
 				noEscape: true,
 			},
 			{
-				property: "og:image:url",
+				property: 'og:image:url',
 				content: userData.picture,
 				noEscape: true,
 			},
@@ -187,25 +187,25 @@ function addTags(res, userData) {
 
 	if (utils.isNumber(userData.uid)) {
 		res.locals.linkTags.push({
-			rel: "canonical",
+			rel: 'canonical',
 			href: `${url}/user/${userData.userslug}`,
 		});
 	} else {
 		res.locals.linkTags.push({
-			rel: "canonical",
+			rel: 'canonical',
 			href: userData.url || userData.uid,
 		});
 		res.locals.metaTags.push({
-			name: "robots",
-			content: "noindex",
+			name: 'robots',
+			content: 'noindex',
 		});
 	}
 
 	if (meta.config.activitypubEnabled) {
 		res.locals.linkTags.push({
-			rel: "alternate",
-			type: "application/activity+json",
-			href: `${nconf.get("url")}/uid/${userData.uid}`,
+			rel: 'alternate',
+			type: 'application/activity+json',
+			href: `${nconf.get('url')}/uid/${userData.uid}`,
 		});
 	}
 }

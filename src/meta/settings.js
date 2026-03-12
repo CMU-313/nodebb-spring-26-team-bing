@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const plugins = require("../plugins");
-const Meta = require("./index");
-const pubsub = require("../pubsub");
-const cache = require("../cache");
+const db = require('../database');
+const plugins = require('../plugins');
+const Meta = require('./index');
+const pubsub = require('../pubsub');
+const cache = require('../cache');
 
 const Settings = module.exports;
 
@@ -40,7 +40,7 @@ Settings.get = async function (hash) {
 		}),
 	);
 
-	const result = await plugins.hooks.fire("filter:settings.get", {
+	const result = await plugins.hooks.fire('filter:settings.get', {
 		plugin: hash,
 		values: values,
 	});
@@ -60,7 +60,7 @@ Settings.set = async function (hash, values, quiet) {
 		plugin: hash,
 		settings: values,
 		quiet,
-	} = await plugins.hooks.fire("filter:settings.set", {
+	} = await plugins.hooks.fire('filter:settings.set', {
 		plugin: hash,
 		settings: values,
 		quiet,
@@ -68,7 +68,7 @@ Settings.set = async function (hash, values, quiet) {
 
 	const sortedListData = {};
 	for (const [key, value] of Object.entries(values)) {
-		if (Array.isArray(value) && typeof value[0] !== "string") {
+		if (Array.isArray(value) && typeof value[0] !== 'string') {
 			sortedListData[key] = value;
 			delete values[key];
 		}
@@ -125,7 +125,7 @@ Settings.set = async function (hash, values, quiet) {
 
 	cache.del(`settings:${hash}`);
 
-	plugins.hooks.fire("action:settings.set", {
+	plugins.hooks.fire('action:settings.set', {
 		plugin: hash,
 		settings: { ...values, ...sortedListData }, // Add back sorted list data to values hash
 		quiet,

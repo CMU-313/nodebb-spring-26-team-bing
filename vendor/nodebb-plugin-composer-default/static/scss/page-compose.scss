@@ -1,7 +1,7 @@
 .page-compose .composer {
   z-index: initial;
   position: static;
-  [data-action="hide"] {
+  [data-action='hide'] {
     display: none;
   }
 
@@ -10,7 +10,7 @@
       flex-wrap: wrap;
     }
     .category-list-container {
-      [component="category-selector-selected"] > span {
+      [component='category-selector-selected'] > span {
         display: inline !important;
       }
       width: 100%;

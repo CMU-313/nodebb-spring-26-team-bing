@@ -1,30 +1,30 @@
-"use strict";
+'use strict';
 
-const meta = require("../meta");
-const categories = require("../categories");
-const topics = require("../topics");
-const events = require("../events");
-const user = require("../user");
-const groups = require("../groups");
-const privileges = require("../privileges");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const meta = require('../meta');
+const categories = require('../categories');
+const topics = require('../topics');
+const events = require('../events');
+const user = require('../user');
+const groups = require('../groups');
+const privileges = require('../privileges');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 const categoriesAPI = module.exports;
 
-const hasAdminPrivilege = async (uid, privilege = "categories") => {
+const hasAdminPrivilege = async (uid, privilege = 'categories') => {
 	const ok = await privileges.admin.can(`admin:${privilege}`, uid);
 	if (!ok) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 };
 
 categoriesAPI.list = async (caller) => {
 	async function getCategories() {
 		const cids = await categories.getCidsByPrivilege(
-			"categories:cid",
+			'categories:cid',
 			caller.uid,
-			"find",
+			'find',
 		);
 		return await categories.getCategoriesData(cids);
 	}
@@ -64,7 +64,7 @@ categoriesAPI.create = async function (caller, data) {
 categoriesAPI.update = async function (caller, data) {
 	await hasAdminPrivilege(caller.uid);
 	if (!data) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	const { cid, values } = data;
 
@@ -77,10 +77,10 @@ categoriesAPI.update = async function (caller, data) {
 categoriesAPI.delete = async function (caller, { cid }) {
 	await hasAdminPrivilege(caller.uid);
 
-	const name = await categories.getCategoryField(cid, "name");
+	const name = await categories.getCategoryField(cid, 'name');
 	await categories.purge(cid, caller.uid);
 	await events.log({
-		type: "category-purge",
+		type: 'category-purge',
 		uid: caller.uid,
 		ip: caller.ip,
 		cid: cid,
@@ -89,11 +89,11 @@ categoriesAPI.delete = async function (caller, { cid }) {
 };
 
 categoriesAPI.getTopicCount = async (caller, { cid }) => {
-	const allowed = await privileges.categories.can("find", cid, caller.uid);
+	const allowed = await privileges.categories.can('find', cid, caller.uid);
 	if (!allowed) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
-	const count = await categories.getCategoryField(cid, "topic_count");
+	const count = await categories.getCategoryField(cid, 'topic_count');
 	return { count };
 };
 
@@ -106,9 +106,9 @@ categoriesAPI.getChildren = async (caller, { cid, start }) => {
 	}
 	start = parseInt(start, 10);
 
-	const allowed = await privileges.categories.can("read", cid, caller.uid);
+	const allowed = await privileges.categories.can('read', cid, caller.uid);
 	if (!allowed) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const category = await categories.getCategoryData(cid);
@@ -133,7 +133,7 @@ categoriesAPI.getTopics = async (caller, data) => {
 	]);
 
 	if (!userPrivileges.read) {
-		throw new Error("[[error:no-privileges]]");
+		throw new Error('[[error:no-privileges]]');
 	}
 
 	const infScrollTopicsPerPage = settings.topicsPerPage;
@@ -141,7 +141,7 @@ categoriesAPI.getTopics = async (caller, data) => {
 		data.sort ||
 		data.categoryTopicSort ||
 		meta.config.categoryTopicSort ||
-		"recently_replied";
+		'recently_replied';
 
 	let start = Math.max(0, parseInt(data.after || 0, 10));
 
@@ -178,10 +178,10 @@ categoriesAPI.setWatchState = async (caller, { cid, state, uid }) => {
 		targetUid = uid;
 	}
 	await user.isAdminOrGlobalModOrSelf(caller.uid, targetUid);
-	const allCids = await categories.getAllCidsFromSet("categories:cid");
+	const allCids = await categories.getAllCidsFromSet('categories:cid');
 	const categoryData = await categories.getCategoriesFields(allCids, [
-		"cid",
-		"parentCid",
+		'cid',
+		'parentCid',
 	]);
 
 	// filter to subcategories of cid
@@ -202,11 +202,11 @@ categoriesAPI.setWatchState = async (caller, { cid, state, uid }) => {
 };
 
 categoriesAPI.getPrivileges = async (caller, { cid }) => {
-	await hasAdminPrivilege(caller.uid, "privileges");
+	await hasAdminPrivilege(caller.uid, 'privileges');
 
 	let responsePayload;
 
-	if (cid === "admin") {
+	if (cid === 'admin') {
 		responsePayload = await privileges.admin.list(caller.uid);
 	} else if (!parseInt(cid, 10)) {
 		responsePayload = await privileges.global.list();
@@ -218,7 +218,7 @@ categoriesAPI.getPrivileges = async (caller, { cid }) => {
 };
 
 categoriesAPI.setPrivilege = async (caller, data) => {
-	await hasAdminPrivilege(caller.uid, "privileges");
+	await hasAdminPrivilege(caller.uid, 'privileges');
 
 	const [userExists, groupExists] = await Promise.all([
 		user.exists(data.member),
@@ -226,14 +226,14 @@ categoriesAPI.setPrivilege = async (caller, data) => {
 	]);
 
 	if (!userExists && !groupExists) {
-		throw new Error("[[error:no-user-or-group]]");
+		throw new Error('[[error:no-user-or-group]]');
 	}
 	const privs = Array.isArray(data.privilege)
 		? data.privilege
 		: [data.privilege];
-	const type = data.set ? "give" : "rescind";
+	const type = data.set ? 'give' : 'rescind';
 	if (!privs.length) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 	if (parseInt(data.cid, 10) === 0) {
 		const adminPrivList = await privileges.admin.getPrivilegeList();
@@ -256,17 +256,17 @@ categoriesAPI.setPrivilege = async (caller, data) => {
 
 	await events.log({
 		uid: caller.uid,
-		type: "privilege-change",
+		type: 'privilege-change',
 		ip: caller.ip,
 		privilege: data.privilege.toString(),
 		cid: data.cid,
-		action: data.set ? "grant" : "rescind",
+		action: data.set ? 'grant' : 'rescind',
 		target: data.member,
 	});
 };
 
 categoriesAPI.setModerator = async (caller, { cid, member, set }) => {
-	await hasAdminPrivilege(caller.uid, "admins-mods");
+	await hasAdminPrivilege(caller.uid, 'admins-mods');
 
 	const privilegeList = await privileges.categories.getUserPrivilegeList();
 	await categoriesAPI.setPrivilege(caller, {

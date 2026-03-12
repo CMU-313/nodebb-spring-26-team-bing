@@ -1,18 +1,18 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Update moderation notes to hashes",
+	name: 'Update moderation notes to hashes',
 	timestamp: Date.UTC(2019, 3, 5),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				progress.incr(uids.length);
 				const allNotes = await db.getSortedSetsMembers(

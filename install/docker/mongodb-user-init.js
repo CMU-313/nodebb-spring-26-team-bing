@@ -1,8 +1,8 @@
 db.createUser({
-	user: "nodebb",
-	pwd: "nodebb",
+	user: 'nodebb',
+	pwd: 'nodebb',
 	roles: [
-		{ role: "readWrite", db: "nodebb" },
-		{ role: "clusterMonitor", db: "admin" },
+		{ role: 'readWrite', db: 'nodebb' },
+		{ role: 'clusterMonitor', db: 'admin' },
 	],
 });

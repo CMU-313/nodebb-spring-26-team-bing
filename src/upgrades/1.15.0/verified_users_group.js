@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
-const batch = require("../../batch");
-const user = require("../../user");
-const groups = require("../../groups");
-const meta = require("../../meta");
-const privileges = require("../../privileges");
+const batch = require('../../batch');
+const user = require('../../user');
+const groups = require('../../groups');
+const meta = require('../../meta');
+const privileges = require('../../privileges');
 
 const now = Date.now();
 module.exports = {
-	name: "Create verified/unverified user groups",
+	name: 'Create verified/unverified user groups',
 	timestamp: Date.UTC(2020, 9, 13),
 	method: async function () {
 		const { progress } = this;
@@ -18,13 +18,13 @@ module.exports = {
 		const maxGroupLength = meta.config.maximumGroupNameLength;
 		meta.config.maximumGroupNameLength = 30;
 		const timestamp = await db.getObjectField(
-			"group:administrators",
-			"timestamp",
+			'group:administrators',
+			'timestamp',
 		);
-		const verifiedExists = await groups.exists("verified-users");
+		const verifiedExists = await groups.exists('verified-users');
 		if (!verifiedExists) {
 			await groups.create({
-				name: "verified-users",
+				name: 'verified-users',
 				hidden: 1,
 				private: 1,
 				system: 1,
@@ -33,10 +33,10 @@ module.exports = {
 				timestamp: timestamp + 1,
 			});
 		}
-		const unverifiedExists = await groups.exists("unverified-users");
+		const unverifiedExists = await groups.exists('unverified-users');
 		if (!unverifiedExists) {
 			await groups.create({
-				name: "unverified-users",
+				name: 'unverified-users',
 				hidden: 1,
 				private: 1,
 				system: 1,
@@ -48,29 +48,29 @@ module.exports = {
 		// restore setting
 		meta.config.maximumGroupNameLength = maxGroupLength;
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				progress.incr(uids.length);
 				const userData = await user.getUsersFields(uids, [
-					"uid",
-					"email:confirmed",
+					'uid',
+					'email:confirmed',
 				]);
 
 				const verified = userData.filter(
-					(u) => parseInt(u["email:confirmed"], 10) === 1,
+					(u) => parseInt(u['email:confirmed'], 10) === 1,
 				);
 				const unverified = userData.filter(
-					(u) => parseInt(u["email:confirmed"], 10) !== 1,
+					(u) => parseInt(u['email:confirmed'], 10) !== 1,
 				);
 
 				await db.sortedSetAdd(
-					"group:verified-users:members",
+					'group:verified-users:members',
 					verified.map(() => now),
 					verified.map((u) => u.uid),
 				);
 
 				await db.sortedSetAdd(
-					"group:unverified-users:members",
+					'group:unverified-users:members',
 					unverified.map(() => now),
 					unverified.map((u) => u.uid),
 				);
@@ -81,23 +81,23 @@ module.exports = {
 			},
 		);
 
-		await db.delete("users:notvalidated");
+		await db.delete('users:notvalidated');
 		await updatePrivilges();
 
 		const verifiedCount = await db.sortedSetCard(
-			"group:verified-users:members",
+			'group:verified-users:members',
 		);
 		const unverifiedCount = await db.sortedSetCard(
-			"group:unverified-users:members",
+			'group:unverified-users:members',
 		);
 		await db.setObjectField(
-			"group:verified-users",
-			"memberCount",
+			'group:verified-users',
+			'memberCount',
 			verifiedCount,
 		);
 		await db.setObjectField(
-			"group:unverified-users",
-			"memberCount",
+			'group:unverified-users',
+			'memberCount',
 			unverifiedCount,
 		);
 	},
@@ -110,46 +110,46 @@ async function updatePrivilges() {
 
 	// This config property has been removed from v1.18.0+, but is still present in old datasets
 	if (meta.config.requireEmailConfirmation) {
-		const cids = await db.getSortedSetRevRange("categories:cid", 0, -1);
+		const cids = await db.getSortedSetRevRange('categories:cid', 0, -1);
 		const canChat = await privileges.global.canGroup(
-			"chat",
-			"registered-users",
+			'chat',
+			'registered-users',
 		);
 		if (canChat) {
-			await privileges.global.give(["groups:chat"], "verified-users");
-			await privileges.global.rescind(["groups:chat"], "registered-users");
+			await privileges.global.give(['groups:chat'], 'verified-users');
+			await privileges.global.rescind(['groups:chat'], 'registered-users');
 		}
 		for (const cid of cids) {
 			/* eslint-disable no-await-in-loop */
 			const data = await privileges.categories.list(cid);
 
 			const registeredUsersPrivs = data.groups.find(
-				(d) => d.name === "registered-users",
+				(d) => d.name === 'registered-users',
 			).privileges;
 
-			if (registeredUsersPrivs["groups:topics:create"]) {
+			if (registeredUsersPrivs['groups:topics:create']) {
 				await privileges.categories.give(
-					["groups:topics:create"],
+					['groups:topics:create'],
 					cid,
-					"verified-users",
+					'verified-users',
 				);
 				await privileges.categories.rescind(
-					["groups:topics:create"],
+					['groups:topics:create'],
 					cid,
-					"registered-users",
+					'registered-users',
 				);
 			}
 
-			if (registeredUsersPrivs["groups:topics:reply"]) {
+			if (registeredUsersPrivs['groups:topics:reply']) {
 				await privileges.categories.give(
-					["groups:topics:reply"],
+					['groups:topics:reply'],
 					cid,
-					"verified-users",
+					'verified-users',
 				);
 				await privileges.categories.rescind(
-					["groups:topics:reply"],
+					['groups:topics:reply'],
 					cid,
-					"registered-users",
+					'registered-users',
 				);
 			}
 		}

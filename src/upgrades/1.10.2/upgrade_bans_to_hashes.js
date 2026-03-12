@@ -1,31 +1,31 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Upgrade bans to hashes",
+	name: 'Upgrade bans to hashes',
 	timestamp: Date.UTC(2018, 8, 24),
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.sortedSetCard("users:joindate");
+		progress.total = await db.sortedSetCard('users:joindate');
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				progress.incr(uids.length);
 				const [allUserData, allBans] = await Promise.all([
 					db.getObjectsFields(
 						uids.map((uid) => `user:${uid}`),
 						[
-							"banned",
-							"banned:expire",
-							"joindate",
-							"lastposttime",
-							"lastonline",
+							'banned',
+							'banned:expire',
+							'joindate',
+							'lastposttime',
+							'lastonline',
 						],
 					),
 					db.getSortedSetsMembersWithScores(

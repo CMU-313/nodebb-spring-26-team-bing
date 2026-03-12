@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const winston = require("winston");
+const async = require('async');
+const winston = require('winston');
 
-const batch = require("../../batch");
-const groups = require("../../groups");
+const batch = require('../../batch');
+const groups = require('../../groups');
 
 module.exports = {
-	name: "rename user mod privileges group",
+	name: 'rename user mod privileges group',
 	timestamp: Date.UTC(2017, 4, 26),
 	method: function (callback) {
 		const { progress } = this;
 		batch.processSortedSet(
-			"categories:cid",
+			'categories:cid',
 			(cids, next) => {
 				async.eachSeries(
 					cids,

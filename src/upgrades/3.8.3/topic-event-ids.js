@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Add id field to all topic events",
+	name: 'Add id field to all topic events',
 	timestamp: Date.UTC(2024, 5, 24),
 	method: async function () {
 		const { progress } = this;
 
-		let nextId = await db.getObjectField("global", "nextTopicEventId");
+		let nextId = await db.getObjectField('global', 'nextTopicEventId');
 		nextId = parseInt(nextId, 10) || 0;
 		const ids = [];
 		for (let i = 1; i < nextId; i++) {

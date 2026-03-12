@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const os = require("os");
+const os = require('os');
 
-const user = require("../user");
-const meta = require("../meta");
-const topics = require("../topics");
-const privileges = require("../privileges");
-const messaging = require("../messaging");
+const user = require('../user');
+const meta = require('../meta');
+const topics = require('../topics');
+const privileges = require('../privileges');
+const messaging = require('../messaging');
 
 const SocketMeta = module.exports;
 SocketMeta.rooms = {};
@@ -20,7 +20,7 @@ SocketMeta.reconnected = async function (socket) {
 		]);
 	}
 	return {
-		"cache-buster": meta.config["cache-buster"],
+		'cache-buster': meta.config['cache-buster'],
 		hostname: os.hostname(),
 	};
 };
@@ -33,7 +33,7 @@ SocketMeta.rooms.enter = async function (socket, data) {
 	}
 
 	if (!data) {
-		throw new Error("[[error:invalid-data]]");
+		throw new Error('[[error:invalid-data]]');
 	}
 
 	if (data.enter) {
@@ -42,27 +42,27 @@ SocketMeta.rooms.enter = async function (socket, data) {
 
 	if (
 		data.enter &&
-		data.enter.startsWith("uid_") &&
+		data.enter.startsWith('uid_') &&
 		data.enter !== `uid_${socket.uid}`
 	) {
-		throw new Error("[[error:not-allowed]]");
+		throw new Error('[[error:not-allowed]]');
 	}
 
-	if (data.enter && data.enter.startsWith("chat_")) {
-		throw new Error("[[error:not-allowed]]");
+	if (data.enter && data.enter.startsWith('chat_')) {
+		throw new Error('[[error:not-allowed]]');
 	}
 
-	if (data.enter && data.enter.startsWith("topic_")) {
-		const tid = data.enter.split("_").pop();
-		if (!(await privileges.topics.can("topics:read", tid, socket.uid))) {
-			throw new Error("[[error:no-privileges]]");
+	if (data.enter && data.enter.startsWith('topic_')) {
+		const tid = data.enter.split('_').pop();
+		if (!(await privileges.topics.can('topics:read', tid, socket.uid))) {
+			throw new Error('[[error:no-privileges]]');
 		}
 	}
 
-	if (data.enter && data.enter.startsWith("category_")) {
-		const cid = data.enter.split("_").pop();
-		if (!(await privileges.categories.can("read", cid, socket.uid))) {
-			throw new Error("[[error:no-privileges]]");
+	if (data.enter && data.enter.startsWith('category_')) {
+		const cid = data.enter.split('_').pop();
+		if (!(await privileges.categories.can('read', cid, socket.uid))) {
+			throw new Error('[[error:no-privileges]]');
 		}
 	}
 
@@ -84,8 +84,8 @@ SocketMeta.rooms.leaveCurrent = async function (socket) {
 function leaveCurrentRoom(socket) {
 	if (socket.currentRoom) {
 		socket.leave(socket.currentRoom);
-		socket.currentRoom = "";
+		socket.currentRoom = '';
 	}
 }
 
-require("../promisify")(SocketMeta);
+require('../promisify')(SocketMeta);

@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
 	name: 'Set "followercount" on each topic object',
@@ -9,10 +9,10 @@ module.exports = {
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.sortedSetCard("topics:tid");
+		progress.total = await db.sortedSetCard('topics:tid');
 
 		await batch.processSortedSet(
-			"topics:tid",
+			'topics:tid',
 			async (tids) => {
 				const keys = tids.map((tid) => `tid:${tid}:followers`);
 				const followerCounts = await db.setsCount(keys);

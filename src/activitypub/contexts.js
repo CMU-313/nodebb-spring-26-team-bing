@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const posts = require("../posts");
-const topics = require("../topics");
+const db = require('../database');
+const posts = require('../posts');
+const topics = require('../topics');
 
 const activitypub = module.parent.exports;
 const Contexts = module.exports;
@@ -12,20 +12,20 @@ Contexts.get = async (uid, id) => {
 	let type;
 
 	// Generate digest for If-None-Match if locally cached
-	const tid = await posts.getPostField(id, "tid");
+	const tid = await posts.getPostField(id, 'tid');
 	const headers = {};
 	if (tid) {
 		const [mainPid, pids] = await Promise.all([
-			topics.getTopicField(tid, "mainPid"),
+			topics.getTopicField(tid, 'mainPid'),
 			db.getSortedSetMembers(`tid:${tid}:posts`),
 		]);
 		pids.push(mainPid);
 		const digest = activitypub.helpers.generateDigest(new Set(pids));
-		headers["If-None-Match"] = `"${digest}"`;
+		headers['If-None-Match'] = `"${digest}"`;
 	}
 
 	try {
-		({ id, type, context } = await activitypub.get("uid", uid, id, {
+		({ id, type, context } = await activitypub.get('uid', uid, id, {
 			headers,
 		}));
 		if (activitypub._constants.acceptable.contextTypes.has(type)) {
@@ -40,9 +40,9 @@ Contexts.get = async (uid, id) => {
 		}
 
 		// context provided; try to resolve it.
-		({ type } = await activitypub.get("uid", uid, context));
+		({ type } = await activitypub.get('uid', uid, context));
 	} catch (e) {
-		if (e.code === "ap_get_304") {
+		if (e.code === 'ap_get_304') {
 			activitypub.helpers.log(`[activitypub/context] ${id} context unchanged.`);
 			return { tid };
 		}
@@ -61,7 +61,7 @@ Contexts.get = async (uid, id) => {
 };
 
 Contexts.getItems = async (uid, id, options) => {
-	if (!options.hasOwnProperty("root")) {
+	if (!options.hasOwnProperty('root')) {
 		options.root = true;
 	}
 
@@ -74,7 +74,7 @@ Contexts.getItems = async (uid, id, options) => {
 			`[activitypub/context] Retrieving context/page ${id}`,
 		);
 		try {
-			object = await activitypub.get("uid", uid, id);
+			object = await activitypub.get('uid', uid, id);
 		} catch (e) {
 			return false;
 		}
@@ -85,7 +85,7 @@ Contexts.getItems = async (uid, id, options) => {
 		return false;
 	}
 
-	if (type.startsWith("Ordered") && orderedItems) {
+	if (type.startsWith('Ordered') && orderedItems) {
 		items = orderedItems;
 	}
 
@@ -118,7 +118,7 @@ Contexts.getItems = async (uid, id, options) => {
 	}
 
 	if (next) {
-		activitypub.helpers.log("[activitypub/context] Fetching next page...");
+		activitypub.helpers.log('[activitypub/context] Fetching next page...');
 		const isUrl = activitypub.helpers.isUri(next);
 		Array.from(
 			await Contexts.getItems(uid, isUrl && next, {
@@ -138,7 +138,7 @@ Contexts.getItems = async (uid, id, options) => {
 
 async function parseString(uid, item) {
 	const { type, id } = await activitypub.helpers.resolveLocalId(item);
-	const pid = type === "post" && id ? id : item;
+	const pid = type === 'post' && id ? id : item;
 	const postData = await posts.getPostData(pid);
 	if (postData) {
 		// Already cached
@@ -147,7 +147,7 @@ async function parseString(uid, item) {
 
 	// No local copy, fetch from source
 	try {
-		const object = await activitypub.get("uid", uid, pid);
+		const object = await activitypub.get('uid', uid, pid);
 		activitypub.helpers.log(`[activitypub/context] Retrieved ${pid}`);
 
 		return parseItem(uid, object);
@@ -160,7 +160,7 @@ async function parseString(uid, item) {
 
 async function parseItem(uid, item) {
 	const { type, id } = await activitypub.helpers.resolveLocalId(item.id);
-	const pid = type === "post" && id ? id : item.id;
+	const pid = type === 'post' && id ? id : item.id;
 	const postData = await posts.getPostData(pid);
 	if (postData) {
 		// Already cached
@@ -168,7 +168,7 @@ async function parseItem(uid, item) {
 	}
 
 	// Handle activity wrapper
-	if (item.type === "Create") {
+	if (item.type === 'Create') {
 		item = item.object;
 		if (activitypub.helpers.isUri(item)) {
 			return parseString(uid, item);

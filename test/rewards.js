@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const async = require("async");
+const assert = require('assert');
+const async = require('async');
 
-const db = require("./mocks/databasemock");
-const meta = require("../src/meta");
-const User = require("../src/user");
-const Groups = require("../src/groups");
+const db = require('./mocks/databasemock');
+const meta = require('../src/meta');
+const User = require('../src/user');
+const Groups = require('../src/groups');
 
-describe("rewards", () => {
+describe('rewards', () => {
 	let adminUid;
 	let bazUid;
 	let herpUid;
@@ -17,9 +17,9 @@ describe("rewards", () => {
 		// Create 3 users: 1 admin, 2 regular
 		async.series(
 			[
-				async.apply(User.create, { username: "foo" }),
-				async.apply(User.create, { username: "baz" }),
-				async.apply(User.create, { username: "herp" }),
+				async.apply(User.create, { username: 'foo' }),
+				async.apply(User.create, { username: 'baz' }),
+				async.apply(User.create, { username: 'herp' }),
 			],
 			(err, uids) => {
 				if (err) {
@@ -33,10 +33,10 @@ describe("rewards", () => {
 				async.series(
 					[
 						function (next) {
-							Groups.join("administrators", adminUid, next);
+							Groups.join('administrators', adminUid, next);
 						},
 						function (next) {
-							Groups.join("rewardGroup", adminUid, next);
+							Groups.join('rewardGroup', adminUid, next);
 						},
 					],
 					done,
@@ -45,19 +45,19 @@ describe("rewards", () => {
 		);
 	});
 
-	describe("rewards create", () => {
-		const socketAdmin = require("../src/socket.io/admin");
-		const rewards = require("../src/rewards");
-		it("it should save a reward", (done) => {
+	describe('rewards create', () => {
+		const socketAdmin = require('../src/socket.io/admin');
+		const rewards = require('../src/rewards');
+		it('it should save a reward', (done) => {
 			const data = [
 				{
-					rewards: { groupname: "Gamers" },
-					condition: "essentials/user.postcount",
-					conditional: "greaterthan",
-					value: "10",
-					rid: "essentials/add-to-group",
-					claimable: "1",
-					id: "",
+					rewards: { groupname: 'Gamers' },
+					condition: 'essentials/user.postcount',
+					conditional: 'greaterthan',
+					value: '10',
+					rid: 'essentials/add-to-group',
+					claimable: '1',
+					id: '',
 					disabled: false,
 				},
 			];
@@ -68,14 +68,14 @@ describe("rewards", () => {
 			});
 		});
 
-		it("should check condition", (done) => {
+		it('should check condition', (done) => {
 			function method(next) {
 				next(null, 1);
 			}
 			rewards.checkConditionAndRewardUser(
 				{
 					uid: adminUid,
-					condition: "essentials/user.postcount",
+					condition: 'essentials/user.postcount',
 					method: method,
 				},
 				(err, data) => {

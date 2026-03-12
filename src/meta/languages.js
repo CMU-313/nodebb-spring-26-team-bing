@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const nconf = require("nconf");
-const path = require("path");
-const fs = require("fs");
-const { mkdirp } = require("mkdirp");
+const _ = require('lodash');
+const nconf = require('nconf');
+const path = require('path');
+const fs = require('fs');
+const { mkdirp } = require('mkdirp');
 
-const file = require("../file");
-const Plugins = require("../plugins");
-const { paths } = require("../constants");
+const file = require('../file');
+const Plugins = require('../plugins');
+const { paths } = require('../constants');
 
-const buildLanguagesPath = path.join(paths.baseDir, "build/public/language");
-const coreLanguagesPath = path.join(paths.baseDir, "public/language");
+const buildLanguagesPath = path.join(paths.baseDir, 'build/public/language');
+const coreLanguagesPath = path.join(paths.baseDir, 'public/language');
 
 async function getTranslationMetadata() {
 	const paths = await file.walk(coreLanguagesPath);
@@ -19,13 +19,13 @@ async function getTranslationMetadata() {
 	let namespaces = [];
 
 	paths.forEach((p) => {
-		if (!p.endsWith(".json")) {
+		if (!p.endsWith('.json')) {
 			return;
 		}
 
 		const rel = path.relative(coreLanguagesPath, p).split(/[/\\]/);
-		const language = rel.shift().replace("_", "-").replace("@", "-x-");
-		const namespace = rel.join("/").replace(/\.json$/, "");
+		const language = rel.shift().replace('_', '-').replace('@', '-x-');
+		const namespace = rel.join('/').replace(/\.json$/, '');
 
 		if (!language || !namespace) {
 			return;
@@ -41,9 +41,9 @@ async function getTranslationMetadata() {
 	namespaces = _.union(namespaces, Plugins.languageData.namespaces)
 		.sort()
 		.filter(Boolean);
-	const configLangs = nconf.get("languages");
+	const configLangs = nconf.get('languages');
 	if (
-		process.env.NODE_ENV === "development" &&
+		process.env.NODE_ENV === 'development' &&
 		Array.isArray(configLangs) &&
 		configLangs.length
 	) {
@@ -57,14 +57,14 @@ async function getTranslationMetadata() {
 		namespaces: namespaces,
 	};
 	await fs.promises.writeFile(
-		path.join(buildLanguagesPath, "metadata.json"),
+		path.join(buildLanguagesPath, 'metadata.json'),
 		JSON.stringify(result),
 	);
 	return result;
 }
 
 async function writeLanguageFile(language, namespace, translations) {
-	const dev = process.env.NODE_ENV === "development";
+	const dev = process.env.NODE_ENV === 'development';
 	const filePath = path.join(buildLanguagesPath, language, `${namespace}.json`);
 
 	await mkdirp(path.dirname(filePath));
@@ -81,7 +81,7 @@ async function buildTranslations(ref) {
 	const { namespaces } = ref;
 	const { languages } = ref;
 	const plugins = _.values(Plugins.pluginsData).filter(
-		(plugin) => typeof plugin.languages === "string",
+		(plugin) => typeof plugin.languages === 'string',
 	);
 
 	const promises = [];
@@ -128,7 +128,7 @@ async function addPlugin(translations, pluginData, lang, namespace) {
 		pluginData.id,
 		pluginData.languages,
 	);
-	const defaultLang = pluginData.defaultLang || "en-GB";
+	const defaultLang = pluginData.defaultLang || 'en-GB';
 
 	// for each plugin, fallback in this order:
 	//  1. correct language string (en-GB)
@@ -136,9 +136,9 @@ async function addPlugin(translations, pluginData, lang, namespace) {
 	//  3. corrected plugin defaultLang (en-US)
 	//  4. old plugin defaultLang (en_US)
 	const langs = _.uniq([
-		defaultLang.replace("-", "_").replace("-x-", "@"),
-		defaultLang.replace("_", "-").replace("@", "-x-"),
-		lang.replace("-", "_").replace("-x-", "@"),
+		defaultLang.replace('-', '_').replace('-x-', '@'),
+		defaultLang.replace('_', '-').replace('@', '-x-'),
+		lang.replace('-', '_').replace('-x-', '@'),
 		lang,
 	]);
 
@@ -153,10 +153,10 @@ async function addPlugin(translations, pluginData, lang, namespace) {
 
 async function assignFileToTranslations(translations, path) {
 	try {
-		const fileData = await fs.promises.readFile(path, "utf8");
+		const fileData = await fs.promises.readFile(path, 'utf8');
 		Object.assign(translations, JSON.parse(fileData));
 	} catch (err) {
-		if (err.code !== "ENOENT") {
+		if (err.code !== 'ENOENT') {
 			throw err;
 		}
 	}

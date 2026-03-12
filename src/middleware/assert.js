@@ -1,27 +1,27 @@
-"use strict";
+'use strict';
 
 /**
  * The middlewares here strictly act to "assert" validity of the incoming
  * payload and throw an error otherwise.
  */
 
-const path = require("path");
-const nconf = require("nconf");
+const path = require('path');
+const nconf = require('nconf');
 
-const file = require("../file");
-const user = require("../user");
-const groups = require("../groups");
-const categories = require("../categories");
-const topics = require("../topics");
-const posts = require("../posts");
-const messaging = require("../messaging");
-const flags = require("../flags");
-const slugify = require("../slugify");
-const utils = require("../utils");
-const activitypub = require("../activitypub");
+const file = require('../file');
+const user = require('../user');
+const groups = require('../groups');
+const categories = require('../categories');
+const topics = require('../topics');
+const posts = require('../posts');
+const messaging = require('../messaging');
+const flags = require('../flags');
+const slugify = require('../slugify');
+const utils = require('../utils');
+const activitypub = require('../activitypub');
 
-const helpers = require("./helpers");
-const controllerHelpers = require("../controllers/helpers");
+const helpers = require('./helpers');
+const controllerHelpers = require('../controllers/helpers');
 
 const Assert = module.exports;
 
@@ -32,12 +32,12 @@ Assert.user = helpers.try(async (req, res, next) => {
 		uid !== -2 && // exposeUid middleware was in chain (means route is local user only) and resolved to fediverse user
 		(((utils.isNumber(uid) || activitypub.helpers.isUri(uid)) &&
 			(await user.exists(uid))) ||
-			(uid.indexOf("@") !== -1 && (await user.existsBySlug(uid))))
+			(uid.indexOf('@') !== -1 && (await user.existsBySlug(uid))))
 	) {
 		return next();
 	}
 
-	controllerHelpers.formatApiResponse(404, res, new Error("[[error:no-user]]"));
+	controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-user]]'));
 });
 
 Assert.group = helpers.try(async (req, res, next) => {
@@ -46,7 +46,7 @@ Assert.group = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:no-group]]"),
+			new Error('[[error:no-group]]'),
 		);
 	}
 
@@ -58,7 +58,7 @@ Assert.category = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:no-category]]"),
+			new Error('[[error:no-category]]'),
 		);
 	}
 
@@ -70,7 +70,7 @@ Assert.topic = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:no-topic]]"),
+			new Error('[[error:no-topic]]'),
 		);
 	}
 
@@ -82,7 +82,7 @@ Assert.post = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:no-post]]"),
+			new Error('[[error:no-post]]'),
 		);
 	}
 
@@ -95,7 +95,7 @@ Assert.flag = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:no-flag]]"),
+			new Error('[[error:no-flag]]'),
 		);
 	}
 
@@ -104,24 +104,24 @@ Assert.flag = helpers.try(async (req, res, next) => {
 
 Assert.path = helpers.try(async (req, res, next) => {
 	// file: URL support
-	if (req.body.path.startsWith("file:///")) {
+	if (req.body.path.startsWith('file:///')) {
 		req.body.path = new URL(req.body.path).pathname;
 	}
 
 	// Strip upload_url if found
-	if (req.body.path.startsWith(nconf.get("upload_url"))) {
-		req.body.path = req.body.path.slice(nconf.get("upload_url").length);
+	if (req.body.path.startsWith(nconf.get('upload_url'))) {
+		req.body.path = req.body.path.slice(nconf.get('upload_url').length);
 	}
 
-	const pathToFile = path.join(nconf.get("upload_path"), req.body.path);
+	const pathToFile = path.join(nconf.get('upload_path'), req.body.path);
 	res.locals.cleanedPath = pathToFile;
 
 	// Guard against path traversal
-	if (!pathToFile.startsWith(nconf.get("upload_path"))) {
+	if (!pathToFile.startsWith(nconf.get('upload_path'))) {
 		return controllerHelpers.formatApiResponse(
 			403,
 			res,
-			new Error("[[error:invalid-path]]"),
+			new Error('[[error:invalid-path]]'),
 		);
 	}
 
@@ -129,7 +129,7 @@ Assert.path = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:invalid-path]]"),
+			new Error('[[error:invalid-path]]'),
 		);
 	}
 
@@ -145,14 +145,14 @@ Assert.folderName = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			403,
 			res,
-			new Error("[[error:invalid-path]]"),
+			new Error('[[error:invalid-path]]'),
 		);
 	}
 	if (await file.exists(folderPath)) {
 		return controllerHelpers.formatApiResponse(
 			403,
 			res,
-			new Error("[[error:folder-exists]]"),
+			new Error('[[error:folder-exists]]'),
 		);
 	}
 
@@ -166,7 +166,7 @@ Assert.room = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			400,
 			res,
-			new Error("[[error:invalid-data]]"),
+			new Error('[[error:invalid-data]]'),
 		);
 	}
 
@@ -179,7 +179,7 @@ Assert.room = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			404,
 			res,
-			new Error("[[error:chat-room-does-not-exist]]"),
+			new Error('[[error:chat-room-does-not-exist]]'),
 		);
 	}
 
@@ -187,7 +187,7 @@ Assert.room = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			403,
 			res,
-			new Error("[[error:no-privileges]]"),
+			new Error('[[error:no-privileges]]'),
 		);
 	}
 
@@ -197,7 +197,7 @@ Assert.room = helpers.try(async (req, res, next) => {
 Assert.message = helpers.try(async (req, res, next) => {
 	let roomId;
 	if (!req.params.roomId) {
-		roomId = await messaging.getMessageField(req.params.mid, "roomId");
+		roomId = await messaging.getMessageField(req.params.mid, 'roomId');
 	}
 
 	if (
@@ -211,7 +211,7 @@ Assert.message = helpers.try(async (req, res, next) => {
 		return controllerHelpers.formatApiResponse(
 			400,
 			res,
-			new Error("[[error:invalid-mid]]"),
+			new Error('[[error:invalid-mid]]'),
 		);
 	}
 

@@ -1,4 +1,4 @@
-import { ObjectType, RedisStyleMatchString } from "./index";
+import { ObjectType, RedisStyleMatchString } from './index';
 
 export interface Item {
   delete(key: string): Promise<void>;

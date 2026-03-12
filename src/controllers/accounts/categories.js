@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const user = require("../../user");
-const categories = require("../../categories");
-const helpers = require("../helpers");
-const pagination = require("../../pagination");
-const meta = require("../../meta");
+const user = require('../../user');
+const categories = require('../../categories');
+const helpers = require('../helpers');
+const pagination = require('../../pagination');
+const meta = require('../../meta');
 
 const categoriesController = module.exports;
 
@@ -13,10 +13,10 @@ categoriesController.get = async function (req, res) {
 	const { username, userslug } = payload;
 	const [states, allCategoriesData] = await Promise.all([
 		user.getCategoryWatchState(res.locals.uid),
-		categories.buildForSelect(res.locals.uid, "find", [
-			"descriptionParsed",
-			"depth",
-			"slug",
+		categories.buildForSelect(res.locals.uid, 'find', [
+			'descriptionParsed',
+			'depth',
+			'slug',
 		]),
 	]);
 	const watchCategories = allCategoriesData.filter((c) => c && c.cid !== -1);
@@ -46,8 +46,8 @@ categoriesController.get = async function (req, res) {
 	payload.title = `[[pages:account/watched-categories, ${username}]]`;
 	payload.breadcrumbs = helpers.buildBreadcrumbs([
 		{ text: username, url: `/user/${userslug}` },
-		{ text: "[[pages:categories]]" },
+		{ text: '[[pages:categories]]' },
 	]);
 	payload.pagination = pagination.create(page, pageCount, req.query);
-	res.render("account/categories", payload);
+	res.render('account/categories', payload);
 };

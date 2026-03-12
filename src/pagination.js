@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const qs = require("querystring");
-const _ = require("lodash");
+const qs = require('querystring');
+const _ = require('lodash');
 
 const pagination = module.exports;
 
@@ -97,14 +97,14 @@ pagination.create = function (currentPage, pageCount, queryObj) {
 
 	if (currentPage < pageCount) {
 		data.rel.push({
-			rel: "next",
+			rel: 'next',
 			href: `?${qs.stringify({ ...queryObj, page: next })}`,
 		});
 	}
 
 	if (currentPage > 1) {
 		data.rel.push({
-			rel: "prev",
+			rel: 'prev',
 			href: `?${qs.stringify({ ...queryObj, page: previous })}`,
 		});
 	}

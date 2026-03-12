@@ -9,7 +9,7 @@
   }
 
   .categories {
-    [component="categories/category"] {
+    [component='categories/category'] {
       $category-pad: 50;
       @for $i from 1 through 6 {
         .depth-#{$i} {
@@ -20,8 +20,8 @@
   }
 }
 
-[component="group/badge/item"]:first-child [component="group/order/up"],
-[component="group/badge/item"]:last-child [component="group/order/down"] {
+[component='group/badge/item']:first-child [component='group/order/up'],
+[component='group/badge/item']:last-child [component='group/order/down'] {
   opacity: 0.65;
   pointer-events: none;
 }

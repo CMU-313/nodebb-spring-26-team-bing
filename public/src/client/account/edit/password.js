@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-define("forum/account/edit/password", [
-	"forum/account/header",
-	"translator",
-	"zxcvbn",
-	"api",
-	"alerts",
+define('forum/account/edit/password', [
+	'forum/account/header',
+	'translator',
+	'zxcvbn',
+	'api',
+	'alerts',
 ], function (header, translator, zxcvbn, api, alerts) {
 	const AccountEditPassword = {};
 
@@ -16,11 +16,11 @@ define("forum/account/edit/password", [
 	};
 
 	function handlePasswordChange() {
-		const currentPassword = $("#inputCurrentPassword");
-		const password_notify = $("#password-notify");
-		const password_confirm_notify = $("#password-confirm-notify");
-		const password = $("#inputNewPassword");
-		const password_confirm = $("#inputNewPasswordAgain");
+		const currentPassword = $('#inputCurrentPassword');
+		const password_notify = $('#password-notify');
+		const password_confirm_notify = $('#password-confirm-notify');
+		const password = $('#inputNewPassword');
+		const password_confirm = $('#inputNewPasswordAgain');
 		let passwordvalid = false;
 		let passwordsmatch = false;
 
@@ -31,9 +31,9 @@ define("forum/account/edit/password", [
 				utils.assertPasswordValidity(password.val(), zxcvbn);
 
 				if (password.val() === ajaxify.data.username) {
-					throw new Error("[[user:password-same-as-username]]");
+					throw new Error('[[user:password-same-as-username]]');
 				} else if (password.val() === ajaxify.data.email) {
-					throw new Error("[[user:password-same-as-email]]");
+					throw new Error('[[user:password-same-as-email]]');
 				}
 
 				showSuccess(password_notify);
@@ -47,7 +47,7 @@ define("forum/account/edit/password", [
 			if (password.val() !== password_confirm.val()) {
 				showError(
 					password_confirm_notify,
-					"[[user:change-password-error-match]]",
+					'[[user:change-password-error-match]]',
 				);
 				passwordsmatch = false;
 			} else {
@@ -56,57 +56,57 @@ define("forum/account/edit/password", [
 				} else {
 					password_confirm_notify
 						.parent()
-						.removeClass("alert-success alert-danger");
+						.removeClass('alert-success alert-danger');
 					password_confirm_notify.children().show();
-					password_confirm_notify.find(".msg").html("");
+					password_confirm_notify.find('.msg').html('');
 				}
 
 				passwordsmatch = true;
 			}
 		}
 
-		password.on("input", onPasswordChanged);
-		password_confirm.on("input", onPasswordConfirmChanged);
+		password.on('input', onPasswordChanged);
+		password_confirm.on('input', onPasswordConfirmChanged);
 
-		$("#changePasswordBtn").on("click", function () {
+		$('#changePasswordBtn').on('click', function () {
 			onPasswordChanged();
 			onPasswordConfirmChanged();
 
 			const btn = $(this);
 			if (passwordvalid && passwordsmatch) {
-				btn.addClass("disabled").find("i").removeClass("hide");
+				btn.addClass('disabled').find('i').removeClass('hide');
 				api
-					.put("/users/" + ajaxify.data.theirid + "/password", {
+					.put('/users/' + ajaxify.data.theirid + '/password', {
 						currentPassword: currentPassword.val(),
 						newPassword: password.val(),
 					})
 					.then(() => {
 						if (parseInt(app.user.uid, 10) === parseInt(ajaxify.data.uid, 10)) {
-							window.location.href = config.relative_path + "/login";
+							window.location.href = config.relative_path + '/login';
 						} else {
-							ajaxify.go("user/" + ajaxify.data.userslug + "/edit");
+							ajaxify.go('user/' + ajaxify.data.userslug + '/edit');
 						}
 					})
 					.catch(alerts.error)
 					.finally(() => {
-						btn.removeClass("disabled").find("i").addClass("hide");
-						currentPassword.val("");
-						password.val("");
-						password_confirm.val("");
-						password_notify.parent().removeClass("show-success show-danger");
+						btn.removeClass('disabled').find('i').addClass('hide');
+						currentPassword.val('');
+						password.val('');
+						password_confirm.val('');
+						password_notify.parent().removeClass('show-success show-danger');
 						password_confirm_notify
 							.parent()
-							.removeClass("show-success show-danger");
+							.removeClass('show-success show-danger');
 						passwordsmatch = false;
 						passwordvalid = false;
 					});
 			} else {
 				if (!passwordsmatch) {
-					alerts.error("[[user:change-password-error-match]]");
+					alerts.error('[[user:change-password-error-match]]');
 				}
 
 				if (!passwordvalid) {
-					alerts.error("[[user:change-password-error]]");
+					alerts.error('[[user:change-password-error]]');
 				}
 			}
 			return false;
@@ -115,12 +115,12 @@ define("forum/account/edit/password", [
 
 	function showError(element, msg) {
 		translator.translate(msg, function (msg) {
-			element.html(msg).removeClass("text-success").addClass("text-danger");
+			element.html(msg).removeClass('text-success').addClass('text-danger');
 		});
 	}
 
 	function showSuccess(element) {
-		element.html("").removeClass("text-danger").addClass("text-success");
+		element.html('').removeClass('text-danger').addClass('text-success');
 	}
 
 	return AccountEditPassword;

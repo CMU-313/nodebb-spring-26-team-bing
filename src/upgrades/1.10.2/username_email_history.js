@@ -1,25 +1,25 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
-const batch = require("../../batch");
-const user = require("../../user");
+const batch = require('../../batch');
+const user = require('../../user');
 
 module.exports = {
-	name: "Record first entry in username/email history",
+	name: 'Record first entry in username/email history',
 	timestamp: Date.UTC(2018, 7, 28),
 	method: async function () {
 		const { progress } = this;
 
-		progress.total = await db.sortedSetCard("users:joindate");
+		progress.total = await db.sortedSetCard('users:joindate');
 
 		await batch.processSortedSet(
-			"users:joindate",
+			'users:joindate',
 			async (uids) => {
 				const [usernameHistory, emailHistory, userData] = await Promise.all([
 					db.sortedSetsCard(uids.map((uid) => `user:${uid}:usernames`)),
 					db.sortedSetsCard(uids.map((uid) => `user:${uid}:emails`)),
-					user.getUsersFields(uids, ["uid", "username", "email", "joindate"]),
+					user.getUsersFields(uids, ['uid', 'username', 'email', 'joindate']),
 				]);
 
 				const bulkAdd = [];
@@ -35,14 +35,14 @@ module.exports = {
 						bulkAdd.push([
 							`user:${data.uid}:usernames`,
 							data.joindate,
-							[data.username, data.joindate].join(":"),
+							[data.username, data.joindate].join(':'),
 						]);
 					}
 					if (thisEmailHistory <= 0 && data && data.joindate && data.email) {
 						bulkAdd.push([
 							`user:${data.uid}:emails`,
 							data.joindate,
-							[data.email, data.joindate].join(":"),
+							[data.email, data.joindate].join(':'),
 						]);
 					}
 				});

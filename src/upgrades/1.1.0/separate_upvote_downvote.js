@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 
-const async = require("async");
-const winston = require("winston");
-const db = require("../../database");
+const async = require('async');
+const winston = require('winston');
+const db = require('../../database');
 
 module.exports = {
-	name: "Store upvotes/downvotes separately",
+	name: 'Store upvotes/downvotes separately',
 	timestamp: Date.UTC(2016, 5, 13),
 	method: function (callback) {
-		const batch = require("../../batch");
-		const posts = require("../../posts");
+		const batch = require('../../batch');
+		const posts = require('../../posts');
 		let count = 0;
 		const { progress } = this;
 
 		batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			(pids, next) => {
 				winston.verbose(`upgraded ${count} posts`);
 				count += pids.length;

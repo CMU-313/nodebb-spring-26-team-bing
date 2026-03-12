@@ -17,10 +17,10 @@ get:
       required: false
       schema:
         type: number
-      example: ""
+      example: ''
   responses:
-    "200":
-      description: ""
+    '200':
+      description: ''
       content:
         application/json:
           schema:
@@ -149,7 +149,7 @@ get:
                                 value is used in conjunction with
                                 `icon:text` for the user's auto-generated
                                 icon
-                              example: "#f44336"
+                              example: '#f44336'
                             banned_until_readable:
                               type: string
                             fullname:
@@ -202,7 +202,7 @@ get:
                                     value is used in conjunction with
                                     `icon:text` for the user's
                                     auto-generated icon
-                                  example: "#f44336"
+                                  example: '#f44336'
                             index:
                               type: number
                         tags:

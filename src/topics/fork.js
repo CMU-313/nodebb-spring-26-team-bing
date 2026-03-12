@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const db = require("../database");
-const posts = require("../posts");
-const categories = require("../categories");
-const privileges = require("../privileges");
-const plugins = require("../plugins");
-const meta = require("../meta");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const db = require('../database');
+const posts = require('../posts');
+const categories = require('../categories');
+const privileges = require('../privileges');
+const plugins = require('../plugins');
+const meta = require('../meta');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 module.exports = function (Topics) {
 	Topics.createTopicFromPosts = async function (
@@ -32,7 +32,7 @@ module.exports = function (Topics) {
 		}
 
 		if (!pids || !pids.length) {
-			throw new Error("[[error:invalid-pid]]");
+			throw new Error('[[error:invalid-pid]]');
 		}
 
 		if (pids.every(isFinite)) {
@@ -64,7 +64,7 @@ module.exports = function (Topics) {
 		}
 
 		if (!isAdminOrMod) {
-			throw new Error("[[error:no-privileges]]");
+			throw new Error('[[error:no-privileges]]');
 		}
 		const now = Date.now();
 		const scheduled = mainPost.timestamp > now;
@@ -74,7 +74,7 @@ module.exports = function (Topics) {
 			cid: cid,
 			timestamp: mainPost.timestamp,
 		};
-		const result = await plugins.hooks.fire("filter:topic.fork", {
+		const result = await plugins.hooks.fire('filter:topic.fork', {
 			params: params,
 			tid: mainPost.tid,
 		});
@@ -105,11 +105,11 @@ module.exports = function (Topics) {
 				forkTimestamp: now,
 			}),
 			db.sortedSetsAdd(
-				["topics:votes", `cid:${cid}:tids:votes`],
+				['topics:votes', `cid:${cid}:tids:votes`],
 				mainPost.votes,
 				tid,
 			),
-			Topics.events.log(fromTid, { type: "fork", uid, href: `/topic/${tid}` }),
+			Topics.events.log(fromTid, { type: 'fork', uid, href: `/topic/${tid}` }),
 		]);
 
 		// ideally we should federate a "move" activity instead, then can capture remote posts too. tbd
@@ -121,7 +121,7 @@ module.exports = function (Topics) {
 			await activitypub.feps.announce(pids[0], activity);
 		}
 
-		plugins.hooks.fire("action:topic.fork", { tid, fromTid, uid });
+		plugins.hooks.fire('action:topic.fork', { tid, fromTid, uid });
 
 		return await Topics.getTopicData(tid);
 	};
@@ -133,34 +133,34 @@ module.exports = function (Topics) {
 		forceScheduled = false,
 	) {
 		tid = String(tid);
-		const topicData = await Topics.getTopicFields(tid, ["tid", "scheduled"]);
+		const topicData = await Topics.getTopicFields(tid, ['tid', 'scheduled']);
 		if (!topicData.tid) {
-			throw new Error("[[error:no-topic]]");
+			throw new Error('[[error:no-topic]]');
 		}
 		if (!forceScheduled && topicData.scheduled) {
-			throw new Error("[[error:cant-move-posts-to-scheduled]]");
+			throw new Error('[[error:cant-move-posts-to-scheduled]]');
 		}
 		const postData = await posts.getPostFields(pid, [
-			"tid",
-			"uid",
-			"timestamp",
-			"upvotes",
-			"downvotes",
+			'tid',
+			'uid',
+			'timestamp',
+			'upvotes',
+			'downvotes',
 		]);
 		if (!postData || !postData.tid) {
-			throw new Error("[[error:no-post]]");
+			throw new Error('[[error:no-post]]');
 		}
 
 		const isSourceTopicScheduled = await Topics.getTopicField(
 			postData.tid,
-			"scheduled",
+			'scheduled',
 		);
 		if (!forceScheduled && isSourceTopicScheduled) {
-			throw new Error("[[error:cant-move-from-scheduled-to-existing]]");
+			throw new Error('[[error:cant-move-from-scheduled-to-existing]]');
 		}
 
 		if (String(postData.tid) === String(tid)) {
-			throw new Error("[[error:cant-move-to-same-topic]]");
+			throw new Error('[[error:cant-move-to-same-topic]]');
 		}
 
 		postData.pid = pid;
@@ -168,7 +168,7 @@ module.exports = function (Topics) {
 		await Topics.removePostFromTopic(postData.tid, postData);
 		await Promise.all([
 			updateCategory(postData, tid),
-			posts.setPostField(pid, "tid", tid),
+			posts.setPostField(pid, 'tid', tid),
 			Topics.addPostToTopic(tid, postData),
 		]);
 
@@ -176,7 +176,7 @@ module.exports = function (Topics) {
 			Topics.updateLastPostTimeFromLastPid(tid),
 			Topics.updateLastPostTimeFromLastPid(postData.tid),
 		]);
-		plugins.hooks.fire("action:post.move", {
+		plugins.hooks.fire('action:post.move', {
 			uid: callerUid,
 			post: postData,
 			tid: tid,
@@ -186,7 +186,7 @@ module.exports = function (Topics) {
 	async function updateCategory(postData, toTid) {
 		const topicData = await Topics.getTopicsFields(
 			[postData.tid, toTid],
-			["cid", "pinned"],
+			['cid', 'pinned'],
 		);
 
 		if (!topicData[0].cid || !topicData[1].cid) {
@@ -213,8 +213,8 @@ module.exports = function (Topics) {
 			`cid:${topicData[0].cid}:uid:${postData.uid}:pids:votes`,
 		];
 		const tasks = [
-			db.incrObjectFieldBy(`category:${topicData[0].cid}`, "post_count", -1),
-			db.incrObjectFieldBy(`category:${topicData[1].cid}`, "post_count", 1),
+			db.incrObjectFieldBy(`category:${topicData[0].cid}`, 'post_count', -1),
+			db.incrObjectFieldBy(`category:${topicData[1].cid}`, 'post_count', 1),
 			db.sortedSetRemove(removeFrom, postData.pid),
 			db.sortedSetAdd(
 				`cid:${topicData[1].cid}:pids`,

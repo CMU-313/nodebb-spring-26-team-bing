@@ -1,32 +1,32 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
 nconf.argv().env({
-	separator: "__",
+	separator: '__',
 });
 
-const fs = require("fs");
-const path = require("path");
-const _ = require("lodash");
+const fs = require('fs');
+const path = require('path');
+const _ = require('lodash');
 
-process.env.NODE_ENV = process.env.NODE_ENV || "production";
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 // Alternate configuration file support
 const configFile = path.resolve(
 	__dirname,
-	"../../../",
-	nconf.any(["config", "CONFIG"]) || "config.json",
+	'../../../',
+	nconf.any(['config', 'CONFIG']) || 'config.json',
 );
-const prestart = require("../../prestart");
+const prestart = require('../../prestart');
 
 prestart.loadConfig(configFile);
 prestart.setupWinston();
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
-process.on("message", async (msg) => {
+process.on('message', async (msg) => {
 	if (msg && msg.uid) {
 		await db.init();
 		await db.initSessionStore();
@@ -36,11 +36,11 @@ process.on("message", async (msg) => {
 		const profileFile = `${targetUid}_profile.json`;
 		const profilePath = path.join(
 			__dirname,
-			"../../../build/export",
+			'../../../build/export',
 			profileFile,
 		);
 
-		const user = require("../index");
+		const user = require('../index');
 		const [
 			userData,
 			userSettings,
@@ -60,11 +60,11 @@ process.on("message", async (msg) => {
 			user.auth.getSessions(targetUid),
 			user.getHistory(`user:${targetUid}:usernames`),
 			user.getHistory(`user:${targetUid}:emails`),
-			getSetData(`uid:${targetUid}:bookmarks`, "post:", targetUid),
-			getSetData(`uid:${targetUid}:followed_tids`, "topic:", targetUid),
-			getSetData(`uid:${targetUid}:upvote`, "post:", targetUid),
-			getSetData(`uid:${targetUid}:downvote`, "post:", targetUid),
-			getSetData(`following:${targetUid}`, "user:", targetUid),
+			getSetData(`uid:${targetUid}:bookmarks`, 'post:', targetUid),
+			getSetData(`uid:${targetUid}:followed_tids`, 'topic:', targetUid),
+			getSetData(`uid:${targetUid}:upvote`, 'post:', targetUid),
+			getSetData(`uid:${targetUid}:downvote`, 'post:', targetUid),
+			getSetData(`following:${targetUid}`, 'user:', targetUid),
 		]);
 		delete userData.password;
 
@@ -108,7 +108,7 @@ process.on("message", async (msg) => {
 });
 
 async function getRoomMessages(uid, roomId) {
-	const batch = require("../../batch");
+	const batch = require('../../batch');
 	let data = [];
 	await batch.processSortedSet(
 		`chat:room:${roomId}:mids`,
@@ -128,26 +128,26 @@ async function getRoomMessages(uid, roomId) {
 }
 
 async function getSetData(set, keyPrefix, uid) {
-	const privileges = require("../../privileges");
-	const batch = require("../../batch");
+	const privileges = require('../../privileges');
+	const batch = require('../../batch');
 	let data = [];
 	await batch.processSortedSet(
 		set,
 		async (ids) => {
-			if (keyPrefix === "post:") {
-				ids = await privileges.posts.filter("topics:read", ids, uid);
-			} else if (keyPrefix === "topic:") {
-				ids = await privileges.topics.filterTids("topics:read", ids, uid);
+			if (keyPrefix === 'post:') {
+				ids = await privileges.posts.filter('topics:read', ids, uid);
+			} else if (keyPrefix === 'topic:') {
+				ids = await privileges.topics.filterTids('topics:read', ids, uid);
 			}
 			let objData = await db.getObjects(ids.map((id) => keyPrefix + id));
-			if (keyPrefix === "post:") {
+			if (keyPrefix === 'post:') {
 				objData = objData.map((o) =>
-					_.pick(o, ["pid", "content", "timestamp"]),
+					_.pick(o, ['pid', 'content', 'timestamp']),
 				);
-			} else if (keyPrefix === "topic:") {
-				objData = objData.map((o) => _.pick(o, ["tid", "title", "timestamp"]));
-			} else if (keyPrefix === "user:") {
-				objData = objData.map((o) => _.pick(o, ["uid", "username"]));
+			} else if (keyPrefix === 'topic:') {
+				objData = objData.map((o) => _.pick(o, ['tid', 'title', 'timestamp']));
+			} else if (keyPrefix === 'user:') {
+				objData = objData.map((o) => _.pick(o, ['uid', 'username']));
 			}
 			data = data.concat(objData);
 		},

@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-define("forum/topic/tag", [
-	"alerts",
-	"autocomplete",
-	"api",
-	"benchpress",
+define('forum/topic/tag', [
+	'alerts',
+	'autocomplete',
+	'api',
+	'benchpress',
 ], function (alerts, autocomplete, api, Benchpress) {
 	const Tag = {};
 	let tagModal;
@@ -19,7 +19,7 @@ define("forum/topic/tag", [
 		tagWhitelist = _tagWhitelist || [];
 
 		app.parseAndTranslate(
-			"modals/tag-topic",
+			'modals/tag-topic',
 			{
 				topics: topics,
 				tagWhitelist: tagWhitelist,
@@ -27,38 +27,38 @@ define("forum/topic/tag", [
 			function (html) {
 				tagModal = html;
 
-				tagCommit = tagModal.find("#tag-topic-commit");
+				tagCommit = tagModal.find('#tag-topic-commit');
 
-				$("body").append(tagModal);
+				$('body').append(tagModal);
 
-				tagModal.find("#tag-topic-cancel").on("click", closeTagModal);
+				tagModal.find('#tag-topic-cancel').on('click', closeTagModal);
 
-				tagCommit.on("click", async () => {
+				tagCommit.on('click', async () => {
 					await tagTopics();
 					if (onComplete) {
 						onComplete();
 					}
 				});
 
-				tagModal.find(".tags").each((index, el) => {
+				tagModal.find('.tags').each((index, el) => {
 					const tagEl = $(el);
 					const tagsinputEl = tagEl.tagsinput({
-						tagClass: "badge bg-info",
+						tagClass: 'badge bg-info',
 						confirmKeys: [13, 44],
 						trimValue: true,
 					});
 					const input = tagsinputEl[0].$input;
 
 					const topic = topics[index];
-					topic.tags.forEach((tag) => tagEl.tagsinput("add", tag.value));
+					topic.tags.forEach((tag) => tagEl.tagsinput('add', tag.value));
 
-					tagEl.on("itemAdded", function (event) {
+					tagEl.on('itemAdded', function (event) {
 						if (tagWhitelist.length && !tagWhitelist.includes(event.item)) {
-							tagEl.tagsinput("remove", event.item);
-							alerts.error("[[error:tag-not-allowed]]");
+							tagEl.tagsinput('remove', event.item);
+							alerts.error('[[error:tag-not-allowed]]');
 						}
 						if (input.length) {
-							input.autocomplete("close");
+							input.autocomplete('close');
 						}
 					});
 
@@ -74,11 +74,11 @@ define("forum/topic/tag", [
 	function initAutocomplete(params) {
 		autocomplete.init({
 			input: params.input,
-			position: { my: "left bottom", at: "left top", collision: "flip" },
+			position: { my: 'left bottom', at: 'left top', collision: 'flip' },
 			appendTo: params.container,
 			source: async (request, response) => {
 				socket.emit(
-					"topics.autocompleteTags",
+					'topics.autocompleteTags',
 					{
 						query: request.term,
 					},
@@ -97,11 +97,11 @@ define("forum/topic/tag", [
 
 	async function tagTopics() {
 		await Promise.all(
-			tagModal.find(".tags").map(async (index, el) => {
+			tagModal.find('.tags').map(async (index, el) => {
 				const topic = topics[index];
 				const tagEl = $(el);
 				topic.tags = await api.put(`/topics/${topic.tid}/tags`, {
-					tags: tagEl.tagsinput("items"),
+					tags: tagEl.tagsinput('items'),
 				});
 				Tag.updateTopicTags([topic]);
 			}),
@@ -113,12 +113,12 @@ define("forum/topic/tag", [
 		topics.forEach((topic) => {
 			// render "partials/category/tags" or "partials/topic/tags"
 			const tpl = ajaxify.data.template.topic
-				? "partials/topic/tags"
-				: "partials/category/tags";
+				? 'partials/topic/tags'
+				: 'partials/category/tags';
 			Benchpress.render(tpl, { tags: topic.tags }).then(function (html) {
 				const tags = $(`[data-tid="${topic.tid}"][component="topic/tags"]`);
 				tags.fadeOut(250, function () {
-					tags.toggleClass("hidden", topic.tags.length === 0);
+					tags.toggleClass('hidden', topic.tags.length === 0);
 					tags.html(html).fadeIn(250);
 				});
 			});

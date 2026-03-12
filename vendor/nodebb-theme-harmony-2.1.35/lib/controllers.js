@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
 const Controllers = module.exports;
 
 const accountHelpers = require.main.require(
-	"./src/controllers/accounts/helpers",
+	'./src/controllers/accounts/helpers',
 );
-const helpers = require.main.require("./src/controllers/helpers");
+const helpers = require.main.require('./src/controllers/helpers');
 
 Controllers.renderAdminPage = (req, res) => {
-	res.render("admin/plugins/harmony", {
-		title: "[[themes/harmony:theme-name]]",
+	res.render('admin/plugins/harmony', {
+		title: '[[themes/harmony:theme-name]]',
 	});
 };
 
@@ -22,14 +22,14 @@ Controllers.renderThemeSettings = async (req, res, next) => {
 	if (!userData) {
 		return next();
 	}
-	const lib = require("../library");
+	const lib = require('../library');
 	userData.theme = await lib.loadThemeConfig(userData.uid);
 
-	userData.title = "[[themes/harmony:settings.title]]";
+	userData.title = '[[themes/harmony:settings.title]]';
 	userData.breadcrumbs = helpers.buildBreadcrumbs([
 		{ text: userData.username, url: `/user/${userData.userslug}` },
-		{ text: "[[themes/harmony:settings.title]]" },
+		{ text: '[[themes/harmony:settings.title]]' },
 	]);
 
-	res.render("account/theme", userData);
+	res.render('account/theme', userData);
 };

@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
-const validator = require("validator");
+const _ = require('lodash');
+const validator = require('validator');
 
-const db = require("../database");
-const user = require("../user");
-const posts = require("../posts");
-const utils = require("../utils");
-const plugins = require("../plugins");
+const db = require('../database');
+const user = require('../user');
+const posts = require('../posts');
+const utils = require('../utils');
+const plugins = require('../plugins');
 
 const intFields = [
-	"mid",
-	"timestamp",
-	"edited",
-	"fromuid",
-	"roomId",
-	"deleted",
-	"system",
+	'mid',
+	'timestamp',
+	'edited',
+	'fromuid',
+	'roomId',
+	'deleted',
+	'system',
 ];
 
 module.exports = function (Messaging) {
@@ -69,10 +69,10 @@ module.exports = function (Messaging) {
 				return msg;
 			})
 			.filter(Boolean);
-		messages = await user.blocks.filter(uid, "fromuid", messages);
+		messages = await user.blocks.filter(uid, 'fromuid', messages);
 		const users = await user.getUsersFields(
 			messages.map((msg) => msg && msg.fromuid),
-			["uid", "username", "userslug", "picture", "status", "banned"],
+			['uid', 'username', 'userslug', 'picture', 'status', 'banned'],
 		);
 
 		messages.forEach((message, index) => {
@@ -122,8 +122,8 @@ module.exports = function (Messaging) {
 			if (index > 0) {
 				const mid = await db.getSortedSetRange(key, index - 1, index - 1);
 				const fields = await Messaging.getMessageFields(mid, [
-					"fromuid",
-					"timestamp",
+					'fromuid',
+					'timestamp',
 				]);
 				if (
 					messages[0].timestamp >
@@ -142,7 +142,7 @@ module.exports = function (Messaging) {
 
 		await addParentMessages(messages, uid, roomId);
 
-		const data = await plugins.hooks.fire("filter:messaging.getMessages", {
+		const data = await plugins.hooks.fire('filter:messaging.getMessages', {
 			messages: messages,
 			uid: uid,
 			roomId: roomId,
@@ -156,7 +156,7 @@ module.exports = function (Messaging) {
 	async function addParentMessages(messages, uid, roomId) {
 		let parentMids = messages
 			.map((msg) =>
-				msg && msg.hasOwnProperty("toMid") ? parseInt(msg.toMid, 10) : null,
+				msg && msg.hasOwnProperty('toMid') ? parseInt(msg.toMid, 10) : null,
 			)
 			.filter(Boolean);
 
@@ -168,20 +168,20 @@ module.exports = function (Messaging) {
 		parentMids = parentMids.filter((mid, idx) => canView[idx]);
 
 		const parentMessages = await Messaging.getMessagesFields(parentMids, [
-			"mid",
-			"fromuid",
-			"content",
-			"timestamp",
-			"deleted",
+			'mid',
+			'fromuid',
+			'content',
+			'timestamp',
+			'deleted',
 		]);
 		const parentUids = _.uniq(parentMessages.map((msg) => msg && msg.fromuid));
 		const usersMap = _.zipObject(
 			parentUids,
 			await user.getUsersFields(parentUids, [
-				"uid",
-				"username",
-				"userslug",
-				"picture",
+				'uid',
+				'username',
+				'userslug',
+				'picture',
 			]),
 		);
 
@@ -249,15 +249,15 @@ module.exports = function (Messaging) {
 async function modifyMessage(message, fields, mid) {
 	if (message) {
 		db.parseIntFields(message, intFields, fields);
-		if (message.hasOwnProperty("timestamp")) {
+		if (message.hasOwnProperty('timestamp')) {
 			message.timestampISO = utils.toISOString(message.timestamp);
 		}
-		if (message.hasOwnProperty("edited")) {
+		if (message.hasOwnProperty('edited')) {
 			message.editedISO = utils.toISOString(message.edited);
 		}
 	}
 
-	const payload = await plugins.hooks.fire("filter:messaging.getFields", {
+	const payload = await plugins.hooks.fire('filter:messaging.getFields', {
 		mid: mid,
 		message: message,
 		fields: fields,

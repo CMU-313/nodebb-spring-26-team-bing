@@ -1,26 +1,26 @@
-"use strict";
+'use strict';
 
-const async = require("async");
+const async = require('async');
 
-const batch = require("../../batch");
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Give tag privilege to registered-users on all categories",
+	name: 'Give tag privilege to registered-users on all categories',
 	timestamp: Date.UTC(2017, 5, 16),
 	method: function (callback) {
 		const { progress } = this;
-		const privileges = require("../../privileges");
+		const privileges = require('../../privileges');
 		batch.processSortedSet(
-			"categories:cid",
+			'categories:cid',
 			(cids, next) => {
 				async.eachSeries(
 					cids,
 					(cid, next) => {
 						progress.incr();
 						privileges.categories.give(
-							["groups:topics:tag"],
+							['groups:topics:tag'],
 							cid,
-							"registered-users",
+							'registered-users',
 							next,
 						);
 					},

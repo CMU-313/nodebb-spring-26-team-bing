@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-define("admin/manage/uploads", [
-	"api",
-	"bootbox",
-	"alerts",
-	"uploader",
+define('admin/manage/uploads', [
+	'api',
+	'bootbox',
+	'alerts',
+	'uploader',
 ], function (api, bootbox, alerts, uploader) {
 	const Uploads = {};
 
 	Uploads.init = function () {
-		$("#upload").on("click", function () {
+		$('#upload').on('click', function () {
 			uploader.show(
 				{
-					title: "[[admin/manage/uploads:upload-file]]",
-					route: config.relative_path + "/api/admin/upload/file",
+					title: '[[admin/manage/uploads:upload-file]]',
+					route: config.relative_path + '/api/admin/upload/file',
 					params: { folder: ajaxify.data.currentFolder },
 				},
 				function () {
@@ -22,16 +22,16 @@ define("admin/manage/uploads", [
 			);
 		});
 
-		$(".delete").on("click", function () {
-			const file = $(this).parents("[data-path]");
-			bootbox.confirm("[[admin/manage/uploads:confirm-delete]]", function (ok) {
+		$('.delete').on('click', function () {
+			const file = $(this).parents('[data-path]');
+			bootbox.confirm('[[admin/manage/uploads:confirm-delete]]', function (ok) {
 				if (!ok) {
 					return;
 				}
 
 				api
-					.del("/files", {
-						path: file.attr("data-path"),
+					.del('/files', {
+						path: file.attr('data-path'),
 					})
 					.then(() => {
 						file.remove();
@@ -40,16 +40,16 @@ define("admin/manage/uploads", [
 			});
 		});
 
-		$("#new-folder").on("click", async function () {
+		$('#new-folder').on('click', async function () {
 			bootbox.prompt(
-				"[[admin/manage/uploads:name-new-folder]]",
+				'[[admin/manage/uploads:name-new-folder]]',
 				(newFolderName) => {
 					if (!newFolderName || !newFolderName.trim()) {
 						return;
 					}
 
 					api
-						.put("/files/folder", {
+						.put('/files/folder', {
 							path: ajaxify.data.currentFolder,
 							folderName: newFolderName,
 						})

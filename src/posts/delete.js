@@ -1,45 +1,45 @@
-"use strict";
+'use strict';
 
-const _ = require("lodash");
+const _ = require('lodash');
 
-const db = require("../database");
-const topics = require("../topics");
-const categories = require("../categories");
-const user = require("../user");
-const notifications = require("../notifications");
-const plugins = require("../plugins");
-const flags = require("../flags");
-const activitypub = require("../activitypub");
-const utils = require("../utils");
+const db = require('../database');
+const topics = require('../topics');
+const categories = require('../categories');
+const user = require('../user');
+const notifications = require('../notifications');
+const plugins = require('../plugins');
+const flags = require('../flags');
+const activitypub = require('../activitypub');
+const utils = require('../utils');
 
 module.exports = function (Posts) {
 	Posts.delete = async function (pid, uid) {
-		return await deleteOrRestore("delete", pid, uid);
+		return await deleteOrRestore('delete', pid, uid);
 	};
 
 	Posts.restore = async function (pid, uid) {
-		return await deleteOrRestore("restore", pid, uid);
+		return await deleteOrRestore('restore', pid, uid);
 	};
 
 	async function deleteOrRestore(type, pid, uid) {
-		const isDeleting = type === "delete";
+		const isDeleting = type === 'delete';
 		await plugins.hooks.fire(`filter:post.${type}`, { pid: pid, uid: uid });
 		await Posts.setPostFields(pid, {
 			deleted: isDeleting ? 1 : 0,
 			deleterUid: isDeleting ? uid : 0,
 		});
 		const postData = await Posts.getPostFields(pid, [
-			"pid",
-			"tid",
-			"uid",
-			"content",
-			"timestamp",
-			"deleted",
+			'pid',
+			'tid',
+			'uid',
+			'content',
+			'timestamp',
+			'deleted',
 		]);
 		const topicData = await topics.getTopicFields(postData.tid, [
-			"tid",
-			"cid",
-			"pinned",
+			'tid',
+			'cid',
+			'pinned',
 		]);
 		postData.cid = topicData.cid;
 		await Promise.all([
@@ -55,8 +55,8 @@ module.exports = function (Posts) {
 			post: _.clone(postData),
 			uid: uid,
 		});
-		if (type === "delete") {
-			await flags.resolveFlag("post", pid, uid);
+		if (type === 'delete') {
+			await flags.resolveFlag('post', pid, uid);
 		}
 		return postData;
 	}
@@ -71,10 +71,10 @@ module.exports = function (Posts) {
 		}
 		const uniqTids = _.uniq(postData.map((p) => p.tid));
 		const topicData = await topics.getTopicsFields(uniqTids, [
-			"tid",
-			"cid",
-			"pinned",
-			"postcount",
+			'tid',
+			'cid',
+			'pinned',
+			'postcount',
 		]);
 		const tidToTopic = _.zipObject(uniqTids, topicData);
 
@@ -83,7 +83,7 @@ module.exports = function (Posts) {
 			p.cid = tidToTopic[p.tid] && tidToTopic[p.tid].cid;
 		});
 
-		await plugins.hooks.fire("filter:posts.purge", {
+		await plugins.hooks.fire('filter:posts.purge', {
 			posts: postData,
 			pids: postData.map((p) => p.pid),
 			uid: uid,
@@ -98,7 +98,7 @@ module.exports = function (Posts) {
 			deleteFromGroups(pids),
 			deleteDiffs(pids),
 			deleteFromUploads(pids),
-			db.sortedSetsRemove(["posts:pid", "posts:votes", "posts:flagged"], pids),
+			db.sortedSetsRemove(['posts:pid', 'posts:votes', 'posts:flagged'], pids),
 			Posts.attachments.empty(pids),
 			activitypub.notes.delete(pids),
 			db.deleteAll(pids.map((pid) => `pid:${pid}:editors`)),
@@ -106,7 +106,7 @@ module.exports = function (Posts) {
 
 		await resolveFlags(postData, uid);
 
-		plugins.hooks.fire("action:posts.purge", { posts: postData, uid: uid });
+		plugins.hooks.fire('action:posts.purge', { posts: postData, uid: uid });
 
 		await db.deleteAll(postData.map((p) => `post:${p.pid}`));
 	};
@@ -123,7 +123,7 @@ module.exports = function (Posts) {
 		await db.sortedSetRemoveBulk(bulkRemove);
 
 		const localCount = postData.filter((p) => utils.isNumber(p.pid)).length;
-		const incrObjectBulk = [["global", { postCount: -localCount }]];
+		const incrObjectBulk = [['global', { postCount: -localCount }]];
 
 		const postsByCategory = _.groupBy(postData, (p) => parseInt(p.cid, 10));
 		for (const [cid, posts] of Object.entries(postsByCategory)) {
@@ -141,7 +141,7 @@ module.exports = function (Posts) {
 			if (posts.length && posts[0]) {
 				const topicData = posts[0].topic;
 				const newPostCount = topicData.postcount - posts.length;
-				topicPostCountTasks.push(["topics:posts", newPostCount, tid]);
+				topicPostCountTasks.push(['topics:posts', newPostCount, tid]);
 				if (!topicData.pinned) {
 					zsetIncrBulk.push([
 						`cid:${topicData.cid}:tids:posts`,
@@ -171,7 +171,7 @@ module.exports = function (Posts) {
 			),
 		]);
 		const tidPosterZsets = tids.map((tid) => `tid:${tid}:posters`);
-		await db.sortedSetsRemoveRangeByScore(tidPosterZsets, "-inf", 0);
+		await db.sortedSetsRemoveRangeByScore(tidPosterZsets, '-inf', 0);
 		const posterCounts = await db.sortedSetsCard(tidPosterZsets);
 		await db.setObjectBulk(
 			tids.map((tid, idx) => [
@@ -256,7 +256,7 @@ module.exports = function (Posts) {
 
 	async function deleteFromGroups(pids) {
 		const groupNames = await db.getSortedSetMembers(
-			"groups:visible:createtime",
+			'groups:visible:createtime',
 		);
 		const keys = groupNames.map(
 			(groupName) => `group:${groupName}:member:pids`,
@@ -286,7 +286,7 @@ module.exports = function (Posts) {
 		const flaggedPosts = postData.filter((p) => p && parseInt(p.flagId, 10));
 		await Promise.all(
 			flaggedPosts.map((p) =>
-				flags.update(p.flagId, uid, { state: "resolved" }),
+				flags.update(p.flagId, uid, { state: 'resolved' }),
 			),
 		);
 	}

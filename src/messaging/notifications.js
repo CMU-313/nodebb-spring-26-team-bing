@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const winston = require("winston");
-const validator = require("validator");
+const winston = require('winston');
+const validator = require('validator');
 
-const batch = require("../batch");
-const db = require("../database");
-const notifications = require("../notifications");
-const user = require("../user");
-const io = require("../socket.io");
-const activitypub = require("../activitypub");
-const plugins = require("../plugins");
-const utils = require("../utils");
+const batch = require('../batch');
+const db = require('../database');
+const notifications = require('../notifications');
+const user = require('../user');
+const io = require('../socket.io');
+const activitypub = require('../activitypub');
+const plugins = require('../plugins');
+const utils = require('../utils');
 
 module.exports = function (Messaging) {
 	Messaging.setUserNotificationSetting = async (uid, roomId, value) => {
@@ -31,7 +31,7 @@ module.exports = function (Messaging) {
 	Messaging.getUidsNotificationSetting = async (uids, roomId) => {
 		const [settings, roomData] = await Promise.all([
 			db.getObjectFields(`chat:room:${roomId}:notification:settings`, uids),
-			Messaging.getRoomData(roomId, ["notificationSetting"]),
+			Messaging.getRoomData(roomId, ['notificationSetting']),
 		]);
 		return uids.map((uid) =>
 			parseInt(settings[uid] || roomData.notificationSetting, 10),
@@ -51,7 +51,7 @@ module.exports = function (Messaging) {
 
 	Messaging.notifyUsersInRoom = async (fromUid, roomId, messageObj) => {
 		const isPublic =
-			parseInt(await db.getObjectField(`chat:room:${roomId}`, "public"), 10) ===
+			parseInt(await db.getObjectField(`chat:room:${roomId}`, 'public'), 10) ===
 			1;
 
 		let data = {
@@ -60,19 +60,19 @@ module.exports = function (Messaging) {
 			message: messageObj,
 			public: isPublic,
 		};
-		data = await plugins.hooks.fire("filter:messaging.notify", data);
+		data = await plugins.hooks.fire('filter:messaging.notify', data);
 		if (!data) {
 			return;
 		}
 
 		// delivers full message to all online users in roomId
-		io.in(`chat_room_${roomId}`).emit("event:chats.receive", data);
+		io.in(`chat_room_${roomId}`).emit('event:chats.receive', data);
 
 		const unreadData = { roomId, fromUid, public: isPublic };
 		if (isPublic && !messageObj.system) {
 			// delivers unread public msg to all online users on the chats page
 			io.in(`chat_room_public_${roomId}`).emit(
-				"event:chats.public.unread",
+				'event:chats.public.unread',
 				unreadData,
 			);
 		}
@@ -147,7 +147,7 @@ module.exports = function (Messaging) {
 			const roomName =
 				roomData.roomName || `[[modules:chat.room-id, ${roomId}]]`;
 			const notifData = {
-				type: isGroupChat ? "new-group-chat" : "new-chat",
+				type: isGroupChat ? 'new-group-chat' : 'new-chat',
 				subject: roomData.roomName
 					? `[[email:notif.chat.new-message-from-user-in-room, ${displayname}, ${roomName}]]`
 					: `[[email:notif.chat.new-message-from-user, ${displayname}]]`,
@@ -165,7 +165,7 @@ module.exports = function (Messaging) {
 			};
 			if (roomData.public) {
 				const icon = Messaging.getRoomIcon(roomData);
-				notifData.type = "new-public-chat";
+				notifData.type = 'new-public-chat';
 				notifData.roomIcon = icon;
 				notifData.subject = `[[email:notif.chat.new-message-from-user-in-room, ${displayname}, ${roomName}]]`;
 				notifData.bodyShort = `[[notifications:user-posted-in-public-room, ${displayname}, ${icon}, ${roomName}]]`;

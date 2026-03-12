@@ -1,18 +1,18 @@
-"use strict";
+'use strict';
 
-const path = require("path");
-const winston = require("winston");
-const fs = require("fs");
-const chalk = require("chalk");
-const nconf = require("nconf");
+const path = require('path');
+const winston = require('winston');
+const fs = require('fs');
+const chalk = require('chalk');
+const nconf = require('nconf');
 
-const db = require("../database");
-const events = require("../events");
-const meta = require("../meta");
-const plugins = require("../plugins");
-const widgets = require("../widgets");
-const privileges = require("../privileges");
-const { paths, pluginNamePattern, themeNamePattern } = require("../constants");
+const db = require('../database');
+const events = require('../events');
+const meta = require('../meta');
+const plugins = require('../plugins');
+const widgets = require('../widgets');
+const privileges = require('../privileges');
+const { paths, pluginNamePattern, themeNamePattern } = require('../constants');
 
 exports.reset = async function (options) {
 	const map = {
@@ -61,18 +61,18 @@ exports.reset = async function (options) {
 	if (!tasks.length) {
 		console.log(
 			[
-				chalk.yellow("No arguments passed in, so nothing was reset.\n"),
-				`Use ./nodebb reset ${chalk.red("{-t|-p|-w|-s|-a}")}`,
-				"    -t\tthemes",
-				"    -p\tplugins",
-				"    -w\twidgets",
-				"    -s\tsettings",
-				"    -a\tall of the above",
-				"",
-				"Plugin and theme reset flags (-p & -t) can take a single argument",
-				"    e.g. ./nodebb reset -p nodebb-plugin-mentions, ./nodebb reset -t nodebb-theme-harmony",
-				"         Prefix is optional, e.g. ./nodebb reset -p markdown, ./nodebb reset -t harmony",
-			].join("\n"),
+				chalk.yellow('No arguments passed in, so nothing was reset.\n'),
+				`Use ./nodebb reset ${chalk.red('{-t|-p|-w|-s|-a}')}`,
+				'    -t\tthemes',
+				'    -p\tplugins',
+				'    -w\twidgets',
+				'    -s\tsettings',
+				'    -a\tall of the above',
+				'',
+				'Plugin and theme reset flags (-p & -t) can take a single argument',
+				'    e.g. ./nodebb reset -p nodebb-plugin-mentions, ./nodebb reset -t nodebb-theme-harmony',
+				'         Prefix is optional, e.g. ./nodebb reset -p markdown, ./nodebb reset -t harmony',
+			].join('\n'),
 		);
 
 		process.exit(0);
@@ -85,7 +85,7 @@ exports.reset = async function (options) {
 			await task();
 		}
 		winston.info(
-			"[reset] Reset complete. Please run `./nodebb build` to rebuild assets.",
+			'[reset] Reset complete. Please run `./nodebb build` to rebuild assets.',
 		);
 		process.exit(0);
 	} catch (err) {
@@ -97,58 +97,58 @@ exports.reset = async function (options) {
 };
 
 async function resetSettings() {
-	await privileges.global.give(["groups:local:login"], "registered-users");
-	winston.info("[reset] registered-users given login privilege");
-	winston.info("[reset] Settings reset to default");
+	await privileges.global.give(['groups:local:login'], 'registered-users');
+	winston.info('[reset] registered-users given login privilege');
+	winston.info('[reset] Settings reset to default');
 }
 
 async function resetTheme(themeId) {
 	try {
 		await fs.promises.access(
-			path.join(paths.nodeModules, themeId, "package.json"),
+			path.join(paths.nodeModules, themeId, 'package.json'),
 		);
 	} catch (err) {
-		winston.warn("[reset] Theme `%s` is not installed on this forum", themeId);
-		throw new Error("theme-not-found");
+		winston.warn('[reset] Theme `%s` is not installed on this forum', themeId);
+		throw new Error('theme-not-found');
 	}
 	await resetThemeTo(themeId);
 }
 
 async function resetThemes() {
-	await resetThemeTo("nodebb-theme-harmony");
+	await resetThemeTo('nodebb-theme-harmony');
 }
 
 async function resetThemeTo(themeId) {
 	await meta.themes.set({
-		type: "local",
+		type: 'local',
 		id: themeId,
 	});
-	await meta.configs.set("bootswatchSkin", "");
+	await meta.configs.set('bootswatchSkin', '');
 	winston.info(`[reset] Theme reset to ${themeId} and default skin`);
 }
 
 async function resetPlugin(pluginId) {
 	try {
-		if (nconf.get("plugins:active")) {
+		if (nconf.get('plugins:active')) {
 			winston.error(
-				"Cannot reset plugins while plugin state is set in the configuration (config.json, environmental variables or terminal arguments), please modify the configuration instead",
+				'Cannot reset plugins while plugin state is set in the configuration (config.json, environmental variables or terminal arguments), please modify the configuration instead',
 			);
 			process.exit(1);
 		}
-		const isActive = await db.isSortedSetMember("plugins:active", pluginId);
+		const isActive = await db.isSortedSetMember('plugins:active', pluginId);
 		if (isActive) {
-			await db.sortedSetRemove("plugins:active", pluginId);
+			await db.sortedSetRemove('plugins:active', pluginId);
 			await events.log({
-				type: "plugin-deactivate",
+				type: 'plugin-deactivate',
 				text: pluginId,
 			});
-			winston.info("[reset] Plugin `%s` disabled", pluginId);
+			winston.info('[reset] Plugin `%s` disabled', pluginId);
 		} else {
 			winston.warn(
-				"[reset] Plugin `%s` was not active on this forum",
+				'[reset] Plugin `%s` was not active on this forum',
 				pluginId,
 			);
-			winston.info("[reset] No action taken.");
+			winston.info('[reset] No action taken.');
 		}
 	} catch (err) {
 		winston.error(
@@ -159,18 +159,18 @@ async function resetPlugin(pluginId) {
 }
 
 async function resetPlugins() {
-	if (nconf.get("plugins:active")) {
+	if (nconf.get('plugins:active')) {
 		winston.error(
-			"Cannot reset plugins while plugin state is set in the configuration (config.json, environmental variables or terminal arguments), please modify the configuration instead",
+			'Cannot reset plugins while plugin state is set in the configuration (config.json, environmental variables or terminal arguments), please modify the configuration instead',
 		);
 		process.exit(1);
 	}
-	await db.delete("plugins:active");
-	winston.info("[reset] All Plugins De-activated");
+	await db.delete('plugins:active');
+	winston.info('[reset] All Plugins De-activated');
 }
 
 async function resetWidgets() {
 	await plugins.reload();
 	await widgets.reset();
-	winston.info("[reset] All Widgets moved to Draft Zone");
+	winston.info('[reset] All Widgets moved to Draft Zone');
 }

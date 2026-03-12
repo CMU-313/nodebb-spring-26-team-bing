@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const api = require("../../api");
-const helpers = require("../helpers");
+const api = require('../../api');
+const helpers = require('../helpers');
 
 const Chats = module.exports;
 
@@ -86,7 +86,7 @@ Chats.rename = async (req, res) => {
 };
 
 Chats.mark = async (req, res) => {
-	const state = req.method === "PUT" ? 1 : 0;
+	const state = req.method === 'PUT' ? 1 : 0;
 	await api.chats.mark(req, {
 		roomId: req.params.roomId,
 		state,
@@ -97,7 +97,7 @@ Chats.mark = async (req, res) => {
 
 Chats.watch = async (req, res) => {
 	const state =
-		req.method === "DELETE" ? -1 : parseInt(req.body.value, 10) || -1;
+		req.method === 'DELETE' ? -1 : parseInt(req.body.value, 10) || -1;
 
 	await api.chats.watch(req, { state, ...req.params });
 	helpers.formatApiResponse(200, res);
@@ -149,7 +149,7 @@ Chats.kickUser = async (req, res) => {
 };
 
 Chats.toggleOwner = async (req, res) => {
-	const state = req.method === "PUT";
+	const state = req.method === 'PUT';
 	await api.chats.toggleOwner(req, { state, ...req.params });
 	helpers.formatApiResponse(200, res);
 };

@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const db = require("../../database");
-const batch = require("../../batch");
+const db = require('../../database');
+const batch = require('../../batch');
 
 module.exports = {
-	name: "Move post:<pid>:uploads to post hash",
+	name: 'Move post:<pid>:uploads to post hash',
 	timestamp: Date.UTC(2025, 6, 5),
 	method: async function () {
 		const { progress } = this;
 
-		const postCount = await db.sortedSetCard("posts:pid");
+		const postCount = await db.sortedSetCard('posts:pid');
 		progress.total = postCount;
 
 		await batch.processSortedSet(
-			"posts:pid",
+			'posts:pid',
 			async (pids) => {
 				const keys = pids.map((pid) => `post:${pid}:uploads`);
 

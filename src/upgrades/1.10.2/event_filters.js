@@ -1,32 +1,32 @@
 /* eslint-disable no-await-in-loop */
 
-"use strict";
+'use strict';
 
-const db = require("../../database");
+const db = require('../../database');
 
-const batch = require("../../batch");
+const batch = require('../../batch');
 
 module.exports = {
-	name: "add filters to events",
+	name: 'add filters to events',
 	timestamp: Date.UTC(2018, 9, 4),
 	method: async function () {
 		const { progress } = this;
 
 		await batch.processSortedSet(
-			"events:time",
+			'events:time',
 			async (eids) => {
 				for (const eid of eids) {
 					progress.incr();
 
 					const eventData = await db.getObject(`event:${eid}`);
 					if (!eventData) {
-						await db.sortedSetRemove("events:time", eid);
+						await db.sortedSetRemove('events:time', eid);
 						return;
 					}
 					// privilege events we're missing type field
 					if (!eventData.type && eventData.privilege) {
-						eventData.type = "privilege-change";
-						await db.setObjectField(`event:${eid}`, "type", "privilege-change");
+						eventData.type = 'privilege-change';
+						await db.setObjectField(`event:${eid}`, 'type', 'privilege-change');
 						await db.sortedSetAdd(
 							`events:time:${eventData.type}`,
 							eventData.timestamp,
@@ -35,7 +35,7 @@ module.exports = {
 						return;
 					}
 					await db.sortedSetAdd(
-						`events:time:${eventData.type || ""}`,
+						`events:time:${eventData.type || ''}`,
 						eventData.timestamp,
 						eid,
 					);

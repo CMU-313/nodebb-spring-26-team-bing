@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
 module.exports = function (module) {
-	const utils = require("../../../utils");
+	const utils = require('../../../utils');
 
 	module.sortedSetAdd = async function (key, score, value) {
 		if (!key) {
@@ -23,7 +23,7 @@ module.exports = function (module) {
 		}
 
 		if (scores.length !== values.length) {
-			throw new Error("[[error:invalid-data]]");
+			throw new Error('[[error:invalid-data]]');
 		}
 		for (let i = 0; i < scores.length; i += 1) {
 			if (!utils.isNumber(scores[i])) {
@@ -50,7 +50,7 @@ module.exports = function (module) {
 		}
 
 		if (isArrayOfScores && scores.length !== keys.length) {
-			throw new Error("[[error:invalid-data]]");
+			throw new Error('[[error:invalid-data]]');
 		}
 
 		const batch = module.client.multi();

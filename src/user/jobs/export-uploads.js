@@ -1,32 +1,32 @@
-"use strict";
+'use strict';
 
-const nconf = require("nconf");
+const nconf = require('nconf');
 
 nconf.argv().env({
-	separator: "__",
+	separator: '__',
 });
 
-const fs = require("fs");
-const path = require("path");
-const archiver = require("archiver");
-const winston = require("winston");
+const fs = require('fs');
+const path = require('path');
+const archiver = require('archiver');
+const winston = require('winston');
 
-process.env.NODE_ENV = process.env.NODE_ENV || "production";
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 // Alternate configuration file support
 const configFile = path.resolve(
 	__dirname,
-	"../../../",
-	nconf.any(["config", "CONFIG"]) || "config.json",
+	'../../../',
+	nconf.any(['config', 'CONFIG']) || 'config.json',
 );
-const prestart = require("../../prestart");
+const prestart = require('../../prestart');
 
 prestart.loadConfig(configFile);
 prestart.setupWinston();
 
-const db = require("../../database");
+const db = require('../../database');
 
-process.on("message", async (msg) => {
+process.on('message', async (msg) => {
 	if (msg && msg.uid) {
 		await db.init();
 
@@ -34,20 +34,20 @@ process.on("message", async (msg) => {
 
 		const archivePath = path.join(
 			__dirname,
-			"../../../build/export",
+			'../../../build/export',
 			`${targetUid}_uploads.zip`,
 		);
-		const rootDirectory = path.join(__dirname, "../../../public/uploads/");
+		const rootDirectory = path.join(__dirname, '../../../public/uploads/');
 
-		const user = require("../index");
+		const user = require('../index');
 
-		const archive = archiver("zip", {
+		const archive = archiver('zip', {
 			zlib: { level: 9 }, // Sets the compression level.
 		});
 
-		archive.on("warning", (err) => {
+		archive.on('warning', (err) => {
 			switch (err.code) {
-				case "ENOENT":
+				case 'ENOENT':
 					winston.warn(`[user/export/uploads] File not found: ${err.path}`);
 					break;
 
@@ -59,12 +59,12 @@ process.on("message", async (msg) => {
 			}
 		});
 
-		archive.on("error", (err) => {
+		archive.on('error', (err) => {
 			const trimPath = function (path) {
-				return path.replace(rootDirectory, "");
+				return path.replace(rootDirectory, '');
 			};
 			switch (err.code) {
-				case "EACCES":
+				case 'EACCES':
 					winston.error(
 						`[user/export/uploads] File inaccessible: ${trimPath(err.path)}`,
 					);
@@ -79,7 +79,7 @@ process.on("message", async (msg) => {
 		});
 
 		const output = fs.createWriteStream(archivePath);
-		output.on("close", async () => {
+		output.on('close', async () => {
 			await db.close();
 			process.exit(0);
 		});
@@ -91,10 +91,10 @@ process.on("message", async (msg) => {
 		await user.collateUploads(targetUid, archive);
 
 		const profileUploadPath = path.join(
-			nconf.get("upload_path"),
+			nconf.get('upload_path'),
 			`profile/uid-${targetUid}`,
 		);
-		archive.directory(profileUploadPath, "profile");
+		archive.directory(profileUploadPath, 'profile');
 		archive.finalize();
 	}
 });

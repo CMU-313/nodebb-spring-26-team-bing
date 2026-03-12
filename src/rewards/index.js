@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const util = require("util");
+const util = require('util');
 
-const db = require("../database");
-const plugins = require("../plugins");
+const db = require('../database');
+const plugins = require('../plugins');
 
 const rewards = module.exports;
 
@@ -17,7 +17,7 @@ rewards.checkConditionAndRewardUser = async function (params) {
 	let rewardData = await getRewardDataByIDs(ids);
 	// filter disabled
 	rewardData = rewardData.filter(
-		(r) => r && !(r.disabled === "true" || r.disabled === true),
+		(r) => r && !(r.disabled === 'true' || r.disabled === true),
 	);
 	rewardData = await filterCompletedRewards(uid, rewardData);
 	if (!rewardData || !rewardData.length) {
@@ -31,7 +31,7 @@ rewards.checkConditionAndRewardUser = async function (params) {
 };
 
 async function isConditionActive(condition) {
-	return await db.isSetMember("conditions:active", condition);
+	return await db.isSetMember('conditions:active', condition);
 }
 
 async function getIDsByCondition(condition) {
@@ -44,7 +44,7 @@ async function filterCompletedRewards(uid, rewards) {
 		0,
 		-1,
 		1,
-		"+inf",
+		'+inf',
 	);
 	const userRewards = {};
 
@@ -77,7 +77,7 @@ async function getRewardsByRewardData(rewards) {
 }
 
 async function checkCondition(reward, method) {
-	if (method.constructor && method.constructor.name !== "AsyncFunction") {
+	if (method.constructor && method.constructor.name !== 'AsyncFunction') {
 		method = util.promisify(method);
 	}
 	const value = await method();
@@ -101,4 +101,4 @@ async function giveRewards(uid, rewards) {
 	}
 }
 
-require("../promisify")(rewards);
+require('../promisify')(rewards);

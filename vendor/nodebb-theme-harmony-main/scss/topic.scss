@@ -22,7 +22,7 @@ body.template-topic {
         }
       }
 
-      [component="post"] {
+      [component='post'] {
         &.selected .post-container {
           background-color: mix($body-bg, $body-color, 90%);
         }
@@ -30,7 +30,7 @@ body.template-topic {
           opacity: 0.65;
         }
 
-        [component="post/content"] {
+        [component='post/content'] {
           @include fix-lists();
 
           > blockquote {
@@ -56,8 +56,8 @@ body.template-topic {
         }
       }
 
-      [component="post/upvote"],
-      [component="post/downvote"] {
+      [component='post/upvote'],
+      [component='post/downvote'] {
         &.upvoted,
         &.downvoted {
           background-color: var(--btn-ghost-active-color);
@@ -74,20 +74,20 @@ body.template-topic {
     @include topic-avatars();
   }
 
-  [component="post/parent"] {
+  [component='post/parent'] {
     margin-left: 2.5rem;
-    [component="post/parent/content"] > p:last-child {
+    [component='post/parent/content'] > p:last-child {
       margin-bottom: 0;
     }
-    &[data-collapsed="true"] {
-      > [component="post/parent/content"] > * {
+    &[data-collapsed='true'] {
+      > [component='post/parent/content'] > * {
         font-size: 13px !important;
         line-height: var(--bs-btn-line-height) !important;
       }
     }
   }
 
-  [component="post/replies/container"] {
+  [component='post/replies/container'] {
     .icon {
       display: none !important;
     }
@@ -104,7 +104,7 @@ body.template-topic {
       display: none !important;
     }
 
-    [component="post"] {
+    [component='post'] {
       padding-top: 0 !important;
       padding-bottom: $spacer;
       &:last-of-type {
@@ -117,7 +117,7 @@ body.template-topic {
     }
   }
 
-  [component="topic/thumb/list"] {
+  [component='topic/thumb/list'] {
     &.thumbs-collapsed a.d-inline-block:nth-of-type(n + 4) {
       display: none !important;
     }
@@ -130,24 +130,24 @@ body.template-topic {
 @include media-breakpoint-up(lg) {
   body.template-topic {
     .topic .posts {
-      [component="post"] {
-        [component="post/actions"] {
+      [component='post'] {
+        [component='post/actions'] {
           opacity: 0;
           transition: $transition-fade;
 
-          &:has([aria-expanded="true"]) {
+          &:has([aria-expanded='true']) {
             opacity: 1;
           }
         }
-        [component="post/actions"]:focus-within {
+        [component='post/actions']:focus-within {
           opacity: 1;
         }
         &:hover {
           > div
             > .post-container
-            > [component="post/footer"]
+            > [component='post/footer']
             > div
-            > [component="post/actions"] {
+            > [component='post/actions'] {
             opacity: 1;
           }
         }

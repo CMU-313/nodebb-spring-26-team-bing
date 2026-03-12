@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
+define('tagFilter', ['hooks', 'alerts', 'bootstrap'], function (
 	hooks,
 	alerts,
 	bootstrap,
@@ -12,9 +12,9 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 			return;
 		}
 		options = options || {};
-		options.template = "partials/tags/filter-dropdown-left";
+		options.template = 'partials/tags/filter-dropdown-left';
 
-		hooks.fire("action:tag.filter.options", { el: el, options: options });
+		hooks.fire('action:tag.filter.options', { el: el, options: options });
 
 		const searchEl = el.find('[component="tag/filter/search"]');
 
@@ -34,15 +34,15 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 
 		const toggleSearchVisibilty =
 			searchEl.parents('[component="tag/filter"]').length &&
-			app.user.privileges["search:tags"];
+			app.user.privileges['search:tags'];
 
-		el.on("show.bs.dropdown", function () {
+		el.on('show.bs.dropdown', function () {
 			if (toggleSearchVisibilty) {
-				searchEl.removeClass("hidden");
+				searchEl.removeClass('hidden');
 			}
 
 			function doSearch() {
-				const val = searchEl.find("input").val();
+				const val = searchEl.find('input').val();
 				if (val.length > 1 || (!val && !tagList)) {
 					loadList(val, function (tags) {
 						tagList = tagList || tags;
@@ -53,27 +53,27 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 				}
 			}
 
-			searchEl.on("click", function (ev) {
+			searchEl.on('click', function (ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
 			});
-			searchEl.find("input").val("").on("keyup", utils.debounce(doSearch, 300));
+			searchEl.find('input').val('').on('keyup', utils.debounce(doSearch, 300));
 			doSearch();
 		});
 
-		el.on("shown.bs.dropdown", function () {
-			if (!["xs", "sm"].includes(utils.findBootstrapEnvironment())) {
-				searchEl.find("input").focus();
+		el.on('shown.bs.dropdown', function () {
+			if (!['xs', 'sm'].includes(utils.findBootstrapEnvironment())) {
+				searchEl.find('input').focus();
 			}
 		});
 
-		el.on("hidden.bs.dropdown", function () {
+		el.on('hidden.bs.dropdown', function () {
 			if (toggleSearchVisibilty) {
-				searchEl.addClass("hidden");
+				searchEl.addClass('hidden');
 			}
 
-			searchEl.off("click");
-			searchEl.find("input").off("keyup");
+			searchEl.off('click');
+			searchEl.find('input').off('keyup');
 
 			let changed = initialTags.length !== selectedTags.length;
 			initialTags.forEach(function (tag, index) {
@@ -110,23 +110,23 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 				}
 				delete currentParams.page;
 				if (Object.keys(currentParams).length) {
-					url += "?" + $.param(currentParams);
+					url += '?' + $.param(currentParams);
 				}
 				ajaxify.go(url);
 			}
 		});
 
-		el.on("click", '[component="tag/filter/list"] [data-tag]', function () {
+		el.on('click', '[component="tag/filter/list"] [data-tag]', function () {
 			const listEl = el.find('[component="tag/filter/list"]');
 			const tagEl = $(this);
-			const link = tagEl.find("a").attr("href");
-			if (link && link !== "#" && link.length) {
+			const link = tagEl.find('a').attr('href');
+			if (link && link !== '#' && link.length) {
 				return;
 			}
-			const tag = tagEl.attr("data-tag");
+			const tag = tagEl.attr('data-tag');
 			const icon = tagEl.find('[component="tag/select/icon"]');
 
-			if (tag !== "") {
+			if (tag !== '') {
 				if (selectedTags.includes(tag)) {
 					selectedTags.splice(selectedTags.indexOf(tag), 1);
 				} else {
@@ -135,15 +135,15 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 				selectedTags.sort(function (a, b) {
 					return a - b;
 				});
-				icon.toggleClass("invisible");
+				icon.toggleClass('invisible');
 			} else {
-				el.find('[component="tag/select/icon"]').addClass("invisible");
+				el.find('[component="tag/select/icon"]').addClass('invisible');
 				selectedTags = [];
 			}
 
 			listEl
 				.find('[data-tag=""] i')
-				.toggleClass("invisible", !!selectedTags.length);
+				.toggleClass('invisible', !!selectedTags.length);
 			options.selectedTags = selectedTags;
 			if (options.onSelect) {
 				options.onSelect({ tag: tag, selectedTags: selectedTags.slice() });
@@ -163,7 +163,7 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 				cids = ajaxify.data.selectedCids;
 			}
 			socket.emit(
-				"topics.tagFilterSearch",
+				'topics.tagFilterSearch',
 				{
 					query: query,
 					cids: cids,
@@ -195,7 +195,7 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 					);
 
 					const bsDropdown = bootstrap.Dropdown.getInstance(
-						el.find(".dropdown-toggle").get(0),
+						el.find('.dropdown-toggle').get(0),
 					);
 					if (bsDropdown) {
 						bsDropdown.update();
@@ -208,19 +208,19 @@ define("tagFilter", ["hooks", "alerts", "bootstrap"], function (
 	function updateFilterButton(el, selectedTags) {
 		if (selectedTags.length > 0) {
 			renderButton({
-				label: selectedTags.join(", "),
+				label: selectedTags.join(', '),
 			});
 		} else {
 			renderButton();
 		}
 		function renderButton(selectedTag) {
 			app.parseAndTranslate(
-				"partials/tags/filter-dropdown-content",
+				'partials/tags/filter-dropdown-content',
 				{
 					selectedTag: selectedTag,
 				},
 				function (html) {
-					el.find("button").replaceWith($("<div/>").html(html).find("button"));
+					el.find('button').replaceWith($('<div/>').html(html).find('button'));
 				},
 			);
 		}
