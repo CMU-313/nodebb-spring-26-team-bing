@@ -85,6 +85,12 @@ jobs:
       - name: Node tests
         run: npm test
 
+      - name: Install retire.js
+        run: npm install -g retire
+
+      - name: Run retire.js
+        run: retire --severity high
+
       - name: Extract coverage info
         run: npm run coverage
 
