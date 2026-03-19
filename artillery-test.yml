@@ -1,0 +1,11 @@
+config:
+  target: "http://localhost:4567" # Default NodeBB port
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+scenarios:
+  - name: "Land on homepage"
+    flow:
+      - get:
+          url: "/"

@@ -96,3 +96,22 @@ jobs:
 
       - name: Test coverage
         uses: coverallsapp/github-action@v2
+      
+      - name: Start NodeBB in Background
+        run: |
+          node app & 
+          # Give the server a few seconds to boot up before hitting it
+          sleep 10 
+
+      - name: Install Artillery
+        run: npm install -g artillery
+
+      - name: Run Artillery Load Test
+        run: artillery run artillery-test.yml --output report.json
+
+      - name: Upload Artillery Report
+        # This preserves your report.json as a downloadable artifact in GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: artillery-report
+          path: report.json
