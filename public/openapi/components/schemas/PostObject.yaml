@@ -178,6 +178,8 @@ PostDataObject:
           type: boolean
         translatedContent:
           type: string
+        anonymous:
+          default: 'false'
         timestamp:
           type: number
         votes:
