@@ -82,6 +82,14 @@
 
 		<div class="content text-break" component="post/content" itemprop="text">
 			{posts.content}
+			{{{if !posts.isEnglish }}}
+			<div class="sensitive-content-message">
+			<a class="btn btn-sm btn-primary view-translated-btn">Click here to view the translated message.</a>
+			</div>
+			<div class="translated-content" style="display:none;">
+			{posts.translatedContent}
+			</div>
+	        {{{end}}}
 		</div>
 
 		<div component="post/footer" class="post-footer border-bottom pb-2">
@@ -111,7 +119,6 @@
 					<!-- IMPORT partials/topic/reactions.tpl -->
 					<a component="post/reply" href="#" class="btn btn-ghost btn-sm {{{ if !privileges.topics:reply }}}hidden{{{ end }}}" title="[[topic:reply]]"><i class="fa fa-fw fa-reply text-primary"></i></a>
 					<a component="post/quote" href="#" class="btn btn-ghost btn-sm {{{ if !privileges.topics:reply }}}hidden{{{ end }}}" title="[[topic:quote]]"><i class="fa fa-fw fa-quote-right text-primary"></i></a>
-					<a component="post/forward" href="#" class="btn btn-ghost btn-sm {{{ if !privileges.topics:reply }}}hidden{{{ end }}}" title="Forward Post"><i class="fa fa-fw fa-share text-primary"></i></a>
 
 					{{{ if ./announces }}}
 					<a component="post/announce-count" href="#" class="btn btn-ghost btn-sm d-flex gap-2 align-items-center" title="[[topic:announcers]]"><i class="fa fa-share-alt text-primary"></i> {./announces}</a>
