@@ -80,6 +80,17 @@ define('forum/topic', [
 		hooks.fire('action:topic.loaded', ajaxify.data);
 	};
 
+	require(['forum/topic/forward-post'], function (forwardPost) {
+		const stored = forwardPost.getStoredForward();
+		if (stored && String(stored.tid) === String(ajaxify.data.tid) && stored.body) {
+			hooks.fire('action:composer.post.new', {
+				tid: ajaxify.data.tid,
+				title: ajaxify.data.titleRaw || stored.title,
+				body: stored.body,
+			});
+		}
+	});
+
 	function configurePostToggle() {
 		$('.topic').on('click', '.view-translated-btn', function () {
 			// Toggle the visibility of the next .translated-content div
