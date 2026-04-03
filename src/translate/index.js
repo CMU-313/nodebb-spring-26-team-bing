@@ -8,39 +8,25 @@ translatorApi.translate = async function (postData) {
 		return [true, ''];
 	}
 
-	const urlsToTry = [
-		process.env.TRANSLATOR_API,
-		'http://host.docker.internal:5000',
-		'http://127.0.0.1:5000',
-	].filter(Boolean);
-
-	const tryUrl = async function (index) {
-		if (index >= urlsToTry.length) {
-			return null;
+	const baseUrl = 'http://host.docker.internal:5000';
+	try {
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+		const response = await fetch(`${baseUrl}/?content=${encodeURIComponent(content)}`, {
+			signal: controller.signal,
+		});
+		clearTimeout(timeoutId);
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}`);
 		}
 
-		const baseUrl = urlsToTry[index];
-		try {
-			const response = await fetch(`${baseUrl}/?content=${encodeURIComponent(content)}`);
-			if (!response.ok) {
-				return await tryUrl(index + 1);
-			}
+		const data = await response.json();
+		const isEnglish = Boolean(data.is_english ?? true);
+		const translatedContent = String(data.translated_content ?? '');
 
-			const data = await response.json();
-			const isEnglish = Boolean(data.is_english ?? true);
-			const translatedContent = String(data.translated_content ?? '');
-
-			return [isEnglish, translatedContent];
-		} catch (err) {
-			// Try the next URL before failing closed.
-			return await tryUrl(index + 1);
-		}
-	};
-
-	const result = await tryUrl(0);
-	if (result) {
-		return result;
+		return [isEnglish, translatedContent];
+	} catch (err) {
+		// If request fails, return default
+		return [true, ''];
 	}
-
-	return [true, ''];
 };
