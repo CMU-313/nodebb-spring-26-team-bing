@@ -84,6 +84,8 @@ if (process.env.LLM_TEST_ENABLED === 'true' && runningLlmTestFile) {
 			const [isEnglish, translatedContent] = await translatorApi.translate({ content: 'efghwoepjfbwejn' });
 			assert.strictEqual(typeof isEnglish, 'boolean');
 			assert.strictEqual(typeof translatedContent, 'string');
+			const normalized = translatedContent.toLowerCase();
+			assert.ok(normalized.includes('efghwoepjfbwejn'));
 		});
 	});
 }
