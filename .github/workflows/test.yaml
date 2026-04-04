@@ -85,6 +85,13 @@ jobs:
       - name: Node tests
         run: npm test
 
+      - name: LLM translator tests
+        if: ${{ vars.TRANSLATOR_API_URL != '' }}
+        env:
+          LLM_TEST_ENABLED: 'true'
+          TRANSLATOR_API: ${{ vars.TRANSLATOR_API_URL }}
+        run: npx mocha test/llm-translator.js
+
       - name: Install retire.js
         run: npm install -g retire
 
